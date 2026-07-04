@@ -38,8 +38,10 @@
   .title{position:absolute; top:10.5%; left:0; width:100%; text-align:center; z-index:4;}
   .title h1{font-family:'Baloo 2', sans-serif; font-weight:800; font-size:18px; margin:0; text-shadow:0 2px 8px rgba(0,0,0,0.35);}
 
-  #locrow{position:absolute; top:16.5%; left:0; width:100%; z-index:4; display:flex; justify-content:center; gap:6px; padding:0 10px;}
-  .locpill{border:1px solid rgba(245,239,227,0.3); border-radius:999px; padding:5px 11px; font-size:11px; font-weight:800;
+  #locrow{position:absolute; top:16.5%; left:0; width:100%; z-index:4; display:flex; justify-content:flex-start;
+    gap:6px; padding:0 12px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none;}
+  #locrow::-webkit-scrollbar{display:none;}
+  .locpill{border:1px solid rgba(245,239,227,0.3); border-radius:999px; padding:5px 11px; font-size:11px; font-weight:800; flex-shrink:0; white-space:nowrap;
     background:rgba(8,34,42,0.5); color:rgba(245,239,227,0.6);}
   .locpill.active{background:var(--gold); color:var(--ink); border-color:var(--gold);}
   .locpill.locked{opacity:.5;}
@@ -96,6 +98,7 @@
   #timerbar{width:100%; max-width:340px; height:7px; border-radius:6px; background:rgba(245,239,227,0.2); overflow:hidden; display:none;}
   #timerfill{height:100%; width:100%; background:var(--coral); transform-origin:left;}
   #gearline{font-size:10px; opacity:.75; font-weight:700; text-align:center;}
+  #boostline{font-size:11px; font-weight:800; text-align:center; color:var(--gold); min-height:14px;}
 
   #catchcard{position:absolute; inset:0; z-index:30; display:none; align-items:center; justify-content:center;
     background:rgba(6,20,25,0.82);}
@@ -211,6 +214,7 @@
       <div id="timerbar"><div id="timerfill"></div></div>
       <button id="mainbtn">Закинуть удочку</button>
       <div id="gearline"></div>
+      <div id="boostline"></div>
     </div>
 
     <div id="catchcard">
@@ -285,26 +289,62 @@
     { id:'harbor', name:'Тихая Гавань', unlockLevel:1, top:'#F2A65A', bottom:'#1E5A6B',
       fish:[
         {id:'roach', name:'Плотвичка', ico:'🐟', tier:0, coins:[5,10], xp:5},
+        {id:'gudgeon', name:'Пескарь', ico:'🐠', tier:0, coins:[4,9], xp:5},
         {id:'perch', name:'Окунь', ico:'🐠', tier:1, coins:[8,14], xp:6},
+        {id:'ruffe', name:'Ёрш', ico:'🐡', tier:1, coins:[7,13], xp:6},
         {id:'crucian', name:'Карась', ico:'🐡', tier:2, coins:[15,25], xp:12},
+        {id:'tench', name:'Линь', ico:'🐢', tier:2, coins:[16,27], xp:13},
         {id:'pike', name:'Щука', ico:'🦈', tier:3, coins:[30,50], xp:25},
+        {id:'catfish', name:'Сом', ico:'🐊', tier:3, coins:[32,55], xp:27},
         {id:'golden', name:'Золотая рыбка', ico:'✨', tier:4, coins:[80,120], xp:60},
       ]},
     { id:'reef', name:'Морской Риф', unlockLevel:5, top:'#4FB3BF', bottom:'#0E3B4A',
       fish:[
         {id:'herring', name:'Сельдь', ico:'🐟', tier:0, coins:[8,15], xp:8},
+        {id:'sardine', name:'Ставрида', ico:'🐠', tier:0, coins:[7,14], xp:8},
         {id:'mackerel', name:'Скумбрия', ico:'🐠', tier:1, coins:[12,20], xp:9},
+        {id:'barracuda', name:'Молодая барракуда', ico:'🐡', tier:1, coins:[13,22], xp:10},
         {id:'crab', name:'Краб', ico:'🦀', tier:2, coins:[25,40], xp:18},
+        {id:'shrimp', name:'Королевская креветка', ico:'🦐', tier:2, coins:[26,42], xp:19},
         {id:'tuna', name:'Тунец', ico:'🐡', tier:3, coins:[50,80], xp:35},
+        {id:'moray', name:'Мурена', ico:'🐍', tier:3, coins:[52,85], xp:36},
         {id:'octopus', name:'Редкий осьминог', ico:'🐙', tier:4, coins:[130,200], xp:85},
       ]},
     { id:'ice', name:'Ледяное Озеро', unlockLevel:10, top:'#BFE8F2', bottom:'#123244',
       fish:[
         {id:'icebass', name:'Ледяной окунь', ico:'🧊', tier:0, coins:[15,25], xp:12},
+        {id:'smelt', name:'Полярная навага', ico:'🐟', tier:0, coins:[14,24], xp:12},
         {id:'trout', name:'Форель', ico:'🐟', tier:1, coins:[20,32], xp:14},
+        {id:'grayling', name:'Хариус', ico:'🐠', tier:1, coins:[21,34], xp:15},
         {id:'whitefish', name:'Голубой сиг', ico:'🐠', tier:2, coins:[45,70], xp:26},
+        {id:'icecrab', name:'Ледяной краб', ico:'🦀', tier:2, coins:[47,73], xp:27},
         {id:'polarpike', name:'Полярная щука', ico:'🦈', tier:3, coins:[90,140], xp:50},
+        {id:'narwhal', name:'Малый нарвал', ico:'🐋', tier:3, coins:[95,145], xp:52},
         {id:'dragonfish', name:'Снежный дракон', ico:'🐉', tier:4, coins:[220,320], xp:120},
+      ]},
+    { id:'jungle', name:'Тропическая Река', unlockLevel:15, top:'#8FBF6B', bottom:'#1B4D3E',
+      fish:[
+        {id:'tetra', name:'Тетра', ico:'🐠', tier:0, coins:[18,28], xp:15},
+        {id:'guppy', name:'Гуппи', ico:'🐟', tier:0, coins:[16,26], xp:14},
+        {id:'piranha', name:'Пиранья', ico:'🐡', tier:1, coins:[22,34], xp:17},
+        {id:'plecosuckerfish', name:'Сомик-прилипала', ico:'🐢', tier:1, coins:[20,32], xp:16},
+        {id:'electriceel', name:'Электрический угорь', ico:'🐍', tier:2, coins:[45,70], xp:30},
+        {id:'caiman', name:'Молодой кайман', ico:'🐊', tier:2, coins:[47,73], xp:31},
+        {id:'riverdolphin', name:'Речной дельфин', ico:'🐬', tier:3, coins:[90,140], xp:55},
+        {id:'giantcatfish', name:'Гигантский сом', ico:'🦈', tier:3, coins:[95,148], xp:57},
+        {id:'arapaima', name:'Золотая Аравана', ico:'🐲', tier:4, coins:[250,360], xp:140},
+      ]},
+    { id:'abyss', name:'Глубокий Океан', unlockLevel:20, top:'#2E3A59', bottom:'#050912',
+      fish:[
+        {id:'lanternfish', name:'Светящийся анчоус', ico:'🐟', tier:0, coins:[30,45], xp:22},
+        {id:'deepherring', name:'Глубоководная сельдь', ico:'🐠', tier:0, coins:[28,42], xp:20},
+        {id:'anglerfish', name:'Малый удильщик', ico:'🐡', tier:1, coins:[35,50], xp:24},
+        {id:'viperfish', name:'Гадюковая рыба', ico:'🐍', tier:1, coins:[33,48], xp:23},
+        {id:'vampiresquid', name:'Кальмар-вампир', ico:'🦑', tier:2, coins:[70,110], xp:45},
+        {id:'frilledshark', name:'Плащеносная акула', ico:'🦈', tier:2, coins:[73,113], xp:46},
+        {id:'youngsperm', name:'Молодой кашалот', ico:'🐋', tier:3, coins:[140,220], xp:80},
+        {id:'gulperEel', name:'Рыба-пеликан', ico:'🐍', tier:3, coins:[145,225], xp:82},
+        {id:'kraken', name:'Легендарный Кракен', ico:'🐙', tier:4, coins:[400,600], xp:220},
       ]},
   ];
 
@@ -324,6 +364,12 @@
     {id:'gold', name:'Золотая парадная', ico:'🟨', color:'#D4AF37', price:900},
     {id:'neon', name:'Неоновая', ico:'🟦', color:'#37D4C9', price:1600},
   ];
+  const BOOST_ITEMS = [
+    {id:'xp2', name:'Ускоритель опыта', ico:'⚡', desc:'x2 опыт за пойманную рыбу · 30 минут', price:300, duration:30*60000},
+    {id:'coins2', name:'Удвоение дохода', ico:'💰', desc:'x2 монеты при продаже на рынке · 30 минут', price:350, duration:30*60000},
+    {id:'luck', name:'Везение рыбака', ico:'🍀', desc:'Выше шанс редкой и ценной рыбы · 20 минут', price:400, duration:20*60000},
+  ];
+  const LUCK_WEIGHTS = [14,14,28,26,18];
 
   function formatNum(n){
     n = Math.floor(n);
@@ -362,7 +408,8 @@
     ownedSkins:['classic'], activeSkin:'classic',
     currentLocation:'harbor', inventory:{}, collectionTotal:{},
     lastBonusDate:null, dailyStreak:0, anonId:null,
-    questsDate:null, dailyQuests:[]
+    questsDate:null, dailyQuests:[],
+    boosts:{xp2:0, coins2:0, luck:0}
   };
 
   const SAVE_KEY = 'save_v2';
@@ -396,12 +443,21 @@
   function isLocUnlocked(loc){ return state.level >= loc.unlockLevel; }
 
   function pickFish(){
-    const weights = getBait(state.activeBait).weights;
+    const weights = isBoostActive('luck') ? LUCK_WEIGHTS : getBait(state.activeBait).weights;
     const total = weights.reduce((a,b)=>a+b,0);
-    let r = Math.random()*total;
-    const list = currentLoc().fish;
-    for(let i=0;i<weights.length;i++){ if(r<weights[i]) return list[i]; r-=weights[i]; }
-    return list[0];
+    let r = Math.random()*total, tierIdx=0;
+    for(let i=0;i<weights.length;i++){ if(r<weights[i]){ tierIdx=i; break; } r-=weights[i]; }
+    const candidates = currentLoc().fish.filter(f=>f.tier===tierIdx);
+    return candidates[Math.floor(Math.random()*candidates.length)] || currentLoc().fish[0];
+  }
+
+  function isBoostActive(key){ return (state.boosts && state.boosts[key] || 0) > Date.now(); }
+  function boostRemaining(key){ return Math.max(0, Math.ceil(((state.boosts[key]||0) - Date.now())/60000)); }
+  function activateBoost(key, durationMs){
+    const now = Date.now();
+    const base = Math.max(state.boosts[key]||0, now);
+    state.boosts[key] = base + durationMs;
+    haptic('success'); saveState(); refreshTopUI();
   }
 
   function addXp(amount){
@@ -435,7 +491,7 @@
     timerfill=document.getElementById('timerfill'), coinsVal=document.getElementById('coinsVal'),
     catchVal=document.getElementById('catchVal'), catchcard=document.getElementById('catchcard'),
     lvlVal=document.getElementById('lvlVal'), xpText=document.getElementById('xpText'),
-    xpfill=document.getElementById('xpfill'), gearline=document.getElementById('gearline'),
+    xpfill=document.getElementById('xpfill'), gearline=document.getElementById('gearline'), boostline=document.getElementById('boostline'),
     stageEl=document.getElementById('screen-fish'), locTitle=document.getElementById('locTitle'),
     locrow=document.getElementById('locrow'), bonusbanner=document.getElementById('bonusbanner');
 
@@ -448,6 +504,8 @@
     xpText.textContent = formatNum(state.xp) + '/' + formatNum(xpNeeded(state.level));
     xpfill.style.width = Math.min(100, (state.xp/xpNeeded(state.level))*100) + '%';
     gearline.textContent = getRod(state.activeRod).name + ' · ' + getBait(state.activeBait).name;
+    const activeBoosts = BOOST_ITEMS.filter(b=>isBoostActive(b.id)).map(b=>b.ico+boostRemaining(b.id)+'м');
+    boostline.textContent = activeBoosts.join('  ');
     document.documentElement.style.setProperty('--rod-color', getSkin(state.activeSkin).color);
     locTitle.textContent = currentLoc().name;
     stageEl.style.background = `linear-gradient(to bottom, ${currentLoc().top} 0%, ${currentLoc().bottom} 32%, ${currentLoc().bottom} 33%, var(--water-deep) 100%)`;
@@ -553,6 +611,58 @@
     windowTimeout = setTimeout(missedBite, winMs);
   }
 
+  const REEL_TARGET = [5,5,8,11,15]; // тапов нужно на вываживание по уровню редкости
+  let reelProgress = 0, reelTarget = 0, reelDecayInterval = null, reelTimeout = null;
+
+  function pull(){
+    if(gameState!=='biting') return;
+    clearTimeout(windowTimeout); haptic('success');
+    bobber.classList.remove('bite-jitter');
+    startReeling();
+  }
+
+  function startReeling(){
+    gameState = 'reeling';
+    reelProgress = 0; reelTarget = REEL_TARGET[currentFish.tier];
+    status.textContent = 'Вываживай! Тапай быстро!';
+    btn.classList.add('pull'); btn.disabled = false;
+    btn.textContent = `Тяни! (0/${reelTarget})`;
+    timerbar.style.display='block'; timerfill.style.transition='none'; timerfill.style.transform='scaleX(0)';
+    clearInterval(reelDecayInterval);
+    reelDecayInterval = setInterval(()=>{
+      reelProgress = Math.max(0, reelProgress - 1);
+      updateReelBar();
+    }, 500);
+    clearTimeout(reelTimeout);
+    reelTimeout = setTimeout(failReel, 6000);
+  }
+
+  function updateReelBar(){
+    const pct = Math.min(1, reelProgress/reelTarget);
+    timerfill.style.transition = 'transform .12s ease-out';
+    timerfill.style.transform = `scaleX(${pct})`;
+    btn.textContent = `Тяни! (${Math.min(reelProgress,reelTarget)}/${reelTarget})`;
+  }
+
+  function reelTap(){
+    if(gameState!=='reeling') return;
+    reelProgress++;
+    haptic('light');
+    updateReelBar();
+    if(reelProgress >= reelTarget){
+      clearInterval(reelDecayInterval); clearTimeout(reelTimeout);
+      landFish();
+    }
+  }
+
+  function failReel(){
+    if(gameState!=='reeling') return;
+    clearInterval(reelDecayInterval);
+    gameState='idle'; haptic('error');
+    status.textContent='Рыба сорвалась с крючка... Попробуй снова';
+    setTimeout(resetVisual, 900);
+  }
+
   function missedBite(){
     if(gameState!=='biting') return;
     gameState='idle'; haptic('error'); bobber.classList.remove('bite-jitter');
@@ -578,16 +688,15 @@
     setTimeout(()=>el.remove(), 800);
   }
 
-  function pull(){
-    if(gameState!=='biting') return;
-    clearTimeout(windowTimeout); gameState='idle'; haptic('success');
-    bobber.classList.remove('bite-jitter');
+  function landFish(){
+    gameState='idle'; haptic('success');
     const fish = currentFish;
     flyFishToCounter(fish.ico);
     state.totalCatches += 1;
     state.inventory[fish.id] = (state.inventory[fish.id]||0) + 1;
     state.collectionTotal[fish.id] = (state.collectionTotal[fish.id]||0) + 1;
-    addXp(fish.xp);
+    const xpBoosted = isBoostActive('xp2');
+    addXp(fish.xp * (xpBoosted?2:1));
     bumpQuest('catch_any', 1);
     if(fish.tier >= 2) bumpQuest('catch_rare', 1);
     saveState(); refreshTopUI();
@@ -596,7 +705,7 @@
     document.getElementById('cc-name').textContent = fish.name;
     const rarityEl = document.getElementById('cc-rarity');
     rarityEl.textContent = RARITY_LABEL[fish.tier]; rarityEl.className = 'rarity r' + fish.tier;
-    document.getElementById('cc-xp').textContent = '+' + fish.xp + ' опыта';
+    document.getElementById('cc-xp').textContent = '+' + (fish.xp * (xpBoosted?2:1)) + ' опыта' + (xpBoosted?' (x2 буст)':'');
     catchcard.style.display = 'flex';
     resetVisual();
   }
@@ -604,20 +713,40 @@
   let lastTapTime = 0;
   btn.addEventListener('pointerdown', (e)=>{
     e.preventDefault();
-    const now = Date.now(); if(now - lastTapTime < 120) return; lastTapTime = now;
-    if(gameState==='idle') cast(); else if(gameState==='biting') pull();
+    const now = Date.now(); if(now - lastTapTime < 90) return; lastTapTime = now;
+    if(gameState==='idle') cast();
+    else if(gameState==='biting') pull();
+    else if(gameState==='reeling') reelTap();
   });
   document.getElementById('cc-close').addEventListener('click', ()=>{ catchcard.style.display='none'; });
 
   // ---------- SHOP (gear) ----------
   function renderShop(){
     const list = document.getElementById('shoplist'); list.innerHTML = '';
+    const h0 = document.createElement('div'); h0.className='sectiontitle'; h0.textContent='Временные бусты'; list.appendChild(h0);
+    BOOST_ITEMS.forEach(b=>list.appendChild(boostCard(b)));
     const h1 = document.createElement('div'); h1.className='sectiontitle'; h1.textContent='Удочки'; list.appendChild(h1);
     RODS.forEach(r=>list.appendChild(gearCard(r,'rod')));
     const h2 = document.createElement('div'); h2.className='sectiontitle'; h2.textContent='Наживка'; list.appendChild(h2);
     BAITS.forEach(b=>list.appendChild(gearCard(b,'bait')));
     const h3 = document.createElement('div'); h3.className='sectiontitle'; h3.textContent='Внешний вид удочки'; list.appendChild(h3);
     ROD_SKINS.forEach(s=>list.appendChild(gearCard(s,'skin')));
+  }
+  function boostCard(item){
+    const active = isBoostActive(item.id);
+    const el = document.createElement('div'); el.className='card2' + (active?' done':'');
+    const disabled = state.coins < item.price;
+    const label = active ? ('Продлить · '+boostRemaining(item.id)+' мин') : (item.price + ' 🪙');
+    el.innerHTML = `<div class="icobox">${item.ico}</div>
+      <div class="info"><div class="name">${item.name}${active?' · активен':''}</div><div class="desc">${item.desc}</div></div>
+      <div class="action"><button class="${active?'btn-active':'btn-buy'}" ${disabled?'disabled':''}>${label}</button></div>`;
+    el.querySelector('button').addEventListener('click', ()=>{
+      if(state.coins < item.price) return;
+      state.coins -= item.price;
+      activateBoost(item.id, item.duration);
+      renderShop();
+    });
+    return el;
   }
   function ownedList(kind){
     if(kind==='rod') return state.ownedRods; if(kind==='bait') return state.ownedBaits; return state.ownedSkins;
@@ -659,7 +788,7 @@
       const count = state.inventory[f.id] || 0;
       if(count<=0) return;
       any = true;
-      const sellPrice = Math.floor((f.coins[0]+f.coins[1])/2);
+      const sellPrice = Math.floor((f.coins[0]+f.coins[1])/2 * (isBoostActive('coins2')?2:1));
       const el = document.createElement('div'); el.className='card2';
       el.innerHTML = `<div class="icobox">${f.ico}</div>
         <div class="info"><div class="name">${f.name} ×${count}</div><div class="desc">${sellPrice} 🪙 за шт · ${RARITY_LABEL[f.tier]}</div></div>
@@ -678,7 +807,7 @@
     const loc = currentLoc(); let total = 0;
     loc.fish.forEach(f=>{
       const count = state.inventory[f.id]||0;
-      if(count>0){ const price = Math.floor((f.coins[0]+f.coins[1])/2); total += price*count; state.inventory[f.id]=0; }
+      if(count>0){ const price = Math.floor((f.coins[0]+f.coins[1])/2 * (isBoostActive('coins2')?2:1)); total += price*count; state.inventory[f.id]=0; }
     });
     if(total>0){ state.coins += total; bumpQuest('sell_coins', total); haptic('success'); saveState(); refreshTopUI(); renderMarket(); }
   });
