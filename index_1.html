@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Тихая Гавань — Рыбалка</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky-top:#F2A65A; --sky-bottom:#1E5A6B; --water-deep:#0B2F3A; --water-mid:#144B57;
+    --gold:#F2C14E; --coral:#E8734A; --cream:#F5EFE3; --ink:#08222A; --card:#0F3A46;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0; height:100%; overflow:hidden; font-family:'Nunito',sans-serif; background:var(--water-deep); color:var(--cream);}
+  #app{position:relative; width:100%; height:100vh; overflow:hidden;}
+
+  /* ---------- FISHING SCREEN ---------- */
+  #screen-fish{
+    position:absolute; inset:0;
+    background:linear-gradient(to bottom, var(--sky-top) 0%, var(--sky-bottom) 32%, var(--water-mid) 33%, var(--water-deep) 100%);
+  }
+  .sun{position:absolute; top:5%; left:50%; transform:translateX(-50%); width:60px; height:60px; border-radius:50%;
+    background:radial-gradient(circle, #FFE7B0, var(--gold) 70%); box-shadow:0 0 40px 10px rgba(242,193,78,0.5);}
+  .hills{position:absolute; top:25%; width:100%; height:14%; opacity:.55;}
+  .hills svg{width:100%; height:100%;}
+  .ripple-layer{position:absolute; top:33%; left:0; width:100%; height:52%; overflow:hidden;}
+  .wave{position:absolute; width:220%; left:-60%; background:rgba(245,239,227,0.05); border-radius:50%; animation:drift linear infinite;}
+  @keyframes drift{0%{transform:translateX(0);} 100%{transform:translateX(30%);}}
+
+  #topbar{position:absolute; top:0; left:0; width:100%; padding:12px 14px; display:flex; justify-content:space-between; align-items:flex-start; z-index:5; gap:8px;}
+  .pill{background:rgba(8,34,42,0.55); backdrop-filter:blur(4px); border:1px solid rgba(245,239,227,0.25);
+    border-radius:999px; padding:6px 13px; font-weight:800; font-size:13px; display:flex; align-items:center; gap:6px;}
+  #levelbox{background:rgba(8,34,42,0.55); border:1px solid rgba(245,239,227,0.25); border-radius:14px; padding:6px 12px 7px; min-width:110px;}
+  #levelbox .lvltop{display:flex; justify-content:space-between; font-size:11px; font-weight:800; margin-bottom:4px;}
+  #levelbox .xpbar{height:5px; border-radius:4px; background:rgba(245,239,227,0.2); overflow:hidden;}
+  #levelbox .xpfill{height:100%; background:var(--gold); width:0%;}
+
+  .title{position:absolute; top:12%; left:0; width:100%; text-align:center; z-index:4;}
+  .title h1{font-family:'Baloo 2', sans-serif; font-weight:800; font-size:20px; margin:0; text-shadow:0 2px 8px rgba(0,0,0,0.35);}
+  .title p{margin:2px 0 0; font-size:11px; opacity:.85; font-weight:600;}
+
+  #rodwrap{position:absolute; left:50%; top:29%; transform:translateX(-50%); width:6px; height:100px; z-index:3;}
+  #line{position:absolute; left:2px; top:0; width:2px; background:rgba(245,239,227,0.8);}
+  #bobber{position:absolute; left:50%; width:26px; height:26px; transform:translate(-50%,-50%); z-index:3;}
+  #bobber .body{width:100%; height:100%; border-radius:50%; background:linear-gradient(180deg, var(--coral) 50%, var(--cream) 50%);
+    border:2px solid var(--ink); box-shadow:0 3px 6px rgba(0,0,0,0.4);}
+  #bobber.hidden{display:none;}
+  #splash{position:absolute; width:60px; height:60px; transform:translate(-50%,-50%); border:3px solid rgba(245,239,227,0.75);
+    border-radius:50%; opacity:0; pointer-events:none; z-index:3;}
+  #splash.animate{animation:splash .5s ease-out;}
+  @keyframes splash{0%{opacity:.9; width:10px; height:10px;} 100%{opacity:0; width:90px; height:90px;}}
+  #bitebang{position:absolute; transform:translate(-50%,-140%); z-index:6; font-size:28px; opacity:0; pointer-events:none;}
+  #bitebang.show{animation:pop .55s ease-out;}
+  @keyframes pop{0%{opacity:0; transform:translate(-50%,-100%) scale(.4);} 30%{opacity:1; transform:translate(-50%,-160%) scale(1.15);} 100%{opacity:0; transform:translate(-50%,-190%) scale(1);}}
+
+  #bottompanel{position:absolute; left:0; bottom:64px; width:100%; z-index:5; padding:12px 16px 10px;
+    background:linear-gradient(to top, rgba(6,20,25,0.92), rgba(6,20,25,0)); display:flex; flex-direction:column; align-items:center; gap:8px;}
+  #status{font-weight:700; font-size:13px; min-height:16px; opacity:.9; text-align:center;}
+  #mainbtn{width:100%; max-width:340px; padding:15px 0; border:none; border-radius:18px; font-family:'Baloo 2', sans-serif;
+    font-weight:800; font-size:18px; background:linear-gradient(180deg, var(--gold), #D89A2E); color:var(--ink);
+    box-shadow:0 6px 0 #8A6318, 0 8px 16px rgba(0,0,0,0.35); transition:transform .08s ease;}
+  #mainbtn:active{transform:translateY(4px); box-shadow:0 2px 0 #8A6318;}
+  #mainbtn.pull{background:linear-gradient(180deg, var(--coral), #B5502A); box-shadow:0 6px 0 #7A331A, 0 8px 16px rgba(0,0,0,0.35);}
+  #mainbtn:disabled{opacity:.55;}
+  #timerbar{width:100%; max-width:340px; height:7px; border-radius:6px; background:rgba(245,239,227,0.2); overflow:hidden; display:none;}
+  #timerfill{height:100%; width:100%; background:var(--coral); transform-origin:left;}
+  #gearline{font-size:11px; opacity:.75; font-weight:700; text-align:center;}
+
+  /* ---------- CATCH CARD ---------- */
+  #catchcard{position:absolute; inset:0; z-index:30; display:none; align-items:center; justify-content:center;
+    background:rgba(6,20,25,0.72); backdrop-filter:blur(2px);}
+  #catchcard .card{width:82%; max-width:320px; background:var(--card); border-radius:22px; padding:26px 20px 22px; text-align:center;
+    border:1px solid rgba(245,239,227,0.15); box-shadow:0 20px 40px rgba(0,0,0,0.5);}
+  #catchcard .fishico{font-size:52px; display:block; margin-bottom:6px;}
+  #catchcard h2{font-family:'Baloo 2',sans-serif; font-size:21px; margin:2px 0 2px;}
+  #catchcard .rarity{font-size:12px; font-weight:800; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px;}
+  #catchcard .reward{font-weight:700; font-size:14px; margin-bottom:4px; opacity:.9;}
+  #catchcard .xpline{font-weight:700; font-size:12px; margin-bottom:14px; opacity:.7;}
+  #catchcard button{border:none; border-radius:14px; padding:12px 26px; font-weight:800; font-size:15px;
+    background:var(--gold); color:var(--ink); font-family:'Baloo 2',sans-serif;}
+
+  .r-common{color:#BFD9CE;} .r-uncommon{color:#7FD68A;} .r-rare{color:#5AB0E8;} .r-legendary{color:#F2C14E;}
+
+  /* ---------- NAV ---------- */
+  #navbar{position:absolute; left:0; bottom:0; width:100%; height:64px; z-index:10; display:flex;
+    background:rgba(6,20,25,0.95); border-top:1px solid rgba(245,239,227,0.12);
+    padding-bottom:env(safe-area-inset-bottom);}
+  .navbtn{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+    background:none; border:none; color:rgba(245,239,227,0.55); font-family:'Nunito',sans-serif; font-weight:800; font-size:11px;}
+  .navbtn .navico{font-size:20px;}
+  .navbtn.active{color:var(--gold);}
+
+  /* ---------- SHOP / COLLECTION SCREENS ---------- */
+  .subscreen{position:absolute; inset:0 0 64px 0; z-index:8; background:var(--water-deep); display:none; flex-direction:column;}
+  .subscreen.show{display:flex;}
+  .subhead{padding:18px 18px 10px; flex-shrink:0;}
+  .subhead h2{font-family:'Baloo 2',sans-serif; font-size:22px; margin:0 0 2px;}
+  .subhead p{margin:0; font-size:12px; opacity:.7; font-weight:600;}
+  .sublist{flex:1; overflow-y:auto; padding:6px 16px 20px; display:flex; flex-direction:column; gap:12px;}
+
+  .gearcard{background:var(--card); border:1px solid rgba(245,239,227,0.12); border-radius:16px; padding:14px; display:flex; align-items:center; gap:12px;}
+  .gearcard .gicon{font-size:30px; width:44px; text-align:center;}
+  .gearcard .ginfo{flex:1;}
+  .gearcard .ginfo .gname{font-weight:800; font-size:15px; margin-bottom:2px;}
+  .gearcard .ginfo .gdesc{font-size:11px; opacity:.65; font-weight:600;}
+  .gearcard .gaction button{border:none; border-radius:10px; padding:9px 14px; font-weight:800; font-size:12px; font-family:'Baloo 2',sans-serif;}
+  .btn-buy{background:var(--gold); color:var(--ink);}
+  .btn-buy:disabled{background:rgba(245,239,227,0.15); color:rgba(245,239,227,0.4);}
+  .btn-owned{background:rgba(127,214,138,0.2); color:#7FD68A;}
+  .btn-active{background:var(--coral); color:var(--cream);}
+
+  .collcard{background:var(--card); border:1px solid rgba(245,239,227,0.12); border-radius:16px; padding:14px; display:flex; align-items:center; gap:12px;}
+  .collcard.locked{opacity:.35;}
+  .collcard .cicon{font-size:32px; width:44px; text-align:center;}
+  .collcard .cinfo{flex:1;}
+  .collcard .cname{font-weight:800; font-size:15px;}
+  .collcard .ccount{font-size:11px; opacity:.65; font-weight:700; margin-top:2px;}
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <div id="screen-fish">
+    <div class="sun"></div>
+    <div class="hills"><svg viewBox="0 0 400 60" preserveAspectRatio="none"><path d="M0,60 Q100,10 200,40 T400,20 V60 Z" fill="#0B2F3A"/></svg></div>
+    <div class="ripple-layer">
+      <div class="wave" style="top:10%; height:40px; animation-duration:9s;"></div>
+      <div class="wave" style="top:35%; height:60px; animation-duration:13s;"></div>
+      <div class="wave" style="top:65%; height:50px; animation-duration:11s;"></div>
+    </div>
+
+    <div id="topbar">
+      <div class="pill"><span>🪙</span><span id="coinsVal">0</span></div>
+      <div id="levelbox">
+        <div class="lvltop"><span id="lvlVal">Ур. 1</span><span id="xpText">0/100</span></div>
+        <div class="xpbar"><div class="xpfill" id="xpfill"></div></div>
+      </div>
+      <div class="pill"><span>🐟</span><span id="catchVal">0</span></div>
+    </div>
+
+    <div class="title"><h1>Тихая Гавань</h1><p id="subtitle">Закинь удочку и жди клёва</p></div>
+
+    <div id="rodwrap"><div id="line"></div></div>
+    <div id="bobber" class="hidden"><div class="body"></div></div>
+    <div id="splash"></div>
+    <div id="bitebang">💥</div>
+
+    <div id="bottompanel">
+      <div id="status">Готов начать</div>
+      <div id="timerbar"><div id="timerfill"></div></div>
+      <button id="mainbtn">Закинуть удочку</button>
+      <div id="gearline"></div>
+    </div>
+
+    <div id="catchcard">
+      <div class="card">
+        <span class="fishico" id="cc-ico">🐠</span>
+        <h2 id="cc-name">Окунь</h2>
+        <div class="rarity" id="cc-rarity">обычная</div>
+        <div class="reward" id="cc-reward">+10 монет</div>
+        <div class="xpline" id="cc-xp">+5 опыта</div>
+        <button id="cc-close">Отлично!</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="subscreen" id="screen-shop">
+    <div class="subhead"><h2>Магазин</h2><p>Улучшай снаряжение — рыбачь эффективнее</p></div>
+    <div class="sublist" id="shoplist"></div>
+  </div>
+
+  <div class="subscreen" id="screen-collection">
+    <div class="subhead"><h2>Коллекция</h2><p id="collSummary">Открыто 0 из 5 видов</p></div>
+    <div class="sublist" id="colllist"></div>
+  </div>
+
+  <div id="navbar">
+    <button class="navbtn active" data-screen="fish"><span class="navico">🎣</span>Рыбалка</button>
+    <button class="navbtn" data-screen="shop"><span class="navico">🛒</span>Магазин</button>
+    <button class="navbtn" data-screen="collection"><span class="navico">📖</span>Коллекция</button>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  const tg = window.Telegram && window.Telegram.WebApp;
+  if(tg){
+    try{ tg.ready(); tg.expand(); tg.setHeaderColor && tg.setHeaderColor('#0B2F3A'); tg.setBackgroundColor && tg.setBackgroundColor('#0B2F3A'); }catch(e){}
+  }
+  function haptic(type){
+    if(tg && tg.HapticFeedback){
+      if(type==='success') tg.HapticFeedback.notificationOccurred('success');
+      else if(type==='error') tg.HapticFeedback.notificationOccurred('error');
+      else tg.HapticFeedback.impactOccurred('light');
+    }
+  }
+
+  // ---------- DATA ----------
+  const FISH = [
+    {id:'roach', name:'Плотвичка', ico:'🐟', rarity:'common', label:'обычная', cls:'r-common', coins:[5,10], xp:5},
+    {id:'perch', name:'Окунь',     ico:'🐠', rarity:'common', label:'обычная', cls:'r-common', coins:[8,14], xp:6},
+    {id:'crucian', name:'Карась', ico:'🐡', rarity:'uncommon', label:'редкая', cls:'r-uncommon', coins:[15,25], xp:12},
+    {id:'pike', name:'Щука',      ico:'🦈', rarity:'rare', label:'ценная', cls:'r-rare', coins:[30,50], xp:25},
+    {id:'golden', name:'Золотая рыбка', ico:'✨', rarity:'legendary', label:'легендарная', cls:'r-legendary', coins:[80,120], xp:60},
+  ];
+
+  const RODS = [
+    {id:'bamboo', name:'Бамбуковая удочка', ico:'🎣', desc:'Окно поклёва 900 мс', window:900, price:0},
+    {id:'carbon', name:'Карбоновая удочка', ico:'🪝', desc:'Окно поклёва 1200 мс', window:1200, price:400},
+    {id:'titan', name:'Титановая удочка', ico:'⚙️', desc:'Окно поклёва 1600 мс', window:1600, price:1500},
+  ];
+  const BAITS = [
+    {id:'plain', name:'Обычная наживка', ico:'🪱', desc:'Стандартные шансы улова', weights:[40,30,18,9,3], price:0},
+    {id:'aroma', name:'Ароматная наживка', ico:'🌿', desc:'Больше редкой и ценной рыбы', weights:[30,25,25,15,5], price:250},
+    {id:'magic', name:'Магическая наживка', ico:'🔮', desc:'Сильно больше шанс легендарной', weights:[20,20,25,20,15], price:1200},
+  ];
+
+  function xpNeeded(level){ return level*100; }
+
+  // ---------- STATE ----------
+  let state = {
+    coins: 0, totalCatches: 0, level: 1, xp: 0,
+    ownedRods: ['bamboo'], activeRod: 'bamboo',
+    ownedBaits: ['plain'], activeBait: 'plain',
+    collection: {} // id -> count
+  };
+
+  const SAVE_KEY = 'save_v1';
+  function saveState(){
+    const payload = JSON.stringify(state);
+    if(tg && tg.CloudStorage){
+      tg.CloudStorage.setItem(SAVE_KEY, payload, function(){});
+    }
+    window.__memSave = payload; // in-memory fallback
+  }
+  function loadState(cb){
+    if(tg && tg.CloudStorage){
+      tg.CloudStorage.getItem(SAVE_KEY, function(err, value){
+        if(!err && value){ try{ Object.assign(state, JSON.parse(value)); }catch(e){} }
+        cb();
+      });
+    } else {
+      if(window.__memSave){ try{ Object.assign(state, JSON.parse(window.__memSave)); }catch(e){} }
+      cb();
+    }
+  }
+
+  function getRod(id){ return RODS.find(r=>r.id===id); }
+  function getBait(id){ return BAITS.find(b=>b.id===id); }
+
+  function pickFish(){
+    const weights = getBait(state.activeBait).weights;
+    const total = weights.reduce((a,b)=>a+b,0);
+    let r = Math.random()*total;
+    for(let i=0;i<weights.length;i++){ if(r<weights[i]) return FISH[i]; r-=weights[i]; }
+    return FISH[0];
+  }
+
+  function addXp(amount){
+    state.xp += amount;
+    while(state.xp >= xpNeeded(state.level)){
+      state.xp -= xpNeeded(state.level);
+      state.level += 1;
+    }
+  }
+
+  // ---------- UI REFS ----------
+  const btn=document.getElementById('mainbtn'), status=document.getElementById('status'),
+    bobber=document.getElementById('bobber'), splash=document.getElementById('splash'),
+    biteBang=document.getElementById('bitebang'), timerbar=document.getElementById('timerbar'),
+    timerfill=document.getElementById('timerfill'), coinsVal=document.getElementById('coinsVal'),
+    catchVal=document.getElementById('catchVal'), catchcard=document.getElementById('catchcard'),
+    lvlVal=document.getElementById('lvlVal'), xpText=document.getElementById('xpText'),
+    xpfill=document.getElementById('xpfill'), gearline=document.getElementById('gearline'),
+    stageEl=document.getElementById('screen-fish');
+
+  let gameState='idle', biteTimeout, windowTimeout, currentFish=null;
+
+  function refreshTopUI(){
+    coinsVal.textContent = state.coins;
+    catchVal.textContent = state.totalCatches;
+    lvlVal.textContent = 'Ур. ' + state.level;
+    xpText.textContent = state.xp + '/' + xpNeeded(state.level);
+    xpfill.style.width = Math.min(100, (state.xp/xpNeeded(state.level))*100) + '%';
+    gearline.textContent = getRod(state.activeRod).name + ' · ' + getBait(state.activeBait).name;
+  }
+
+  function resetVisual(){
+    bobber.classList.add('hidden'); btn.classList.remove('pull'); btn.disabled=false;
+    timerbar.style.display='none'; status.textContent='Готов начать'; btn.textContent='Закинуть удочку';
+  }
+
+  function cast(){
+    if(gameState!=='idle') return;
+    gameState='casting'; btn.disabled=true; status.textContent='Закидываем...'; haptic('light');
+    const cx = stageEl.clientWidth/2, cy = window.innerHeight*0.29 + 55 + Math.random()*40;
+    bobber.style.left=cx+'px'; bobber.style.top=cy+'px'; bobber.classList.remove('hidden');
+    setTimeout(()=>{
+      gameState='waiting'; status.textContent='Тихо... жди клёва'; btn.disabled=true;
+      const delay = 1400 + Math.random()*2600;
+      biteTimeout = setTimeout(triggerBite, delay);
+    }, 350);
+  }
+
+  function triggerBite(){
+    if(gameState!=='waiting') return;
+    gameState='biting'; currentFish=pickFish(); haptic('light');
+    const rect = bobber.getBoundingClientRect();
+    splash.style.left=rect.left+rect.width/2+'px'; splash.style.top=rect.top+rect.height/2+'px';
+    splash.classList.remove('animate'); void splash.offsetWidth; splash.classList.add('animate');
+    biteBang.style.left=rect.left+rect.width/2+'px'; biteBang.style.top=rect.top+'px';
+    biteBang.classList.remove('show'); void biteBang.offsetWidth; biteBang.classList.add('show');
+    status.textContent='КЛЮЁТ! Тяни!'; btn.textContent='Тяни!'; btn.classList.add('pull'); btn.disabled=false;
+    const winMs = getRod(state.activeRod).window;
+    timerbar.style.display='block'; timerfill.style.transition='none'; timerfill.style.width='100%';
+    requestAnimationFrame(()=>{ timerfill.style.transition=`width ${winMs}ms linear`; timerfill.style.width='0%'; });
+    windowTimeout = setTimeout(missedBite, winMs);
+  }
+
+  function missedBite(){
+    if(gameState!=='biting') return;
+    gameState='idle'; haptic('error'); status.textContent='Рыба сорвалась... Попробуй снова';
+    setTimeout(resetVisual, 900);
+  }
+
+  function pull(){
+    if(gameState!=='biting') return;
+    clearTimeout(windowTimeout); gameState='idle'; haptic('success');
+    const fish = currentFish;
+    const reward = Math.floor(fish.coins[0] + Math.random()*(fish.coins[1]-fish.coins[0]));
+    state.coins += reward; state.totalCatches += 1;
+    state.collection[fish.id] = (state.collection[fish.id]||0) + 1;
+    addXp(fish.xp);
+    saveState(); refreshTopUI();
+
+    document.getElementById('cc-ico').textContent = fish.ico;
+    document.getElementById('cc-name').textContent = fish.name;
+    const rarityEl = document.getElementById('cc-rarity');
+    rarityEl.textContent = fish.label; rarityEl.className = 'rarity ' + fish.cls;
+    document.getElementById('cc-reward').textContent = '+' + reward + ' монет';
+    document.getElementById('cc-xp').textContent = '+' + fish.xp + ' опыта';
+    catchcard.style.display = 'flex';
+    resetVisual();
+  }
+
+  btn.addEventListener('click', ()=>{ if(gameState==='idle') cast(); else if(gameState==='biting') pull(); });
+  document.getElementById('cc-close').addEventListener('click', ()=>{ catchcard.style.display='none'; });
+
+  // ---------- SHOP ----------
+  function renderShop(){
+    const list = document.getElementById('shoplist');
+    list.innerHTML = '';
+    const rodHead = document.createElement('div');
+    rodHead.style.fontWeight='800'; rodHead.style.fontSize='13px'; rodHead.style.opacity='.7'; rodHead.style.margin='4px 0 -2px';
+    rodHead.textContent = 'Удочки';
+    list.appendChild(rodHead);
+    RODS.forEach(r=>list.appendChild(gearCard(r,'rod')));
+    const baitHead = rodHead.cloneNode(); baitHead.textContent = 'Наживка';
+    list.appendChild(baitHead);
+    BAITS.forEach(b=>list.appendChild(gearCard(b,'bait')));
+  }
+  function gearCard(item, kind){
+    const owned = kind==='rod' ? state.ownedRods.includes(item.id) : state.ownedBaits.includes(item.id);
+    const active = kind==='rod' ? state.activeRod===item.id : state.activeBait===item.id;
+    const el = document.createElement('div'); el.className='gearcard';
+    const affordable = state.coins >= item.price;
+    let btnLabel, btnClass, disabled=false;
+    if(active){ btnLabel='Выбрано'; btnClass='btn-owned'; disabled=true; }
+    else if(owned){ btnLabel='Выбрать'; btnClass='btn-active'; }
+    else { btnLabel = item.price===0 ? 'Выбрать' : (item.price + ' 🪙'); btnClass='btn-buy'; disabled = !affordable; }
+    el.innerHTML = `<div class="gicon">${item.ico}</div>
+      <div class="ginfo"><div class="gname">${item.name}</div><div class="gdesc">${item.desc}</div></div>
+      <div class="gaction"><button class="${btnClass}" ${disabled?'disabled':''}>${btnLabel}</button></div>`;
+    el.querySelector('button').addEventListener('click', ()=>{
+      if(active) return;
+      if(!owned){
+        if(state.coins < item.price) return;
+        state.coins -= item.price;
+        if(kind==='rod') state.ownedRods.push(item.id); else state.ownedBaits.push(item.id);
+      }
+      if(kind==='rod') state.activeRod = item.id; else state.activeBait = item.id;
+      haptic('success'); saveState(); refreshTopUI(); renderShop();
+    });
+    return el;
+  }
+
+  // ---------- COLLECTION ----------
+  function renderCollection(){
+    const list = document.getElementById('colllist');
+    list.innerHTML = '';
+    let discovered = 0;
+    FISH.forEach(f=>{
+      const count = state.collection[f.id] || 0;
+      if(count>0) discovered++;
+      const el = document.createElement('div'); el.className='collcard' + (count===0?' locked':'');
+      el.innerHTML = `<div class="cicon">${count>0 ? f.ico : '❔'}</div>
+        <div class="cinfo"><div class="cname">${count>0 ? f.name : '???'}</div>
+        <div class="ccount">${count>0 ? ('Поймано: '+count+' · '+f.label) : 'Ещё не найдено'}</div></div>`;
+      list.appendChild(el);
+    });
+    document.getElementById('collSummary').textContent = `Открыто ${discovered} из ${FISH.length} видов`;
+  }
+
+  // ---------- NAV ----------
+  const navbtns = document.querySelectorAll('.navbtn');
+  navbtns.forEach(b=>b.addEventListener('click', ()=>{
+    navbtns.forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    const scr = b.dataset.screen;
+    document.getElementById('screen-shop').classList.remove('show');
+    document.getElementById('screen-collection').classList.remove('show');
+    if(scr==='shop'){ renderShop(); document.getElementById('screen-shop').classList.add('show'); }
+    else if(scr==='collection'){ renderCollection(); document.getElementById('screen-collection').classList.add('show'); }
+  }));
+
+  // ---------- INIT ----------
+  loadState(function(){
+    refreshTopUI();
+  });
+})();
+</script>
+</body>
+</html>
