@@ -166,6 +166,25 @@
     background:var(--gold); color:var(--ink);}
   .questcard .qclaim:disabled{background:rgba(245,239,227,0.15); color:rgba(245,239,227,0.4);}
   .questcard .qclaim.claimed{background:rgba(127,214,138,0.2); color:#7FD68A;}
+
+  #questtabs{display:flex; gap:8px; padding:0 16px 6px;}
+  .qtab{flex:1; border:1px solid rgba(245,239,227,0.25); background:rgba(8,34,42,0.5); color:rgba(245,239,227,0.7);
+    border-radius:12px; padding:8px 6px; font-weight:800; font-size:12px; font-family:'Baloo 2',sans-serif;}
+  .qtab.active{background:var(--gold); color:var(--ink); border-color:var(--gold);}
+
+  .storycard{background:var(--card); border:1px solid rgba(245,239,227,0.12); border-radius:16px; padding:14px;}
+  .storycard .schapter{font-size:10.5px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; color:var(--gold); margin-bottom:4px;}
+  .storycard .stitle{font-family:'Baloo 2',sans-serif; font-weight:800; font-size:15px; margin-bottom:6px;}
+  .storycard .stext{font-size:12px; line-height:1.5; opacity:.85; margin-bottom:10px;}
+  .storycard .qbar{height:8px; border-radius:6px; background:rgba(245,239,227,0.15); overflow:hidden; margin-bottom:8px;}
+  .storycard .qfill{height:100%; background:var(--gold);}
+  .storycard .qfoot{display:flex; justify-content:space-between; align-items:center;}
+  .storycard .qreward{font-size:11.5px; opacity:.75; font-weight:700;}
+  .storycard .qclaim{border:none; border-radius:10px; padding:7px 14px; font-weight:800; font-size:12px; font-family:'Baloo 2',sans-serif;
+    background:var(--gold); color:var(--ink);}
+  .storycard .qclaim:disabled{background:rgba(245,239,227,0.15); color:rgba(245,239,227,0.4);}
+  .storynext{opacity:.5; font-size:11.5px; font-weight:700; padding:4px 4px;}
+  .weightline{font-size:10px; opacity:.7; font-weight:700;}
 </style>
 </head>
 <body>
@@ -223,6 +242,7 @@
         <h2 id="cc-name">Окунь</h2>
         <div class="rarity" id="cc-rarity">обычная</div>
         <div class="xpline" id="cc-xp">+5 опыта</div>
+        <div class="weightline" id="cc-weight">Вес: 0.3 кг</div>
         <div class="hint">Продай в разделе «Рынок»</div>
         <button id="cc-close">Отлично!</button>
       </div>
@@ -247,6 +267,10 @@
 
   <div class="subscreen" id="screen-quests">
     <div class="subhead"><h2>Задания</h2><p id="questSummary">Обновляются каждый день</p></div>
+    <div id="questtabs">
+      <button class="qtab active" data-qtab="daily">📅 Ежедневные</button>
+      <button class="qtab" data-qtab="story">📜 Сюжетные</button>
+    </div>
     <div class="sublist" id="questlist"></div>
   </div>
 
@@ -284,6 +308,28 @@
 
   const RARITY_LABEL = ['обычная','обычная','редкая','ценная','легендарная'];
   const RARITY_SPEED = [1, 1, 0.8, 0.6, 0.42]; // множитель окна поклёва: чем реже рыба, тем короче окно
+
+  // Диапазон веса (кг) по редкости — чем реже рыба, тем крупнее и тяжелее она может быть
+  const WEIGHT_RANGE_BY_TIER = [
+    [0.08, 0.45],
+    [0.25, 1.1],
+    [0.8, 3.2],
+    [2.0, 8.0],
+    [4.0, 16.0],
+  ];
+  function randomWeight(tier){
+    const [wMin, wMax] = WEIGHT_RANGE_BY_TIER[tier];
+    const t = Math.pow(Math.random(), 2.1); // смещение к небольшим экземплярам, крупные — редкость
+    return Math.round((wMin + t*(wMax-wMin)) * 100) / 100;
+  }
+  function fishPrice(fish, weight){
+    const [wMin, wMax] = WEIGHT_RANGE_BY_TIER[fish.tier];
+    const avgWeight = (wMin+wMax)/2;
+    const avgCoins = (fish.coins[0]+fish.coins[1])/2;
+    const pricePerKg = avgCoins/avgWeight;
+    const price = Math.round(pricePerKg * weight);
+    return Math.max(Math.round(fish.coins[0]*0.5), price);
+  }
 
   const LOCATIONS = [
     { id:'harbor', name:'Тихая Гавань', unlockLevel:1, top:'#F2A65A', bottom:'#1E5A6B',
@@ -363,6 +409,7 @@
     {id:'crimson', name:'Алая карбоновая', ico:'🟥', color:'#C1443C', price:300},
     {id:'gold', name:'Золотая парадная', ico:'🟨', color:'#D4AF37', price:900},
     {id:'neon', name:'Неоновая', ico:'🟦', color:'#37D4C9', price:1600},
+    {id:'legend', name:'Легенда Тихой Гавани', ico:'🟪', color:'#B14EF2', price:null, desc:'Награда за сюжет', storyOnly:true},
   ];
   const BOOST_ITEMS = [
     {id:'xp2', name:'Ускоритель опыта', ico:'⚡', desc:'x2 опыт за пойманную рыбу · 30 минут', price:300, duration:30*60000},
@@ -402,13 +449,56 @@
     if(q) q.progress = Math.min(q.target, q.progress + amount);
   }
 
+  // ---------- СЮЖЕТНЫЕ ЗАДАНИЯ (не сбрасываются, идут по цепочке глав) ----------
+  const STORY_QUESTS = [
+    { title:'Пролог: Новичок на пристани', story:'Старый смотритель гавани щурится на твою снасть: «Здесь рыбачат поколениями, но мало кто задерживается. Покажи, что не бросишь после первой же неудачи». Поймай 5 любых рыб.', type:'catch_any', target:5, rewardCoins:60, rewardXp:30 },
+    { title:'Глава 1: Слухи о крупной рыбе', story:'Рыбаки за кружкой чая шепчутся о «редких тенях», что изредка попадаются на крючок. Докажи, что тебе везёт: поймай 3 редких или ценных рыбы.', type:'catch_rare', target:3, rewardCoins:120, rewardXp:60 },
+    { title:'Глава 2: Тяжёлый трофей', story:'Никто в гавани не верил, что тебе попадётся что-то весомое. Поймай рыбу весом от 2 кг и докажи обратное.', type:'catch_heavy', target:2, rewardCoins:150, rewardXp:70 },
+    { title:'Глава 3: Монета к монете', story:'Чтобы двигаться дальше, нужны деньги на снаряжение. Заработай на рынке 400 монет.', type:'sell_coins', target:400, rewardCoins:100, rewardXp:50 },
+    { title:'Глава 4: Курс на Риф', story:'Смотритель кивает на горизонт: «За Тихой Гаванью есть Морской Риф. Но туда пускают только опытных». Достигни 5 уровня.', type:'reach_level', target:5, rewardCoins:200, rewardXp:0 },
+    { title:'Глава 5: Легенда рифа', story:'Среди кораллов, говорят, живёт рыба, что светится золотом. Поймай хотя бы одну легендарную рыбу.', type:'catch_legendary', target:1, rewardCoins:300, rewardXp:150 },
+    { title:'Глава 6: Гигант из глубин', story:'Твоя снасть уже не та, что раньше. Пришло время побороться с настоящим гигантом — поймай рыбу весом от 5 кг.', type:'catch_heavy', target:5, rewardCoins:350, rewardXp:180 },
+    { title:'Глава 7: Ледяной зов', story:'За Рифом лежат воды, что никогда не оттаивают. Чтобы дойти туда, нужно стать сильнее. Достигни 10 уровня.', type:'reach_level', target:10, rewardCoins:400, rewardXp:0 },
+    { title:'Глава 8: Богатый улов', story:'Торговцы Ледяного озера уважают только тех, кто умеет зарабатывать. Заработай 2000 монет на рынке.', type:'sell_coins', target:2000, rewardCoins:500, rewardXp:250 },
+    { title:'Глава 9: Гроза бездны', story:'Чем глубже ты заходишь, тем чаще встречаешь настоящих монстров. Поймай 5 легендарных рыб.', type:'catch_legendary', target:5, rewardCoins:800, rewardXp:400 },
+    { title:'Финал: Легенда Тихой Гавани', story:'Говорят, где-то в темных водах живёт существо весом больше десяти килограмм, о котором слагают легенды. Поймай его и стань частью этой истории.', type:'catch_heavy', target:10, rewardCoins:1500, rewardXp:800, rewardSkin:'legend' },
+  ];
+  function ensureStory(){
+    if(typeof state.storyChapter !== 'number') state.storyChapter = 0;
+    if(typeof state.storyProgress !== 'number') state.storyProgress = 0;
+  }
+  function currentStoryChapter(){ ensureStory(); return STORY_QUESTS[state.storyChapter] || null; }
+  function bumpStoryQuest(type, amount, mode){
+    ensureStory();
+    const ch = currentStoryChapter();
+    if(!ch || ch.type !== type) return;
+    if(mode === 'max') state.storyProgress = Math.min(ch.target, Math.max(state.storyProgress, amount));
+    else state.storyProgress = Math.min(ch.target, state.storyProgress + amount);
+  }
+  function checkStoryLevel(){
+    ensureStory();
+    const ch = currentStoryChapter();
+    if(ch && ch.type === 'reach_level') state.storyProgress = Math.min(ch.target, Math.max(state.storyProgress, state.level));
+  }
+  function claimStoryChapter(){
+    const ch = currentStoryChapter();
+    if(!ch || state.storyProgress < ch.target) return;
+    state.coins += ch.rewardCoins;
+    if(ch.rewardXp) addXp(ch.rewardXp);
+    if(ch.rewardSkin && !state.ownedSkins.includes(ch.rewardSkin)) state.ownedSkins.push(ch.rewardSkin);
+    state.storyChapter += 1;
+    state.storyProgress = 0;
+    checkStoryLevel();
+  }
+
   let state = {
     coins:0, totalCatches:0, level:1, xp:0, totalXpEarned:0,
     ownedRods:['bamboo'], activeRod:'bamboo', ownedBaits:['plain'], activeBait:'plain',
     ownedSkins:['classic'], activeSkin:'classic',
-    currentLocation:'harbor', inventory:{}, collectionTotal:{},
+    currentLocation:'harbor', inventory:{}, collectionTotal:{}, collectionBest:{},
     lastBonusDate:null, dailyStreak:0, anonId:null,
     questsDate:null, dailyQuests:[],
+    storyChapter:0, storyProgress:0,
     boosts:{xp2:0, coins2:0, luck:0}
   };
 
@@ -435,6 +525,25 @@
     }
   }
 
+  function findFishDef(id){
+    for(const loc of LOCATIONS){ const f = loc.fish.find(x=>x.id===id); if(f) return f; }
+    return null;
+  }
+  function fixInventory(){
+    // миграция со старого формата (число = количество) на новый (массив весов пойманных экземпляров)
+    Object.keys(state.inventory||{}).forEach(id=>{
+      const val = state.inventory[id];
+      if(typeof val === 'number'){
+        const fish = findFishDef(id);
+        const arr = [];
+        for(let i=0;i<val;i++) arr.push(fish ? randomWeight(fish.tier) : 0.3);
+        state.inventory[id] = arr;
+      } else if(!Array.isArray(val)){
+        state.inventory[id] = [];
+      }
+    });
+    if(!state.collectionBest) state.collectionBest = {};
+  }
   function getRod(id){ return RODS.find(r=>r.id===id); }
   function getBait(id){ return BAITS.find(b=>b.id===id); }
   function getSkin(id){ return ROD_SKINS.find(s=>s.id===id); }
@@ -463,6 +572,7 @@
   function addXp(amount){
     state.xp += amount; state.totalXpEarned += amount;
     while(state.xp >= xpNeeded(state.level)){ state.xp -= xpNeeded(state.level); state.level += 1; }
+    checkStoryLevel();
   }
 
   function getUserId(){
@@ -691,14 +801,21 @@
   function landFish(){
     gameState='idle'; haptic('success');
     const fish = currentFish;
+    const weight = randomWeight(fish.tier);
     flyFishToCounter(fish.ico);
     state.totalCatches += 1;
-    state.inventory[fish.id] = (state.inventory[fish.id]||0) + 1;
+    if(!Array.isArray(state.inventory[fish.id])) state.inventory[fish.id] = [];
+    state.inventory[fish.id].push(weight);
     state.collectionTotal[fish.id] = (state.collectionTotal[fish.id]||0) + 1;
+    state.collectionBest[fish.id] = Math.max(state.collectionBest[fish.id]||0, weight);
     const xpBoosted = isBoostActive('xp2');
     addXp(fish.xp * (xpBoosted?2:1));
     bumpQuest('catch_any', 1);
     if(fish.tier >= 2) bumpQuest('catch_rare', 1);
+    bumpStoryQuest('catch_any', 1);
+    if(fish.tier >= 2) bumpStoryQuest('catch_rare', 1);
+    if(fish.tier >= 4) bumpStoryQuest('catch_legendary', 1);
+    bumpStoryQuest('catch_heavy', weight, 'max');
     saveState(); refreshTopUI();
 
     document.getElementById('cc-ico').textContent = fish.ico;
@@ -706,6 +823,7 @@
     const rarityEl = document.getElementById('cc-rarity');
     rarityEl.textContent = RARITY_LABEL[fish.tier]; rarityEl.className = 'rarity r' + fish.tier;
     document.getElementById('cc-xp').textContent = '+' + (fish.xp * (xpBoosted?2:1)) + ' опыта' + (xpBoosted?' (x2 буст)':'');
+    document.getElementById('cc-weight').textContent = 'Вес: ' + weight.toFixed(2) + ' кг · цена ~' + fishPrice(fish, weight) + ' 🪙';
     catchcard.style.display = 'flex';
     resetVisual();
   }
@@ -730,7 +848,7 @@
     const h2 = document.createElement('div'); h2.className='sectiontitle'; h2.textContent='Наживка'; list.appendChild(h2);
     BAITS.forEach(b=>list.appendChild(gearCard(b,'bait')));
     const h3 = document.createElement('div'); h3.className='sectiontitle'; h3.textContent='Внешний вид удочки'; list.appendChild(h3);
-    ROD_SKINS.forEach(s=>list.appendChild(gearCard(s,'skin')));
+    ROD_SKINS.filter(s=>!s.storyOnly || state.ownedSkins.includes(s.id)).forEach(s=>list.appendChild(gearCard(s,'skin')));
   }
   function boostCard(item){
     const active = isBoostActive(item.id);
@@ -780,23 +898,31 @@
 
 
   // ---------- MARKET (sell / trade) ----------
+  function stackValue(f){
+    const weights = state.inventory[f.id] || [];
+    const boost = isBoostActive('coins2') ? 2 : 1;
+    const total = weights.reduce((sum,w)=>sum + fishPrice(f, w)*boost, 0);
+    const avgWeight = weights.length ? weights.reduce((s,w)=>s+w,0)/weights.length : 0;
+    return { count: weights.length, total, avgWeight };
+  }
   function renderMarket(){
     const list = document.getElementById('marketlist'); list.innerHTML = '';
     const loc = currentLoc();
     let any = false;
-    loc.fish.forEach((f,idx)=>{
-      const count = state.inventory[f.id] || 0;
-      if(count<=0) return;
+    loc.fish.forEach((f)=>{
+      const weights = state.inventory[f.id] || [];
+      if(weights.length<=0) return;
       any = true;
-      const sellPrice = Math.floor((f.coins[0]+f.coins[1])/2 * (isBoostActive('coins2')?2:1));
+      const { count, total, avgWeight } = stackValue(f);
       const el = document.createElement('div'); el.className='card2';
       el.innerHTML = `<div class="icobox">${f.ico}</div>
-        <div class="info"><div class="name">${f.name} ×${count}</div><div class="desc">${sellPrice} 🪙 за шт · ${RARITY_LABEL[f.tier]}</div></div>
+        <div class="info"><div class="name">${f.name} ×${count}</div><div class="desc">~${avgWeight.toFixed(2)} кг сред. · ${RARITY_LABEL[f.tier]} · вес влияет на цену</div></div>
         <div class="action">
-          <button class="btn-sell" data-act="sell1">Продать 1</button>
+          <button class="btn-sell" data-act="sellstack">Продать всё · ${formatNum(total)} 🪙</button>
         </div>`;
-      el.querySelector('[data-act="sell1"]').addEventListener('click', ()=>{
-        state.inventory[f.id] -= 1; state.coins += sellPrice; bumpQuest('sell_coins', sellPrice);
+      el.querySelector('[data-act="sellstack"]').addEventListener('click', ()=>{
+        const { total:sum } = stackValue(f);
+        state.inventory[f.id] = []; state.coins += sum; bumpQuest('sell_coins', sum); bumpStoryQuest('sell_coins', sum);
         haptic('success'); saveState(); refreshTopUI(); renderMarket();
       });
       list.appendChild(el);
@@ -806,10 +932,10 @@
   document.getElementById('sellall').addEventListener('click', ()=>{
     const loc = currentLoc(); let total = 0;
     loc.fish.forEach(f=>{
-      const count = state.inventory[f.id]||0;
-      if(count>0){ const price = Math.floor((f.coins[0]+f.coins[1])/2 * (isBoostActive('coins2')?2:1)); total += price*count; state.inventory[f.id]=0; }
+      const weights = state.inventory[f.id]||[];
+      if(weights.length>0){ total += stackValue(f).total; state.inventory[f.id]=[]; }
     });
-    if(total>0){ state.coins += total; bumpQuest('sell_coins', total); haptic('success'); saveState(); refreshTopUI(); renderMarket(); }
+    if(total>0){ state.coins += total; bumpQuest('sell_coins', total); bumpStoryQuest('sell_coins', total); haptic('success'); saveState(); refreshTopUI(); renderMarket(); }
   });
 
   // ---------- COLLECTION ----------
@@ -822,10 +948,11 @@
         totalSpecies++;
         const count = state.collectionTotal[f.id] || 0;
         if(count>0) discovered++;
+        const best = state.collectionBest[f.id] || 0;
         const el = document.createElement('div'); el.className='card2' + (count===0?' locked':'');
         el.innerHTML = `<div class="icobox">${count>0?f.ico:'❔'}</div>
           <div class="info"><div class="name">${count>0?f.name:'???'}</div>
-          <div class="desc">${count>0 ? ('Поймано: '+count+' · '+RARITY_LABEL[f.tier]) : 'Ещё не найдено'}</div></div>`;
+          <div class="desc">${count>0 ? ('Поймано: '+count+' · рекорд '+best.toFixed(2)+' кг · '+RARITY_LABEL[f.tier]) : 'Ещё не найдено'}</div></div>`;
         list.appendChild(el);
       });
     });
@@ -833,7 +960,8 @@
   }
 
   // ---------- QUESTS ----------
-  function renderQuests(){
+  let activeQuestTab = 'daily';
+  function renderDailyQuests(){
     ensureQuests();
     const list = document.getElementById('questlist'); list.innerHTML = '';
     state.dailyQuests.forEach(q=>{
@@ -849,13 +977,62 @@
       el.querySelector('button').addEventListener('click', ()=>{
         if(q.claimed || q.progress < q.target) return;
         state.coins += q.rewardCoins; addXp(q.rewardXp); q.claimed = true;
-        haptic('success'); saveState(); refreshTopUI(); renderQuests();
+        haptic('success'); saveState(); refreshTopUI(); renderDailyQuests();
       });
       list.appendChild(el);
     });
     const doneCount = state.dailyQuests.filter(q=>q.claimed).length;
     document.getElementById('questSummary').textContent = `Выполнено ${doneCount} из ${state.dailyQuests.length} · обновление каждый день`;
   }
+
+  function renderStoryQuests(){
+    ensureStory(); checkStoryLevel();
+    const list = document.getElementById('questlist'); list.innerHTML = '';
+    const ch = currentStoryChapter();
+    if(!ch){
+      document.getElementById('questSummary').textContent = 'Сюжет пройден полностью — ты живая легенда Тихой Гавани!';
+      const el = document.createElement('div'); el.className='storycard';
+      el.innerHTML = `<div class="schapter">Конец истории</div><div class="stitle">Все главы пройдены</div>
+        <div class="stext">Ты прошёл весь путь от новичка до легенды этих вод. Новые главы могут появиться позже.</div>`;
+      list.appendChild(el);
+      return;
+    }
+    document.getElementById('questSummary').textContent = `Глава ${state.storyChapter+1} из ${STORY_QUESTS.length} · сюжет не сбрасывается`;
+    const done = state.storyProgress >= ch.target;
+    const pct = Math.min(100, (state.storyProgress/ch.target)*100);
+    const el = document.createElement('div'); el.className='storycard' + (done?' done':'');
+    el.innerHTML = `<div class="schapter">Глава ${state.storyChapter+1}</div>
+      <div class="stitle">${ch.title}</div>
+      <div class="stext">${ch.story}</div>
+      <div class="qbar"><div class="qfill" style="width:${pct}%"></div></div>
+      <div class="qfoot">
+        <div class="qreward">${Math.min(state.storyProgress,ch.target)}/${ch.target} · +${ch.rewardCoins} 🪙${ch.rewardXp?(' +'+ch.rewardXp+' XP'):''}${ch.rewardSkin?' · скин удочки':''}</div>
+        <button class="qclaim" ${!done?'disabled':''}>Забрать и продолжить</button>
+      </div>`;
+    el.querySelector('button').addEventListener('click', ()=>{
+      if(state.storyProgress < ch.target) return;
+      claimStoryChapter();
+      haptic('success'); saveState(); refreshTopUI(); renderStoryQuests();
+    });
+    list.appendChild(el);
+    if(STORY_QUESTS[state.storyChapter+1]){
+      const next = document.createElement('div'); next.className='storynext';
+      next.textContent = '🔒 Следующая глава откроется после этой...';
+      list.appendChild(next);
+    }
+  }
+
+  function renderQuests(){
+    if(activeQuestTab === 'story') renderStoryQuests(); else renderDailyQuests();
+  }
+  document.querySelectorAll('.qtab').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.qtab').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      activeQuestTab = btn.dataset.qtab;
+      renderQuests();
+    });
+  });
 
   // ---------- LEADERBOARD ----------
   function renderTop(){
@@ -894,7 +1071,7 @@
   }));
 
   // ---------- INIT ----------
-  loadState(function(){ ensureQuests(); refreshTopUI(); syncLeaderboard(); });
+  loadState(function(){ fixInventory(); ensureQuests(); ensureStory(); refreshTopUI(); syncLeaderboard(); });
 })();
 </script>
 </body>
