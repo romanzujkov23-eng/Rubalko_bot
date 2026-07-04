@@ -51,16 +51,17 @@
   #bonusbanner button{border:none; background:var(--ink); color:var(--cream); border-radius:10px; padding:5px 10px; font-weight:800; font-size:11px;}
 
   #rodsvg{position:absolute; right:-16vw; bottom:-6vh; width:72vw; height:62vh; max-width:340px; max-height:420px;
-    z-index:2; pointer-events:none; transform-origin:94% 94%; animation:rodIdle 3.4s ease-in-out infinite;}
+    z-index:2; pointer-events:none; transform-origin:94% 94%; animation:rodIdle 3.4s ease-in-out infinite; will-change:transform;}
   #rodsvg.casting{animation:rodCast .55s cubic-bezier(.3,.1,.3,1);}
   @keyframes rodIdle{0%,100%{transform:rotate(0deg);} 50%{transform:rotate(-1.6deg);}}
   @keyframes rodCast{0%{transform:rotate(2deg);} 25%{transform:rotate(-22deg);} 55%{transform:rotate(8deg);} 78%{transform:rotate(-4deg);} 100%{transform:rotate(0deg);}}
-  #rodpath{fill:none; stroke:var(--rod-color, #6b4726); stroke-width:9; stroke-linecap:round;}
-  #reelpath{fill:var(--rod-color, #6b4726); opacity:.85;}
+  #rodpath{fill:var(--rod-color, #6b4726); stroke:none;}
+  #reelpath{fill:var(--rod-color, #6b4726); opacity:.9;}
 
-  #rodwrap{position:absolute; left:50%; top:30%; transform:translateX(-50%); width:6px; height:0; z-index:3;}
-  #line{position:absolute; left:2px; top:0; width:2px; height:0; background:rgba(245,239,227,0.85);}
-  #bobber{position:absolute; left:50%; width:24px; height:24px; transform:translate(-50%,-50%); z-index:3;}
+  #line{position:fixed; left:0; top:0; height:2px; width:1px;
+    background:linear-gradient(to right, rgba(245,239,227,0.92), rgba(245,239,227,0.5));
+    transform-origin:0 50%; will-change:transform; z-index:3;}
+  #bobber{position:absolute; left:50%; width:24px; height:24px; transform:translate(-50%,-50%); z-index:3; will-change:transform;}
   #bobber .body{width:100%; height:100%; border-radius:50%; background:linear-gradient(180deg, var(--coral) 50%, var(--cream) 50%);
     border:2px solid var(--ink); box-shadow:0 3px 6px rgba(0,0,0,0.4);}
   #bobber.hidden{display:none;}
@@ -75,10 +76,10 @@
     30%{transform:translate(-50%,-50%) translateY(14px) rotate(-8deg);}
     65%{transform:translate(-50%,-50%) translateY(-4px) rotate(8deg);}}
   .flyfish{position:fixed; z-index:25; font-size:22px; pointer-events:none; transition:transform .75s cubic-bezier(.2,.6,.3,1), opacity .75s ease-in;}
-  #splash{position:absolute; width:60px; height:60px; transform:translate(-50%,-50%); border:3px solid rgba(245,239,227,0.75);
-    border-radius:50%; opacity:0; pointer-events:none; z-index:3;}
+  #splash{position:absolute; width:60px; height:60px; transform:translate(-50%,-50%) scale(0); border:3px solid rgba(245,239,227,0.75);
+    border-radius:50%; opacity:0; pointer-events:none; z-index:3; will-change:transform,opacity;}
   #splash.animate{animation:splash .5s ease-out;}
-  @keyframes splash{0%{opacity:.9; width:10px; height:10px;} 100%{opacity:0; width:90px; height:90px;}}
+  @keyframes splash{0%{opacity:.9; transform:translate(-50%,-50%) scale(.15);} 100%{opacity:0; transform:translate(-50%,-50%) scale(1.5);}}
   #bitebang{position:absolute; transform:translate(-50%,-140%); z-index:6; font-size:26px; opacity:0; pointer-events:none;}
   #bitebang.show{animation:pop .55s ease-out;}
   @keyframes pop{0%{opacity:0; transform:translate(-50%,-100%) scale(.4);} 30%{opacity:1; transform:translate(-50%,-160%) scale(1.15);} 100%{opacity:0; transform:translate(-50%,-190%) scale(1);}}
@@ -189,10 +190,18 @@
     <div id="bonusbanner">🎁 <span id="bonusText">Бонус готов!</span><button id="bonusBtn">Забрать</button></div>
 
     <svg id="rodsvg" viewBox="0 0 300 500" preserveAspectRatio="xMaxYMax meet">
-      <path id="rodpath" d="M 288 494 Q 150 260 150 24"/>
-      <ellipse id="reelpath" cx="270" cy="440" rx="16" ry="20"/>
+      <path id="rodpath" d="M 281 494 Q 145 260 148.5 24 L 151.5 24 Q 155 260 295 494 Z"/>
+      <path d="M 283 490 Q 147 260 149.5 26" fill="none" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="217.6" cy="353.4" r="4.2" fill="none" stroke="#1c1108" stroke-width="2.4"/>
+      <circle cx="177.9" cy="236" r="3.5" fill="none" stroke="#1c1108" stroke-width="2.1"/>
+      <circle cx="155.5" cy="118.3" r="2.7" fill="none" stroke="#1c1108" stroke-width="1.8"/>
+      <rect x="266" y="450" width="30" height="58" rx="14" fill="#3b2a1c" transform="rotate(-35 281 479)"/>
+      <ellipse id="reelpath" cx="270" cy="440" rx="17" ry="21"/>
+      <circle cx="270" cy="440" r="7" fill="#1c1108" opacity=".55"/>
+      <rect x="266" y="418" width="8" height="16" rx="3" fill="#1c1108" opacity=".7" transform="rotate(20 270 426)"/>
+      <circle id="rodtip" cx="150" cy="24" r="3" fill="none" stroke="#1c1108" stroke-width="2"/>
     </svg>
-    <div id="rodwrap"><div id="line"></div></div>
+    <div id="line"></div>
     <div id="bobber" class="hidden"><div class="body"></div></div>
     <div id="splash"></div>
     <div id="bitebang">💥</div>
@@ -265,7 +274,7 @@
   }
 
   // ====== ЗАПОЛНИ ЭТУ СТРОКУ ПОСЛЕ НАСТРОЙКИ FIREBASE (см. инструкцию в чате) ======
-  const FIREBASE_URL = "https://guhgg-83fab-default-rtdb.europe-west1.firebasedatabase.app/";
+  const FIREBASE_URL = "ВСТАВЬ-СВОЙ-URL-СЮДА";
   // Пример: "https://tihaya-gavan-default-rtdb.europe-west1.firebasedatabase.app"
   // =================================================================================
 
@@ -480,28 +489,38 @@
   function resetVisual(){
     bobber.classList.add('hidden'); btn.classList.remove('pull'); btn.disabled=false;
     timerbar.style.display='none'; status.textContent='Готов начать'; btn.textContent='Закинуть удочку';
-    lineEl.style.transition='none'; lineEl.style.height='0px';
+    lineEl.style.transition='none'; lineEl.style.transform='scaleX(0)';
   }
 
   const rodsvg = document.getElementById('rodsvg');
-  const rodwrapEl = document.getElementById('rodwrap');
   const lineEl = document.getElementById('line');
+  const rodtipEl = document.getElementById('rodtip');
+
+  function getTipPoint(){
+    const r = rodtipEl.getBoundingClientRect();
+    return { x: r.left + r.width/2, y: r.top + r.height/2 };
+  }
 
   function cast(){
     if(gameState!=='idle') return;
     gameState='casting'; btn.disabled=true; status.textContent='Закидываем...'; haptic('light');
+    const tip = getTipPoint();
     rodsvg.classList.remove('casting'); void rodsvg.offsetWidth; rodsvg.classList.add('casting');
 
     const cx = stageEl.clientWidth/2, cy = Math.min(window.innerHeight*0.62, window.innerHeight*0.30 + 50 + Math.random()*35);
     bobber.style.left=cx+'px'; bobber.style.top=cy+'px';
     bobber.classList.remove('hidden','idle-bob','bite-jitter');
-    lineEl.style.height='0px';
+
+    const dx = cx - tip.x, dy = cy - tip.y;
+    const len = Math.hypot(dx,dy), angle = Math.atan2(dy,dx) * 180/Math.PI;
+    lineEl.style.left = tip.x+'px'; lineEl.style.top = tip.y+'px';
+    lineEl.style.transition='none'; lineEl.style.transform = `rotate(${angle}deg) scaleX(0)`;
 
     setTimeout(()=>{
-      const anchorTop = rodwrapEl.getBoundingClientRect().top;
-      const lineLen = Math.max(10, cy - anchorTop);
-      lineEl.style.transition = 'height .35s ease-out';
-      lineEl.style.height = lineLen + 'px';
+      requestAnimationFrame(()=>{
+        lineEl.style.transition = 'transform .35s ease-out';
+        lineEl.style.transform = `rotate(${angle}deg) scaleX(${len})`;
+      });
       bobber.classList.add('landing');
     }, 120);
 
@@ -529,8 +548,8 @@
     biteBang.classList.remove('show'); void biteBang.offsetWidth; biteBang.classList.add('show');
     status.textContent='КЛЮЁТ! Тяни!'; btn.textContent='Тяни!'; btn.classList.add('pull'); btn.disabled=false;
     const winMs = Math.round(getRod(state.activeRod).window * RARITY_SPEED[currentFish.tier]);
-    timerbar.style.display='block'; timerfill.style.transition='none'; timerfill.style.width='100%';
-    requestAnimationFrame(()=>{ timerfill.style.transition=`width ${winMs}ms linear`; timerfill.style.width='0%'; });
+    timerbar.style.display='block'; timerfill.style.transition='none'; timerfill.style.transform='scaleX(1)';
+    requestAnimationFrame(()=>{ timerfill.style.transition=`transform ${winMs}ms linear`; timerfill.style.transform='scaleX(0)'; });
     windowTimeout = setTimeout(missedBite, winMs);
   }
 
