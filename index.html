@@ -104,7 +104,7 @@
     background:rgba(6,20,25,0.82);}
   #catchcard .card{width:82%; max-width:320px; background:var(--card); border-radius:22px; padding:24px 20px 20px; text-align:center;
     border:1px solid rgba(245,239,227,0.15); box-shadow:0 20px 40px rgba(0,0,0,0.5);}
-  #catchcard .fishico{font-size:50px; display:block; margin-bottom:6px;}
+  #catchcard .fishico{display:flex; align-items:center; justify-content:center; width:70px; height:70px; margin:0 auto 6px;}
   #catchcard h2{font-family:'Baloo 2',sans-serif; font-size:20px; margin:2px 0 2px;}
   #catchcard .rarity{font-size:11px; font-weight:800; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px;}
   #catchcard .xpline{font-weight:700; font-size:13px; margin-bottom:4px; opacity:.85;}
@@ -129,7 +129,7 @@
   .sublist{flex:1; overflow-y:auto; padding:6px 14px 20px; display:flex; flex-direction:column; gap:10px;}
 
   .card2{background:var(--card); border:1px solid rgba(245,239,227,0.12); border-radius:15px; padding:12px; display:flex; align-items:center; gap:10px;}
-  .card2 .icobox{font-size:26px; width:38px; text-align:center; flex-shrink:0;}
+  .card2 .icobox{font-size:26px; width:38px; height:38px; text-align:center; flex-shrink:0; display:flex; align-items:center; justify-content:center; overflow:hidden;}
   .card2 .info{flex:1; min-width:0;}
   .card2 .name{font-weight:800; font-size:14px; margin-bottom:1px;}
   .card2 .desc{font-size:10.5px; opacity:.65; font-weight:600;}
@@ -309,6 +309,86 @@
   const RARITY_LABEL = ['обычная','обычная','редкая','ценная','легендарная'];
   const RARITY_SPEED = [1, 1, 0.8, 0.6, 0.42]; // множитель окна поклёва: чем реже рыба, тем короче окно
 
+  // ---------- УНИКАЛЬНЫЕ SVG-ИКОНКИ ДЛЯ КАЖДОГО ВИДА РЫБЫ ----------
+  function svgTag(inner){ return '<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">'+inner+'</svg>'; }
+  function fishBase(o){
+    const rx = 15*(o.elong||1), ry = 12*(o.depth||1);
+    const cx=36, cy=32;
+    const bodyPath = '<ellipse cx="'+cx+'" cy="'+cy+'" rx="'+rx+'" ry="'+ry+'" fill="'+o.body+'"/>';
+    const bellyPath = '<ellipse cx="'+cx+'" cy="'+(cy+ry*0.45)+'" rx="'+(rx*0.7)+'" ry="'+(ry*0.45)+'" fill="'+o.belly+'"/>';
+    const tx = cx-rx;
+    let tail='';
+    if(o.tail==='fork') tail = '<path d="M'+(tx+3)+','+cy+' L'+(tx-9)+','+(cy-10)+' L'+(tx-1)+','+cy+' L'+(tx-9)+','+(cy+10)+' Z" fill="'+o.fin+'"/>';
+    else if(o.tail==='round') tail = '<path d="M'+(tx+3)+','+(cy-8)+' Q'+(tx-11)+','+cy+' '+(tx+3)+','+(cy+8)+' Z" fill="'+o.fin+'"/>';
+    else if(o.tail==='fan') tail = '<path d="M'+(tx+4)+','+cy+' C'+(tx-8)+','+(cy-15)+' '+(tx-20)+','+(cy-8)+' '+(tx-15)+','+cy+' C'+(tx-20)+','+(cy+8)+' '+(tx-8)+','+(cy+15)+' '+(tx+4)+','+cy+' Z" fill="'+o.fin+'" opacity="0.92"/>';
+    else tail = '<path d="M'+(tx+3)+','+cy+' L'+(tx-10)+','+(cy-6)+' L'+(tx-10)+','+(cy+6)+' Z" fill="'+o.fin+'"/>';
+    let dorsal='';
+    if(o.finStyle==='sail') dorsal = '<path d="M'+(cx-rx*0.5)+','+(cy-ry+2)+' Q'+cx+','+(cy-ry-16)+' '+(cx+rx*0.4)+','+(cy-ry+2)+' Z" fill="'+o.fin+'" opacity="0.88"/>';
+    else if(o.finStyle==='spiky'){
+      let pts=[]; const n=5;
+      for(let i=0;i<=n;i++){ pts.push((cx-rx*0.5+(rx*0.9)*(i/n)).toFixed(1)+','+(cy-ry-(i%2===0?9:3))); }
+      dorsal = '<polygon points="'+(cx-rx*0.5)+','+(cy-ry+2)+' '+pts.join(' ')+' '+(cx+rx*0.4)+','+(cy-ry+2)+'" fill="'+o.fin+'"/>';
+    } else dorsal = '<path d="M'+(cx-rx*0.15)+','+(cy-ry+2)+' Q'+(cx+rx*0.1)+','+(cy-ry-10)+' '+(cx+rx*0.4)+','+(cy-ry+2)+' Z" fill="'+o.fin+'"/>';
+    const pect = '<path d="M'+(cx+rx*0.1)+','+(cy+ry*0.4)+' Q'+(cx+rx*0.05)+','+(cy+ry+8)+' '+(cx-rx*0.25)+','+(cy+ry*0.65)+' Z" fill="'+o.fin+'" opacity="0.9"/>';
+    const clipId = 'c'+(o._id||Math.random().toString(36).slice(2,9));
+    let pattern='';
+    if(o.pattern==='stripes'){
+      let bars=''; const n=4;
+      for(let i=0;i<n;i++){ const px=cx-rx*0.6+i*(rx*1.2/n); bars+='<rect x="'+px+'" y="'+(cy-ry)+'" width="'+(rx*0.16)+'" height="'+(ry*2)+'" fill="'+o.patternColor+'" opacity="0.75"/>'; }
+      pattern='<clipPath id="'+clipId+'"><ellipse cx="'+cx+'" cy="'+cy+'" rx="'+rx+'" ry="'+ry+'"/></clipPath><g clip-path="url(#'+clipId+')">'+bars+'</g>';
+    } else if(o.pattern==='spots'){
+      let dots=''; const n=6;
+      for(let i=0;i<n;i++){ const px=cx-rx*0.5+(i%3)*rx*0.5; const py=cy-ry*0.4+Math.floor(i/3)*ry*0.7; dots+='<circle cx="'+px+'" cy="'+py+'" r="'+(2+(i%2))+'" fill="'+o.patternColor+'" opacity="0.8"/>'; }
+      pattern='<clipPath id="'+clipId+'"><ellipse cx="'+cx+'" cy="'+cy+'" rx="'+rx+'" ry="'+ry+'"/></clipPath><g clip-path="url(#'+clipId+')">'+dots+'</g>';
+    } else if(o.pattern==='scale'){
+      let arcs='';
+      for(let row=0;row<3;row++){ for(let col=0;col<4;col++){ const px=cx-rx*0.6+col*rx*0.4; const py=cy-ry*0.5+row*ry*0.5; arcs+='<path d="M'+(px-4)+','+py+' Q'+px+','+(py+4)+' '+(px+4)+','+py+'" stroke="'+o.patternColor+'" fill="none" stroke-width="1" opacity="0.6"/>'; } }
+      pattern='<clipPath id="'+clipId+'"><ellipse cx="'+cx+'" cy="'+cy+'" rx="'+rx+'" ry="'+ry+'"/></clipPath><g clip-path="url(#'+clipId+')">'+arcs+'</g>';
+    }
+    let extra='';
+    const headX = cx+rx*0.8;
+    if(o.whiskers){
+      extra += '<path d="M'+(headX-2)+','+(cy+3)+' Q'+(headX+10)+','+(cy+10)+' '+(headX+14)+','+(cy+16)+'" stroke="'+o.fin+'" fill="none" stroke-width="1.4" stroke-linecap="round"/>';
+      extra += '<path d="M'+(headX-2)+','+(cy+1)+' Q'+(headX+12)+','+(cy+2)+' '+(headX+17)+','+(cy+3)+'" stroke="'+o.fin+'" fill="none" stroke-width="1.4" stroke-linecap="round"/>';
+    }
+    if(o.teeth) extra += '<path d="M'+(headX-3)+','+(cy+ry*0.35)+' L'+(headX+2)+','+(cy+ry*0.35)+' L'+(headX-1)+','+(cy+ry*0.6)+' Z" fill="#fff"/>';
+    if(o.tusk) extra += '<path d="M'+headX+','+(cy-1)+' Q'+(headX+18)+','+(cy-8)+' '+(headX+22)+','+(cy-18)+'" stroke="#EDE6D6" fill="none" stroke-width="2" stroke-linecap="round"/>';
+    if(o.lure) extra += '<path d="M'+(headX-4)+','+(cy-ry)+' Q'+(headX+2)+','+(cy-ry-14)+' '+(headX+6)+','+(cy-ry-16)+'" stroke="'+o.fin+'" fill="none" stroke-width="1.2"/><circle cx="'+(headX+6)+'" cy="'+(cy-ry-16)+'" r="2.6" fill="'+(o.glow||'#9CF2A0')+'"/>';
+    if(o.gulp) extra += '<ellipse cx="'+(headX+3)+'" cy="'+(cy+2)+'" rx="9" ry="7" fill="'+o.body+'" stroke="'+o.fin+'" stroke-width="1"/>';
+    const eye = '<circle cx="'+headX+'" cy="'+(cy-ry*0.15)+'" r="2.4" fill="'+(o.eye||'#182028')+'"/><circle cx="'+(headX+0.7)+'" cy="'+(cy-ry*0.3)+'" r="0.8" fill="#fff"/>';
+    return tail+dorsal+pect+bodyPath+bellyPath+pattern+extra+eye;
+  }
+  function crabIcon(o){
+    const cx=32, cy=34; let legs='';
+    for(let i=-2;i<=2;i++){ if(i===0) continue; const x1=cx+i*7, y1=cy+8; legs+='<path d="M'+x1+','+y1+' q'+(i*2)+',6 '+(i*4)+',10" stroke="'+o.body+'" stroke-width="2" fill="none" stroke-linecap="round"/>'; }
+    function claw(side){ const sx=cx+side*20; return '<path d="M'+(cx+side*12)+','+(cy-2)+' Q'+sx+','+(cy-14)+' '+(sx+side*4)+','+(cy-6)+'" stroke="'+o.claw+'" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="'+(sx+side*4)+'" cy="'+(cy-6)+'" r="4.5" fill="'+o.claw+'"/>'; }
+    return legs+claw(-1)+claw(1)+'<ellipse cx="'+cx+'" cy="'+cy+'" rx="15" ry="10" fill="'+o.body+'"/><circle cx="'+(cx-6)+'" cy="'+(cy-11)+'" r="2.4" fill="'+o.body+'"/><circle cx="'+(cx+6)+'" cy="'+(cy-11)+'" r="2.4" fill="'+o.body+'"/><circle cx="'+(cx-6)+'" cy="'+(cy-13)+'" r="1.2" fill="#182028"/><circle cx="'+(cx+6)+'" cy="'+(cy-13)+'" r="1.2" fill="#182028"/>';
+  }
+  function shrimpIcon(o){
+    return '<path d="M14,40 Q20,14 44,16 Q54,17 50,26 Q46,20 36,20 Q20,22 18,42 Z" fill="'+o.body+'"/><path d="M46,15 L58,6" stroke="'+o.body+'" stroke-width="1.2" fill="none" stroke-linecap="round"/><path d="M14,40 L6,46" stroke="'+o.body+'" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M18,42 L10,50" stroke="'+o.body+'" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="46" cy="18" r="1.6" fill="#182028"/>';
+  }
+  function cephalopodIcon(o){
+    const n=o.arms||8; let arms='';
+    for(let i=0;i<n;i++){ const t=i/(n-1); const x=14+t*36; const wig=(i%2===0)?6:-6; arms+='<path d="M'+x+',30 Q'+(x+wig)+',44 '+x+',54" stroke="'+o.body+'" stroke-width="4" fill="none" stroke-linecap="round"/>'; }
+    return arms+'<ellipse cx="32" cy="26" rx="17" ry="14" fill="'+o.body+'"/><circle cx="25" cy="24" r="4" fill="'+(o.eye2||'#fff')+'"/><circle cx="39" cy="24" r="4" fill="'+(o.eye2||'#fff')+'"/><circle cx="25" cy="24" r="2" fill="'+(o.eye||'#182028')+'"/><circle cx="39" cy="24" r="2" fill="'+(o.eye||'#182028')+'"/>';
+  }
+  function mammalIcon(o){
+    const tuskPath = o.tusk? '<path d="M52,30 Q64,26 68,16" stroke="'+(o.tuskColor||'#EDE6D6')+'" stroke-width="2.4" fill="none" stroke-linecap="round"/>' : '';
+    return '<path d="M14,32 Q10,26 16,26 Q30,10 50,20 Q56,24 52,30 Q44,42 24,40 Q14,38 14,32 Z" fill="'+o.body+'"/>'+tuskPath+'<path d="M14,32 L4,26 L4,38 Z" fill="'+o.body+'"/><path d="M30,18 Q34,6 40,18 Q36,16 30,18 Z" fill="'+o.body+'"/><circle cx="46" cy="22" r="2" fill="#182028"/><ellipse cx="30" cy="34" rx="14" ry="6" fill="'+o.belly+'" opacity="0.85"/>';
+  }
+  function reptileIcon(o){
+    const spikes='<polygon points="20,20 24,12 28,20 32,12 36,20 40,12 44,20" fill="'+(o.spike||o.body)+'"/>';
+    const horns = o.horns? '<path d="M44,16 L48,6" stroke="'+o.body+'" stroke-width="2" stroke-linecap="round"/><path d="M50,18 L56,10" stroke="'+o.body+'" stroke-width="2" stroke-linecap="round"/>' : '';
+    return '<path d="M8,30 Q10,20 24,20 Q40,18 52,26 Q58,29 56,32 Q40,34 24,32 Q10,32 8,30 Z" fill="'+o.body+'"/>'+spikes+horns+'<path d="M52,26 L60,24 L54,30 Z" fill="'+o.body+'"/><circle cx="55" cy="26" r="1.6" fill="#182028"/>';
+  }
+  const CREATURE_BUILDERS = { fish:fishBase, crab:crabIcon, shrimp:shrimpIcon, cephalopod:cephalopodIcon, mammal:mammalIcon, reptile:reptileIcon };
+  function fishIconSVG(fishDef){
+    const d = fishDef.design || {type:'fish', body:'#BFD9CE', belly:'#EFF5F2', fin:'#8FA6AC', tail:'round'};
+    d._id = fishDef.id;
+    const builder = CREATURE_BUILDERS[d.type] || fishBase;
+    return svgTag(builder(d));
+  }
+
   // Диапазон веса (кг) по редкости — чем реже рыба, тем крупнее и тяжелее она может быть
   const WEIGHT_RANGE_BY_TIER = [
     [0.08, 0.45],
@@ -334,63 +414,63 @@
   const LOCATIONS = [
     { id:'harbor', name:'Тихая Гавань', unlockLevel:1, top:'#F2A65A', bottom:'#1E5A6B',
       fish:[
-        {id:'roach', name:'Плотвичка', ico:'🐟', tier:0, coins:[5,10], xp:5},
-        {id:'gudgeon', name:'Пескарь', ico:'🐠', tier:0, coins:[4,9], xp:5},
-        {id:'perch', name:'Окунь', ico:'🐠', tier:1, coins:[8,14], xp:6},
-        {id:'ruffe', name:'Ёрш', ico:'🐡', tier:1, coins:[7,13], xp:6},
-        {id:'crucian', name:'Карась', ico:'🐡', tier:2, coins:[15,25], xp:12},
-        {id:'tench', name:'Линь', ico:'🐢', tier:2, coins:[16,27], xp:13},
-        {id:'pike', name:'Щука', ico:'🦈', tier:3, coins:[30,50], xp:25},
-        {id:'catfish', name:'Сом', ico:'🐊', tier:3, coins:[32,55], xp:27},
-        {id:'golden', name:'Золотая рыбка', ico:'✨', tier:4, coins:[80,120], xp:60},
+        {id:'roach', name:'Плотвичка', ico:'🐟', tier:0, coins:[5,10], xp:5, design:{type:'fish', body:'#C9D6DA', belly:'#EFF5F2', fin:'#8FA6AC', tail:'fork'}},
+        {id:'gudgeon', name:'Пескарь', ico:'🐠', tier:0, coins:[4,9], xp:5, design:{type:'fish', body:'#B99A6B', belly:'#EDDFC5', fin:'#8A6B42', tail:'round', pattern:'spots', patternColor:'#6B4A2B'}},
+        {id:'perch', name:'Окунь', ico:'🐠', tier:1, coins:[8,14], xp:6, design:{type:'fish', body:'#6B8F4E', belly:'#DDE8C6', fin:'#3E5A2B', tail:'fork', finStyle:'spiky', pattern:'stripes', patternColor:'#3E5A2B'}},
+        {id:'ruffe', name:'Ёрш', ico:'🐡', tier:1, coins:[7,13], xp:6, design:{type:'fish', body:'#7A7562', belly:'#C9C2A8', fin:'#4E4A3B', tail:'round', finStyle:'spiky', pattern:'spots', patternColor:'#4E4A3B'}},
+        {id:'crucian', name:'Карась', ico:'🐡', tier:2, coins:[15,25], xp:12, design:{type:'fish', body:'#C9963B', belly:'#F0D28C', fin:'#A6742B', tail:'fan', depth:1.25, pattern:'scale', patternColor:'#A6742B'}},
+        {id:'tench', name:'Линь', ico:'🐢', tier:2, coins:[16,27], xp:13, design:{type:'fish', body:'#4A5A3A', belly:'#7C8F5E', fin:'#38452C', tail:'round', depth:1.2}},
+        {id:'pike', name:'Щука', ico:'🦈', tier:3, coins:[30,50], xp:25, design:{type:'fish', body:'#45633F', belly:'#A9C98B', fin:'#2E4029', tail:'fork', elong:1.5, depth:0.8, pattern:'spots', patternColor:'#A9C98B', teeth:true}},
+        {id:'catfish', name:'Сом', ico:'🐊', tier:3, coins:[32,55], xp:27, design:{type:'fish', body:'#5C5347', belly:'#A69A82', fin:'#3E362B', tail:'round', elong:1.3, whiskers:true}},
+        {id:'golden', name:'Золотая рыбка', ico:'✨', tier:4, coins:[80,120], xp:60, design:{type:'fish', body:'#F2C14E', belly:'#FFF0C2', fin:'#E8A93E', tail:'fan', pattern:'scale', patternColor:'#E8A93E'}},
       ]},
     { id:'reef', name:'Морской Риф', unlockLevel:5, top:'#4FB3BF', bottom:'#0E3B4A',
       fish:[
-        {id:'herring', name:'Сельдь', ico:'🐟', tier:0, coins:[8,15], xp:8},
-        {id:'sardine', name:'Ставрида', ico:'🐠', tier:0, coins:[7,14], xp:8},
-        {id:'mackerel', name:'Скумбрия', ico:'🐠', tier:1, coins:[12,20], xp:9},
-        {id:'barracuda', name:'Молодая барракуда', ico:'🐡', tier:1, coins:[13,22], xp:10},
-        {id:'crab', name:'Краб', ico:'🦀', tier:2, coins:[25,40], xp:18},
-        {id:'shrimp', name:'Королевская креветка', ico:'🦐', tier:2, coins:[26,42], xp:19},
-        {id:'tuna', name:'Тунец', ico:'🐡', tier:3, coins:[50,80], xp:35},
-        {id:'moray', name:'Мурена', ico:'🐍', tier:3, coins:[52,85], xp:36},
-        {id:'octopus', name:'Редкий осьминог', ico:'🐙', tier:4, coins:[130,200], xp:85},
+        {id:'herring', name:'Сельдь', ico:'🐟', tier:0, coins:[8,15], xp:8, design:{type:'fish', body:'#A9C9D9', belly:'#F0F7FA', fin:'#7397A8', tail:'fork'}},
+        {id:'sardine', name:'Ставрида', ico:'🐠', tier:0, coins:[7,14], xp:8, design:{type:'fish', body:'#6FAFA0', belly:'#E4F2EC', fin:'#4A8071', tail:'fork', pattern:'stripes', patternColor:'#2E5A4D'}},
+        {id:'mackerel', name:'Скумбрия', ico:'🐠', tier:1, coins:[12,20], xp:9, design:{type:'fish', body:'#3E7B8C', belly:'#D8ECEF', fin:'#2A5966', tail:'fork', pattern:'stripes', patternColor:'#1E3F49'}},
+        {id:'barracuda', name:'Молодая барракуда', ico:'🐡', tier:1, coins:[13,22], xp:10, design:{type:'fish', body:'#8FAEC2', belly:'#E8F1F5', fin:'#5E7E90', tail:'fork', elong:1.6, depth:0.75, teeth:true}},
+        {id:'crab', name:'Краб', ico:'🦀', tier:2, coins:[25,40], xp:18, design:{type:'crab', body:'#E8734A', claw:'#D9603A'}},
+        {id:'shrimp', name:'Королевская креветка', ico:'🦐', tier:2, coins:[26,42], xp:19, design:{type:'shrimp', body:'#F2A897'}},
+        {id:'tuna', name:'Тунец', ico:'🐡', tier:3, coins:[50,80], xp:35, design:{type:'fish', body:'#1F4E5C', belly:'#C9DEE3', fin:'#F2C14E', tail:'fork', elong:1.4}},
+        {id:'moray', name:'Мурена', ico:'🐍', tier:3, coins:[52,85], xp:36, design:{type:'fish', body:'#8A7052', belly:'#B9A886', fin:'#5C4A34', tail:'pointed', elong:2.0, depth:0.55, pattern:'spots', patternColor:'#4A3B2A', teeth:true}},
+        {id:'octopus', name:'Редкий осьминог', ico:'🐙', tier:4, coins:[130,200], xp:85, design:{type:'cephalopod', body:'#8F4E8C', arms:8}},
       ]},
     { id:'ice', name:'Ледяное Озеро', unlockLevel:10, top:'#BFE8F2', bottom:'#123244',
       fish:[
-        {id:'icebass', name:'Ледяной окунь', ico:'🧊', tier:0, coins:[15,25], xp:12},
-        {id:'smelt', name:'Полярная навага', ico:'🐟', tier:0, coins:[14,24], xp:12},
-        {id:'trout', name:'Форель', ico:'🐟', tier:1, coins:[20,32], xp:14},
-        {id:'grayling', name:'Хариус', ico:'🐠', tier:1, coins:[21,34], xp:15},
-        {id:'whitefish', name:'Голубой сиг', ico:'🐠', tier:2, coins:[45,70], xp:26},
-        {id:'icecrab', name:'Ледяной краб', ico:'🦀', tier:2, coins:[47,73], xp:27},
-        {id:'polarpike', name:'Полярная щука', ico:'🦈', tier:3, coins:[90,140], xp:50},
-        {id:'narwhal', name:'Малый нарвал', ico:'🐋', tier:3, coins:[95,145], xp:52},
-        {id:'dragonfish', name:'Снежный дракон', ico:'🐉', tier:4, coins:[220,320], xp:120},
+        {id:'icebass', name:'Ледяной окунь', ico:'🧊', tier:0, coins:[15,25], xp:12, design:{type:'fish', body:'#BFE0E8', belly:'#F0FAFC', fin:'#7FB8C9', tail:'round'}},
+        {id:'smelt', name:'Полярная навага', ico:'🐟', tier:0, coins:[14,24], xp:12, design:{type:'fish', body:'#D8E8ED', belly:'#F5FBFC', fin:'#A6C7D1', tail:'fork'}},
+        {id:'trout', name:'Форель', ico:'🐟', tier:1, coins:[20,32], xp:14, design:{type:'fish', body:'#7FA88A', belly:'#EFE6C9', fin:'#5A8267', tail:'fan', pattern:'spots', patternColor:'#D9727A'}},
+        {id:'grayling', name:'Хариус', ico:'🐠', tier:1, coins:[21,34], xp:15, design:{type:'fish', body:'#6B93A8', belly:'#DCEAF0', fin:'#4E7286', tail:'fork', finStyle:'sail', pattern:'spots', patternColor:'#3E5A6B'}},
+        {id:'whitefish', name:'Голубой сиг', ico:'🐠', tier:2, coins:[45,70], xp:26, design:{type:'fish', body:'#D9E8ED', belly:'#F5FBFC', fin:'#9CC3D1', tail:'fork', depth:1.1}},
+        {id:'icecrab', name:'Ледяной краб', ico:'🦀', tier:2, coins:[47,73], xp:27, design:{type:'crab', body:'#A8D8E8', claw:'#7FB8CE'}},
+        {id:'polarpike', name:'Полярная щука', ico:'🦈', tier:3, coins:[90,140], xp:50, design:{type:'fish', body:'#C9E8F2', belly:'#F0FAFC', fin:'#8FBFD4', tail:'fork', elong:1.5, depth:0.8, pattern:'spots', patternColor:'#8FBFD4', teeth:true}},
+        {id:'narwhal', name:'Малый нарвал', ico:'🐋', tier:3, coins:[95,145], xp:52, design:{type:'mammal', body:'#7A93A3', belly:'#DCE6EA', tusk:true}},
+        {id:'dragonfish', name:'Снежный дракон', ico:'🐉', tier:4, coins:[220,320], xp:120, design:{type:'reptile', body:'#D9F0F5', spike:'#A9D8E8', horns:true}},
       ]},
     { id:'jungle', name:'Тропическая Река', unlockLevel:15, top:'#8FBF6B', bottom:'#1B4D3E',
       fish:[
-        {id:'tetra', name:'Тетра', ico:'🐠', tier:0, coins:[18,28], xp:15},
-        {id:'guppy', name:'Гуппи', ico:'🐟', tier:0, coins:[16,26], xp:14},
-        {id:'piranha', name:'Пиранья', ico:'🐡', tier:1, coins:[22,34], xp:17},
-        {id:'plecosuckerfish', name:'Сомик-прилипала', ico:'🐢', tier:1, coins:[20,32], xp:16},
-        {id:'electriceel', name:'Электрический угорь', ico:'🐍', tier:2, coins:[45,70], xp:30},
-        {id:'caiman', name:'Молодой кайман', ico:'🐊', tier:2, coins:[47,73], xp:31},
-        {id:'riverdolphin', name:'Речной дельфин', ico:'🐬', tier:3, coins:[90,140], xp:55},
-        {id:'giantcatfish', name:'Гигантский сом', ico:'🦈', tier:3, coins:[95,148], xp:57},
-        {id:'arapaima', name:'Золотая Аравана', ico:'🐲', tier:4, coins:[250,360], xp:140},
+        {id:'tetra', name:'Тетра', ico:'🐠', tier:0, coins:[18,28], xp:15, design:{type:'fish', body:'#3E8CC9', belly:'#E8734A', fin:'#2A5F8C', tail:'fork'}},
+        {id:'guppy', name:'Гуппи', ico:'🐟', tier:0, coins:[16,26], xp:14, design:{type:'fish', body:'#4EBFA0', belly:'#D8F2E8', fin:'#E8A93E', tail:'fan'}},
+        {id:'piranha', name:'Пиранья', ico:'🐡', tier:1, coins:[22,34], xp:17, design:{type:'fish', body:'#8A9AA0', belly:'#E8734A', fin:'#5C6A6F', tail:'fork', depth:1.1, teeth:true}},
+        {id:'plecosuckerfish', name:'Сомик-прилипала', ico:'🐢', tier:1, coins:[20,32], xp:16, design:{type:'fish', body:'#8F7B5C', belly:'#C9BB9C', fin:'#5C4A34', tail:'round', depth:0.85, pattern:'spots', patternColor:'#4A3B2A', whiskers:true}},
+        {id:'electriceel', name:'Электрический угорь', ico:'🐍', tier:2, coins:[45,70], xp:30, design:{type:'fish', body:'#2A2E33', belly:'#5C6570', fin:'#F2E14E', tail:'pointed', elong:2.2, depth:0.5}},
+        {id:'caiman', name:'Молодой кайман', ico:'🐊', tier:2, coins:[47,73], xp:31, design:{type:'reptile', body:'#4A5A3A', spike:'#33421F'}},
+        {id:'riverdolphin', name:'Речной дельфин', ico:'🐬', tier:3, coins:[90,140], xp:55, design:{type:'mammal', body:'#E89AB0', belly:'#FBE4EC'}},
+        {id:'giantcatfish', name:'Гигантский сом', ico:'🦈', tier:3, coins:[95,148], xp:57, design:{type:'fish', body:'#4A4E52', belly:'#8F969B', fin:'#2E3134', tail:'round', elong:1.5, whiskers:true}},
+        {id:'arapaima', name:'Золотая Аравана', ico:'🐲', tier:4, coins:[250,360], xp:140, design:{type:'fish', body:'#8FA83E', belly:'#C9543E', fin:'#6B8028', tail:'fan', elong:1.3, pattern:'scale', patternColor:'#C9543E'}},
       ]},
     { id:'abyss', name:'Глубокий Океан', unlockLevel:20, top:'#2E3A59', bottom:'#050912',
       fish:[
-        {id:'lanternfish', name:'Светящийся анчоус', ico:'🐟', tier:0, coins:[30,45], xp:22},
-        {id:'deepherring', name:'Глубоководная сельдь', ico:'🐠', tier:0, coins:[28,42], xp:20},
-        {id:'anglerfish', name:'Малый удильщик', ico:'🐡', tier:1, coins:[35,50], xp:24},
-        {id:'viperfish', name:'Гадюковая рыба', ico:'🐍', tier:1, coins:[33,48], xp:23},
-        {id:'vampiresquid', name:'Кальмар-вампир', ico:'🦑', tier:2, coins:[70,110], xp:45},
-        {id:'frilledshark', name:'Плащеносная акула', ico:'🦈', tier:2, coins:[73,113], xp:46},
-        {id:'youngsperm', name:'Молодой кашалот', ico:'🐋', tier:3, coins:[140,220], xp:80},
-        {id:'gulperEel', name:'Рыба-пеликан', ico:'🐍', tier:3, coins:[145,225], xp:82},
-        {id:'kraken', name:'Легендарный Кракен', ico:'🐙', tier:4, coins:[400,600], xp:220},
+        {id:'lanternfish', name:'Светящийся анчоус', ico:'🐟', tier:0, coins:[30,45], xp:22, design:{type:'fish', body:'#1A2438', belly:'#3E4A63', fin:'#111827', tail:'fork', lure:true, glow:'#6FE8E8'}},
+        {id:'deepherring', name:'Глубоководная сельдь', ico:'🐠', tier:0, coins:[28,42], xp:20, design:{type:'fish', body:'#2A2540', belly:'#4A4166', fin:'#1A1730', tail:'fork'}},
+        {id:'anglerfish', name:'Малый удильщик', ico:'🐡', tier:1, coins:[35,50], xp:24, design:{type:'fish', body:'#2A2030', belly:'#4A3B52', fin:'#1A1522', tail:'round', depth:0.9, teeth:true, lure:true, glow:'#8FE86F', eye:'#000'}},
+        {id:'viperfish', name:'Гадюковая рыба', ico:'🐍', tier:1, coins:[33,48], xp:23, design:{type:'fish', body:'#1F1830', belly:'#4A3E63', fin:'#120E1F', tail:'pointed', elong:1.7, depth:0.55, teeth:true}},
+        {id:'vampiresquid', name:'Кальмар-вампир', ico:'🦑', tier:2, coins:[70,110], xp:45, design:{type:'cephalopod', body:'#4A1F2E', arms:8, eye:'#E8434E', eye2:'#2A0F17'}},
+        {id:'frilledshark', name:'Плащеносная акула', ico:'🦈', tier:2, coins:[73,113], xp:46, design:{type:'fish', body:'#4A4238', belly:'#7A7062', fin:'#2E291F', tail:'pointed', elong:2.0, depth:0.55, teeth:true}},
+        {id:'youngsperm', name:'Молодой кашалот', ico:'🐋', tier:3, coins:[140,220], xp:80, design:{type:'mammal', body:'#3A3F45', belly:'#6B7278'}},
+        {id:'gulperEel', name:'Рыба-пеликан', ico:'🐍', tier:3, coins:[145,225], xp:82, design:{type:'fish', body:'#2A1F1A', belly:'#4A382E', fin:'#1A130F', tail:'pointed', elong:1.9, depth:0.5, gulp:true}},
+        {id:'kraken', name:'Легендарный Кракен', ico:'🐙', tier:4, coins:[400,600], xp:220, design:{type:'cephalopod', body:'#16323A', arms:8, eye:'#E8434E'}},
       ]},
   ];
 
@@ -780,11 +860,11 @@
     setTimeout(resetVisual, 900);
   }
 
-  function flyFishToCounter(icoText){
+  function flyFishToCounter(fishDef){
     const from = bobber.getBoundingClientRect();
     const to = catchVal.getBoundingClientRect();
     const el = document.createElement('div');
-    el.className = 'flyfish'; el.textContent = icoText;
+    el.className = 'flyfish'; el.style.width='22px'; el.style.height='22px'; el.innerHTML = fishIconSVG(fishDef);
     el.style.left = (from.left + from.width/2 - 11) + 'px';
     el.style.top = (from.top + from.height/2 - 11) + 'px';
     el.style.transform = 'translate(0,0) scale(1)'; el.style.opacity = '1';
@@ -802,7 +882,7 @@
     gameState='idle'; haptic('success');
     const fish = currentFish;
     const weight = randomWeight(fish.tier);
-    flyFishToCounter(fish.ico);
+    flyFishToCounter(fish);
     state.totalCatches += 1;
     if(!Array.isArray(state.inventory[fish.id])) state.inventory[fish.id] = [];
     state.inventory[fish.id].push(weight);
@@ -818,7 +898,7 @@
     bumpStoryQuest('catch_heavy', weight, 'max');
     saveState(); refreshTopUI();
 
-    document.getElementById('cc-ico').textContent = fish.ico;
+    document.getElementById('cc-ico').innerHTML = fishIconSVG(fish);
     document.getElementById('cc-name').textContent = fish.name;
     const rarityEl = document.getElementById('cc-rarity');
     rarityEl.textContent = RARITY_LABEL[fish.tier]; rarityEl.className = 'rarity r' + fish.tier;
@@ -915,7 +995,7 @@
       any = true;
       const { count, total, avgWeight } = stackValue(f);
       const el = document.createElement('div'); el.className='card2';
-      el.innerHTML = `<div class="icobox">${f.ico}</div>
+      el.innerHTML = `<div class="icobox">${fishIconSVG(f)}</div>
         <div class="info"><div class="name">${f.name} ×${count}</div><div class="desc">~${avgWeight.toFixed(2)} кг сред. · ${RARITY_LABEL[f.tier]} · вес влияет на цену</div></div>
         <div class="action">
           <button class="btn-sell" data-act="sellstack">Продать всё · ${formatNum(total)} 🪙</button>
@@ -950,7 +1030,7 @@
         if(count>0) discovered++;
         const best = state.collectionBest[f.id] || 0;
         const el = document.createElement('div'); el.className='card2' + (count===0?' locked':'');
-        el.innerHTML = `<div class="icobox">${count>0?f.ico:'❔'}</div>
+        el.innerHTML = `<div class="icobox">${count>0?fishIconSVG(f):'❔'}</div>
           <div class="info"><div class="name">${count>0?f.name:'???'}</div>
           <div class="desc">${count>0 ? ('Поймано: '+count+' · рекорд '+best.toFixed(2)+' кг · '+RARITY_LABEL[f.tier]) : 'Ещё не найдено'}</div></div>`;
         list.appendChild(el);
