@@ -185,6 +185,29 @@
   .storycard .qclaim:disabled{background:rgba(245,239,227,0.15); color:rgba(245,239,227,0.4);}
   .storynext{opacity:.5; font-size:11.5px; font-weight:700; padding:4px 4px;}
   .weightline{font-size:10px; opacity:.7; font-weight:700;}
+
+  .btn-reset-progress{width:100%; margin-top:4px; padding:13px; border:1px solid rgba(232,90,74,0.5); border-radius:14px;
+    background:rgba(232,90,74,0.12); color:#F0897A; font-family:'Baloo 2',sans-serif; font-weight:800; font-size:13.5px;}
+  .btn-reset-progress:active{background:rgba(232,90,74,0.22);}
+
+  .modal-overlay{position:absolute; inset:0; z-index:40; display:none; align-items:center; justify-content:center;
+    background:rgba(6,20,25,0.86); padding:0 20px;}
+  .modal-overlay.show{display:flex;}
+  .modal-card{width:100%; max-width:320px; background:var(--card); border-radius:22px; padding:22px 20px; text-align:center;
+    border:1px solid rgba(232,90,74,0.35); box-shadow:0 20px 40px rgba(0,0,0,0.5);}
+  .modal-card .modal-icon{font-size:34px; margin-bottom:6px;}
+  .modal-card h2{font-family:'Baloo 2',sans-serif; font-size:18px; margin:2px 0 8px; color:#F0897A;}
+  .modal-card p{font-size:12.5px; line-height:1.5; opacity:.85; font-weight:600; margin:0 0 16px;}
+  .modal-actions{display:flex; gap:10px;}
+  .modal-actions button{flex:1; border:none; border-radius:13px; padding:11px 0; font-weight:800; font-size:13.5px; font-family:'Baloo 2',sans-serif;}
+  .modal-btn-cancel{background:rgba(245,239,227,0.14); color:var(--cream);}
+  .modal-btn-danger{background:#E85A4A; color:#fff;}
+
+  #levelupToast{position:absolute; top:14%; left:50%; transform:translateX(-50%) translateY(-14px); z-index:35;
+    background:var(--gold); color:var(--ink); border-radius:16px; padding:10px 18px; font-family:'Baloo 2',sans-serif;
+    font-weight:800; font-size:14px; box-shadow:0 10px 24px rgba(0,0,0,0.4); opacity:0; pointer-events:none;
+    transition:opacity .25s ease, transform .25s ease; text-align:center; white-space:nowrap;}
+  #levelupToast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 </style>
 </head>
 <body>
@@ -247,6 +270,8 @@
         <button id="cc-close">Отлично!</button>
       </div>
     </div>
+
+    <div id="levelupToast">🎉 Уровень 2! +76 🪙</div>
   </div>
 
   <div class="subscreen" id="screen-shop">
@@ -286,6 +311,18 @@
     <button class="navbtn" data-screen="quests"><span class="navico">📋</span>Задания</button>
     <button class="navbtn" data-screen="collection"><span class="navico">📖</span>Коллекция</button>
     <button class="navbtn" data-screen="top"><span class="navico">🏆</span>Топ</button>
+  </div>
+
+  <div class="modal-overlay" id="resetModal">
+    <div class="modal-card">
+      <div class="modal-icon">⚠️</div>
+      <h2 id="resetModalTitle">Сбросить весь прогресс?</h2>
+      <p id="resetModalText">Ты потеряешь уровень, монеты, снаряжение, коллекцию и сюжет. Действие нельзя отменить.</p>
+      <div class="modal-actions">
+        <button id="resetCancelBtn" class="modal-btn-cancel">Отмена</button>
+        <button id="resetConfirmBtn" class="modal-btn-danger">Далее</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -476,25 +513,25 @@
 
   const RODS = [
     {id:'bamboo', name:'Бамбуковая удочка', ico:'🎣', desc:'Базовое окно поклёва 700 мс', window:700, price:0},
-    {id:'carbon', name:'Карбоновая удочка', ico:'🪝', desc:'Окно поклёва 950 мс', window:950, price:400},
-    {id:'titan', name:'Титановая удочка', ico:'⚙️', desc:'Окно поклёва 1300 мс', window:1300, price:1500},
+    {id:'carbon', name:'Карбоновая удочка', ico:'🪝', desc:'Окно поклёва 950 мс', window:950, price:600},
+    {id:'titan', name:'Титановая удочка', ico:'⚙️', desc:'Окно поклёва 1300 мс', window:1300, price:2400},
   ];
   const BAITS = [
     {id:'plain', name:'Обычная наживка', ico:'🪱', desc:'Стандартные шансы улова', weights:[40,30,18,9,3], price:0},
-    {id:'aroma', name:'Ароматная наживка', ico:'🌿', desc:'Больше редкой и ценной рыбы', weights:[30,25,25,15,5], price:250},
-    {id:'magic', name:'Магическая наживка', ico:'🔮', desc:'Сильно больше шанс легендарной', weights:[20,20,25,20,15], price:1200},
+    {id:'aroma', name:'Ароматная наживка', ico:'🌿', desc:'Больше редкой и ценной рыбы', weights:[30,25,25,15,5], price:380},
+    {id:'magic', name:'Магическая наживка', ico:'🔮', desc:'Сильно больше шанс легендарной', weights:[20,20,25,20,15], price:1900},
   ];
   const ROD_SKINS = [
     {id:'classic', name:'Классическое дерево', ico:'🟫', color:'#6b4726', price:0},
-    {id:'crimson', name:'Алая карбоновая', ico:'🟥', color:'#C1443C', price:300},
-    {id:'gold', name:'Золотая парадная', ico:'🟨', color:'#D4AF37', price:900},
-    {id:'neon', name:'Неоновая', ico:'🟦', color:'#37D4C9', price:1600},
+    {id:'crimson', name:'Алая карбоновая', ico:'🟥', color:'#C1443C', price:350},
+    {id:'gold', name:'Золотая парадная', ico:'🟨', color:'#D4AF37', price:1100},
+    {id:'neon', name:'Неоновая', ico:'🟦', color:'#37D4C9', price:2000},
     {id:'legend', name:'Легенда Тихой Гавани', ico:'🟪', color:'#B14EF2', price:null, desc:'Награда за сюжет', storyOnly:true},
   ];
   const BOOST_ITEMS = [
-    {id:'xp2', name:'Ускоритель опыта', ico:'⚡', desc:'x2 опыт за пойманную рыбу · 30 минут', price:300, duration:30*60000},
-    {id:'coins2', name:'Удвоение дохода', ico:'💰', desc:'x2 монеты при продаже на рынке · 30 минут', price:350, duration:30*60000},
-    {id:'luck', name:'Везение рыбака', ico:'🍀', desc:'Выше шанс редкой и ценной рыбы · 20 минут', price:400, duration:20*60000},
+    {id:'xp2', name:'Ускоритель опыта', ico:'⚡', desc:'x2 опыт за пойманную рыбу · 8 минут', price:120, duration:8*60000},
+    {id:'coins2', name:'Удвоение дохода', ico:'💰', desc:'x2 монеты при продаже на рынке · 8 минут', price:140, duration:8*60000},
+    {id:'luck', name:'Везение рыбака', ico:'🍀', desc:'Выше шанс редкой и ценной рыбы · 6 минут', price:170, duration:6*60000},
   ];
   const LUCK_WEIGHTS = [14,14,28,26,18];
 
@@ -505,6 +542,12 @@
     return String(n);
   }
   function xpNeeded(level){ return level*100; }
+  // Награда монетами за новый уровень: растёт с уровнем, каждый 5-й уровень — с бонусом x1.5
+  function coinsForLevel(level){
+    const base = 40 + level*18;
+    const milestone = (level % 5 === 0) ? base*1.5 : base;
+    return Math.round(milestone/5)*5;
+  }
   function todayStr(){ const d=new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
   function yesterdayStr(){ const d=new Date(); d.setDate(d.getDate()-1); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
 
@@ -571,16 +614,19 @@
     checkStoryLevel();
   }
 
-  let state = {
-    coins:0, totalCatches:0, level:1, xp:0, totalXpEarned:0,
-    ownedRods:['bamboo'], activeRod:'bamboo', ownedBaits:['plain'], activeBait:'plain',
-    ownedSkins:['classic'], activeSkin:'classic',
-    currentLocation:'harbor', inventory:{}, collectionTotal:{}, collectionBest:{},
-    lastBonusDate:null, dailyStreak:0, anonId:null,
-    questsDate:null, dailyQuests:[],
-    storyChapter:0, storyProgress:0,
-    boosts:{xp2:0, coins2:0, luck:0}
-  };
+  function freshState(){
+    return {
+      coins:0, totalCatches:0, level:1, xp:0, totalXpEarned:0,
+      ownedRods:['bamboo'], activeRod:'bamboo', ownedBaits:['plain'], activeBait:'plain',
+      ownedSkins:['classic'], activeSkin:'classic',
+      currentLocation:'harbor', inventory:{}, collectionTotal:{}, collectionBest:{},
+      lastBonusDate:null, dailyStreak:0, anonId:null,
+      questsDate:null, dailyQuests:[],
+      storyChapter:0, storyProgress:0,
+      boosts:{xp2:0, coins2:0, luck:0}
+    };
+  }
+  let state = freshState();
 
   const SAVE_KEY = 'save_v2';
   let saveTimer=null;
@@ -603,6 +649,19 @@
       if(window.__memSave){ try{ Object.assign(state, JSON.parse(window.__memSave)); }catch(e){} }
       cb();
     }
+  }
+
+  function resetProgress(){
+    const keepAnonId = state.anonId;
+    const clean = freshState();
+    clean.anonId = keepAnonId;
+    Object.keys(state).forEach(k=>delete state[k]);
+    Object.assign(state, clean);
+    fixInventory(); ensureQuests(); ensureStory();
+    saveState();
+    refreshTopUI();
+    renderShop();
+    haptic('success');
   }
 
   function findFishDef(id){
@@ -651,8 +710,27 @@
 
   function addXp(amount){
     state.xp += amount; state.totalXpEarned += amount;
-    while(state.xp >= xpNeeded(state.level)){ state.xp -= xpNeeded(state.level); state.level += 1; }
+    let levelsGained = 0, coinsGained = 0;
+    while(state.xp >= xpNeeded(state.level)){
+      state.xp -= xpNeeded(state.level);
+      state.level += 1;
+      levelsGained += 1;
+      coinsGained += coinsForLevel(state.level);
+    }
+    if(coinsGained > 0) state.coins += coinsGained;
     checkStoryLevel();
+    if(levelsGained > 0) showLevelUpToast(state.level, coinsGained);
+    return { levelsGained, coinsGained };
+  }
+
+  let levelupToastTimer = null;
+  function showLevelUpToast(level, coins){
+    const el = document.getElementById('levelupToast');
+    el.textContent = '🎉 Уровень ' + level + '! +' + formatNum(coins) + ' 🪙';
+    clearTimeout(levelupToastTimer);
+    el.classList.add('show');
+    haptic('success');
+    levelupToastTimer = setTimeout(()=>{ el.classList.remove('show'); }, 2400);
   }
 
   function getUserId(){
@@ -918,6 +996,41 @@
   });
   document.getElementById('cc-close').addEventListener('click', ()=>{ catchcard.style.display='none'; });
 
+  // ---------- RESET PROGRESS (with double confirmation) ----------
+  let resetStage = 0;
+  const resetModal = document.getElementById('resetModal'),
+    resetTitle = document.getElementById('resetModalTitle'),
+    resetText = document.getElementById('resetModalText'),
+    resetConfirmBtn = document.getElementById('resetConfirmBtn'),
+    resetCancelBtn = document.getElementById('resetCancelBtn');
+
+  function openResetModal(){
+    resetStage = 1;
+    resetTitle.textContent = 'Сбросить весь прогресс?';
+    resetText.textContent = 'Ты потеряешь уровень, монеты, снаряжение, коллекцию и сюжет. Это действие нельзя отменить.';
+    resetConfirmBtn.textContent = 'Далее';
+    haptic('light');
+    resetModal.classList.add('show');
+  }
+  resetConfirmBtn.addEventListener('click', ()=>{
+    if(resetStage === 1){
+      resetStage = 2;
+      resetTitle.textContent = 'Точно уверен?';
+      resetText.textContent = 'Последнее предупреждение: после подтверждения весь прогресс исчезнет навсегда, без возможности восстановления.';
+      resetConfirmBtn.textContent = 'Да, сбросить всё';
+      haptic('error');
+    } else if(resetStage === 2){
+      resetModal.classList.remove('show');
+      resetStage = 0;
+      resetProgress();
+    }
+  });
+  resetCancelBtn.addEventListener('click', ()=>{
+    resetModal.classList.remove('show');
+    resetStage = 0;
+    haptic('light');
+  });
+
   // ---------- SHOP (gear) ----------
   function renderShop(){
     const list = document.getElementById('shoplist'); list.innerHTML = '';
@@ -929,6 +1042,13 @@
     BAITS.forEach(b=>list.appendChild(gearCard(b,'bait')));
     const h3 = document.createElement('div'); h3.className='sectiontitle'; h3.textContent='Внешний вид удочки'; list.appendChild(h3);
     ROD_SKINS.filter(s=>!s.storyOnly || state.ownedSkins.includes(s.id)).forEach(s=>list.appendChild(gearCard(s,'skin')));
+
+    const h4 = document.createElement('div'); h4.className='sectiontitle'; h4.textContent='Опасная зона'; list.appendChild(h4);
+    const resetBtn = document.createElement('button');
+    resetBtn.className = 'btn-reset-progress';
+    resetBtn.textContent = '🗑️ Сбросить весь прогресс';
+    resetBtn.addEventListener('click', openResetModal);
+    list.appendChild(resetBtn);
   }
   function boostCard(item){
     const active = isBoostActive(item.id);
