@@ -9,20 +9,24 @@
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --gold:#F2C14E; --coral:#E8734A; --cream:#F5EFE3; --ink:#08222A; --card:#0F3A46; --water-deep:#0B2F3A;
+    --gold:#F6C453; --gold-deep:#D9962C; --coral:#FF7A59; --coral-deep:#D9502E;
+    --cream:#F7F3E8; --ink:#0A1F26; --card:rgba(16,49,59,0.62); --card-solid:#123C47;
+    --water-deep:#081A20; --glass-border:rgba(247,243,232,0.14); --glass-border-strong:rgba(247,243,232,0.24);
+    --shadow-soft:0 10px 28px rgba(0,0,0,0.35); --shadow-lift:0 16px 40px rgba(0,0,0,0.45);
+    --radius-lg:20px; --radius-md:16px; --radius-sm:12px;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action:manipulation;}
-  html,body{margin:0; padding:0; height:100vh; height:100dvh; overflow:hidden; font-family:'Nunito',sans-serif; background:var(--water-deep); color:var(--cream);}
+  html,body{margin:0; padding:0; height:100vh; height:100dvh; overflow:hidden; font-family:'Nunito',sans-serif; background:var(--water-deep); color:var(--cream); -webkit-font-smoothing:antialiased;}
   #app{position:relative; width:100%; height:100vh; height:100dvh; overflow:hidden;}
 
   #screen-fish{position:absolute; inset:0; transition:background 0.6s ease;
-    background:linear-gradient(to bottom, #F2A65A 0%, #1E5A6B 32%, #144B57 33%, var(--water-deep) 100%);}
+    background:linear-gradient(to bottom, #F5AD63 0%, #1F6478 30%, #14505E 33%, var(--water-deep) 100%);}
   .sun{position:absolute; top:5%; left:50%; transform:translateX(-50%); width:56px; height:56px; border-radius:50%;
-    background:radial-gradient(circle, #FFE7B0, var(--gold) 70%); box-shadow:0 0 40px 10px rgba(242,193,78,0.5);}
+    background:radial-gradient(circle, #FFEBB8, var(--gold) 70%); box-shadow:0 0 44px 12px rgba(246,196,83,0.45);}
   .cloud{position:absolute; font-size:26px; opacity:.5; animation:cloudDrift linear infinite; will-change:transform;}
   @keyframes cloudDrift{0%{transform:translateX(-20vw);} 100%{transform:translateX(120vw);}}
   .ripple-layer{position:absolute; top:33%; left:0; width:100%; height:50%; overflow:hidden;}
-  .wave{position:absolute; width:220%; left:-60%; background:rgba(245,239,227,0.05); border-radius:50%; animation:drift linear infinite;}
+  .wave{position:absolute; width:220%; left:-60%; background:rgba(247,243,232,0.05); border-radius:50%; animation:drift linear infinite;}
   @keyframes drift{0%{transform:translateX(0);} 100%{transform:translateX(30%);}}
 
   /* ---------- ЖИВОЙ ФОН ЛОКАЦИЙ ---------- */
@@ -39,7 +43,7 @@
   @keyframes glowPulseFar{0%,100%{opacity:.35;} 50%{opacity:.9;}}
   .sway{transform-origin:bottom center; animation:swayTree 4.5s ease-in-out infinite;}
   #screen-fish[data-loc="abyss"] .sun, #screen-fish[data-loc="abyss"] .cloud{display:none;}
-  #screen-fish[data-loc="ice"] .sun{background:radial-gradient(circle, #EAF7FF, #BFE0EE 70%); box-shadow:0 0 30px 8px rgba(191,224,238,0.5);}
+  #screen-fish[data-loc="ice"] .sun{background:radial-gradient(circle, #EFFAFF, #C6E7F2 70%); box-shadow:0 0 32px 9px rgba(198,231,242,0.5);}
   #screen-fish[data-loc="ice"] .cloud, #screen-fish[data-loc="jungle"] .cloud{opacity:.35;}
 
   /* ---------- ЛУНКА ВО ЛЬДУ (ледяная локация) ---------- */
@@ -56,34 +60,35 @@
     100%{transform:translate(-50%,-50%) translate(var(--bx), var(--by)) scale(1.05) rotate(var(--br)); opacity:0;}}
 
   #topbar{position:absolute; top:0; left:0; width:100%; padding:calc(10px + env(safe-area-inset-top)) 12px 10px; display:flex; justify-content:space-between; align-items:flex-start; z-index:5; gap:6px;}
-  .pill{background:rgba(8,34,42,0.72); border:1px solid rgba(245,239,227,0.25);
-    border-radius:999px; padding:5px 11px; font-weight:800; font-size:12px; display:flex; align-items:center; gap:5px;
-    flex-shrink:0; white-space:nowrap;}
-  #levelbox{background:rgba(8,34,42,0.55); border:1px solid rgba(245,239,227,0.25); border-radius:14px; padding:5px 11px 6px;
-    flex:1 1 0; min-width:0; max-width:230px;}
-  #levelbox .lvltop{display:flex; justify-content:space-between; align-items:center; font-size:10px; font-weight:800; margin-bottom:3px; gap:6px;}
+  .pill{background:rgba(10,31,38,0.55); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); border:1px solid var(--glass-border);
+    border-radius:999px; padding:6px 12px; font-weight:800; font-size:12px; display:flex; align-items:center; gap:5px;
+    flex-shrink:0; white-space:nowrap; box-shadow:0 4px 12px rgba(0,0,0,0.2);}
+  #levelbox{background:rgba(10,31,38,0.45); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); border:1px solid var(--glass-border); border-radius:16px; padding:6px 12px 7px;
+    flex:1 1 0; min-width:0; max-width:230px; box-shadow:0 4px 12px rgba(0,0,0,0.2);}
+  #levelbox .lvltop{display:flex; justify-content:space-between; align-items:center; font-size:10px; font-weight:800; margin-bottom:4px; gap:6px;}
   #levelbox .lvltop span{white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-variant-numeric:tabular-nums;}
-  #levelbox #lvlVal{flex-shrink:0; max-width:46%;}
-  #levelbox #xpText{min-width:0; flex-shrink:1; text-align:right;}
-  #levelbox .xpbar{height:5px; border-radius:4px; background:rgba(245,239,227,0.2); overflow:hidden;}
-  #levelbox .xpfill{height:100%; background:var(--gold); width:0%;}
+  #levelbox #lvlVal{flex-shrink:0; max-width:46%; color:var(--gold);}
+  #levelbox #xpText{min-width:0; flex-shrink:1; text-align:right; opacity:.8;}
+  #levelbox .xpbar{height:6px; border-radius:5px; background:rgba(247,243,232,0.16); overflow:hidden;}
+  #levelbox .xpfill{height:100%; border-radius:5px; background:linear-gradient(90deg, var(--gold-deep), var(--gold)); width:0%; transition:width .4s ease;}
 
   .title{position:absolute; top:10.5%; left:0; width:100%; text-align:center; z-index:4;}
-  .title h1{font-family:'Baloo 2', sans-serif; font-weight:800; font-size:18px; margin:0; text-shadow:0 2px 8px rgba(0,0,0,0.35);}
+  .title h1{font-family:'Baloo 2', sans-serif; font-weight:800; font-size:18px; margin:0; letter-spacing:.2px; text-shadow:0 2px 10px rgba(0,0,0,0.4);}
 
   #locrow{position:absolute; top:16.5%; left:0; width:100%; z-index:4; display:flex; justify-content:flex-start;
-    gap:6px; padding:0 12px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none;}
+    gap:7px; padding:0 12px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none;}
   #locrow::-webkit-scrollbar{display:none;}
-  .locpill{border:1px solid rgba(245,239,227,0.3); border-radius:999px; padding:5px 11px; font-size:11px; font-weight:800; flex-shrink:0; white-space:nowrap;
-    background:rgba(8,34,42,0.5); color:rgba(245,239,227,0.6);}
-  .locpill.active{background:var(--gold); color:var(--ink); border-color:var(--gold);}
-  .locpill.locked{opacity:.5;}
+  .locpill{border:1px solid var(--glass-border); border-radius:999px; padding:6px 13px; font-size:11px; font-weight:800; flex-shrink:0; white-space:nowrap;
+    background:rgba(10,31,38,0.45); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); color:rgba(247,243,232,0.62); transition:background .2s ease, color .2s ease, transform .15s ease;}
+  .locpill:active{transform:scale(.96);}
+  .locpill.active{background:linear-gradient(180deg, var(--gold), var(--gold-deep)); color:var(--ink); border-color:transparent; box-shadow:0 4px 12px rgba(246,196,83,0.35);}
+  .locpill.locked{opacity:.45;}
 
   #bonusbanner{position:absolute; top:21.5%; left:50%; transform:translateX(-50%); z-index:6; display:none;
-    background:var(--gold); color:var(--ink); border-radius:14px; padding:8px 14px; font-weight:800; font-size:12px;
-    display:none; align-items:center; gap:8px; box-shadow:0 6px 14px rgba(0,0,0,0.3);}
+    background:linear-gradient(180deg, var(--gold), var(--gold-deep)); color:var(--ink); border-radius:16px; padding:9px 15px; font-weight:800; font-size:12px;
+    align-items:center; gap:8px; box-shadow:0 8px 20px rgba(0,0,0,0.35);}
   #bonusbanner.show{display:flex;}
-  #bonusbanner button{border:none; background:var(--ink); color:var(--cream); border-radius:10px; padding:5px 10px; font-weight:800; font-size:11px;}
+  #bonusbanner button{border:none; background:var(--ink); color:var(--cream); border-radius:10px; padding:6px 11px; font-weight:800; font-size:11px;}
 
   #rodsvg{position:absolute; right:-16vw; bottom:-6vh; width:72vw; height:62vh; max-width:340px; max-height:420px;
     z-index:2; pointer-events:none; transform-origin:94% 94%; animation:rodIdle 3.4s ease-in-out infinite; will-change:transform;}
@@ -98,18 +103,18 @@
     50%{filter:drop-shadow(0 0 10px var(--glow-color,#33f0ff)) drop-shadow(0 0 22px var(--glow-color,#33f0ff));}}
   #rodsvg.legend-skin{animation:legendHue 4s linear infinite, rodIdle 3.4s ease-in-out infinite;}
   #rodsvg.legend-skin.casting{animation:legendHue 4s linear infinite, rodCast .55s cubic-bezier(.3,.1,.3,1);}
-  @keyframes legendHue{0%{filter:hue-rotate(0deg) drop-shadow(0 0 10px #F2C14E);} 50%{filter:hue-rotate(180deg) drop-shadow(0 0 14px #B14EF2);} 100%{filter:hue-rotate(360deg) drop-shadow(0 0 10px #F2C14E);}}
+  @keyframes legendHue{0%{filter:hue-rotate(0deg) drop-shadow(0 0 10px #F6C453);} 50%{filter:hue-rotate(180deg) drop-shadow(0 0 14px #B14EF2);} 100%{filter:hue-rotate(360deg) drop-shadow(0 0 10px #F6C453);}}
 
-  .skinswatch{width:36px; height:36px; border-radius:11px; border:1px solid rgba(245,239,227,0.35); flex-shrink:0;}
+  .skinswatch{width:38px; height:38px; border-radius:12px; border:1px solid var(--glass-border-strong); flex-shrink:0;}
   @keyframes skinGlowPulse{0%,100%{filter:brightness(1) saturate(1);} 50%{filter:brightness(1.4) saturate(1.3);}}
   @keyframes skinLegendSwatch{0%{filter:hue-rotate(0deg);} 100%{filter:hue-rotate(360deg);}}
 
   #line{position:fixed; left:0; top:0; height:2px; width:1px;
-    background:linear-gradient(to right, rgba(245,239,227,0.92), rgba(245,239,227,0.5));
+    background:linear-gradient(to right, rgba(247,243,232,0.92), rgba(247,243,232,0.5));
     transform-origin:0 50%; will-change:transform; z-index:3;}
   #bobber{position:absolute; left:50%; width:24px; height:24px; transform:translate(-50%,-50%); z-index:3; will-change:transform;}
   #bobber .body{width:100%; height:100%; border-radius:50%; background:linear-gradient(180deg, var(--coral) 50%, var(--cream) 50%);
-    border:2px solid var(--ink); box-shadow:0 3px 6px rgba(0,0,0,0.4);}
+    border:2px solid var(--ink); box-shadow:0 3px 8px rgba(0,0,0,0.4);}
   #bobber.hidden{display:none;}
   #bobber.landing{animation:bobberLand .5s cubic-bezier(.34,1.56,.64,1);}
   @keyframes bobberLand{0%{transform:translate(-50%,-50%) translateY(-40px) scale(.6); opacity:0;}
@@ -122,7 +127,7 @@
     30%{transform:translate(-50%,-50%) translateY(14px) rotate(-8deg);}
     65%{transform:translate(-50%,-50%) translateY(-4px) rotate(8deg);}}
   .flyfish{position:fixed; z-index:25; font-size:22px; pointer-events:none; transition:transform .75s cubic-bezier(.2,.6,.3,1), opacity .75s ease-in;}
-  #splash{position:absolute; width:60px; height:60px; transform:translate(-50%,-50%) scale(0); border:3px solid rgba(245,239,227,0.75);
+  #splash{position:absolute; width:60px; height:60px; transform:translate(-50%,-50%) scale(0); border:3px solid rgba(247,243,232,0.75);
     border-radius:50%; opacity:0; pointer-events:none; z-index:3; will-change:transform,opacity;}
   #splash.animate{animation:splash .5s ease-out;}
   @keyframes splash{0%{opacity:.9; transform:translate(-50%,-50%) scale(.15);} 100%{opacity:0; transform:translate(-50%,-50%) scale(1.5);}}
@@ -130,128 +135,201 @@
   #bitebang.show{animation:pop .55s ease-out;}
   @keyframes pop{0%{opacity:0; transform:translate(-50%,-100%) scale(.4);} 30%{opacity:1; transform:translate(-50%,-160%) scale(1.15);} 100%{opacity:0; transform:translate(-50%,-190%) scale(1);}}
 
-  #bottompanel{position:absolute; left:0; bottom:64px; width:100%; z-index:5; padding:10px 16px 8px;
-    background:linear-gradient(to top, rgba(6,20,25,0.92), rgba(6,20,25,0)); display:flex; flex-direction:column; align-items:center; gap:7px;}
+  #bottompanel{position:absolute; left:0; bottom:76px; width:100%; z-index:5; padding:10px 16px 8px;
+    background:linear-gradient(to top, rgba(5,16,20,0.94), rgba(5,16,20,0)); display:flex; flex-direction:column; align-items:center; gap:8px;}
   #status{font-weight:700; font-size:12px; min-height:15px; opacity:.9; text-align:center;}
-  #mainbtn{width:100%; max-width:340px; padding:14px 0; border:none; border-radius:18px; font-family:'Baloo 2', sans-serif;
-    font-weight:800; font-size:17px; background:linear-gradient(180deg, var(--gold), #D89A2E); color:var(--ink);
-    box-shadow:0 6px 0 #8A6318, 0 8px 16px rgba(0,0,0,0.35); transition:transform .08s ease;}
-  #mainbtn:active{transform:translateY(4px); box-shadow:0 2px 0 #8A6318;}
-  #mainbtn.pull{background:linear-gradient(180deg, var(--coral), #B5502A); box-shadow:0 6px 0 #7A331A, 0 8px 16px rgba(0,0,0,0.35);}
-  #mainbtn:disabled{opacity:.55;}
-  #timerbar{width:100%; max-width:340px; height:7px; border-radius:6px; background:rgba(245,239,227,0.2); overflow:hidden; display:none;}
-  #timerfill{height:100%; width:100%; background:var(--coral); transform-origin:left;}
-  #gearline{font-size:10px; opacity:.75; font-weight:700; text-align:center;}
+  #mainbtn{width:100%; max-width:340px; padding:15px 0; border:none; border-radius:18px; font-family:'Baloo 2', sans-serif;
+    font-weight:800; font-size:17px; letter-spacing:.2px; background:linear-gradient(180deg, var(--gold), var(--gold-deep)); color:var(--ink);
+    box-shadow:0 6px 0 #93691C, 0 10px 20px rgba(0,0,0,0.4); transition:transform .08s ease, box-shadow .08s ease;}
+  #mainbtn:active{transform:translateY(4px); box-shadow:0 2px 0 #93691C, 0 4px 10px rgba(0,0,0,0.3);}
+  #mainbtn.pull{background:linear-gradient(180deg, var(--coral), var(--coral-deep)); box-shadow:0 6px 0 #8A3A20, 0 10px 20px rgba(0,0,0,0.4);}
+  #mainbtn:disabled{opacity:.5;}
+  #timerbar{width:100%; max-width:340px; height:8px; border-radius:6px; background:rgba(247,243,232,0.18); overflow:hidden; display:none;}
+  #timerfill{height:100%; width:100%; background:linear-gradient(90deg, var(--coral-deep), var(--coral)); transform-origin:left;}
+  #gearline{font-size:10px; opacity:.72; font-weight:700; text-align:center;}
   #boostline{font-size:11px; font-weight:800; text-align:center; color:var(--gold); min-height:14px;}
 
   #catchcard{position:absolute; inset:0; z-index:30; display:none; align-items:center; justify-content:center;
-    background:rgba(6,20,25,0.82);}
-  #catchcard .card{width:82%; max-width:320px; background:var(--card); border-radius:22px; padding:24px 20px 20px; text-align:center;
-    border:1px solid rgba(245,239,227,0.15); box-shadow:0 20px 40px rgba(0,0,0,0.5);}
-  #catchcard .fishico{display:flex; align-items:center; justify-content:center; width:70px; height:70px; margin:0 auto 6px;}
-  #catchcard h2{font-family:'Baloo 2',sans-serif; font-size:20px; margin:2px 0 2px;}
-  #catchcard .rarity{font-size:11px; font-weight:800; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px;}
+    background:rgba(5,16,20,0.78); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);}
+  #catchcard .card{width:84%; max-width:320px; background:linear-gradient(165deg, rgba(24,66,78,0.95), rgba(15,44,52,0.95)); border-radius:24px; padding:26px 22px 22px; text-align:center;
+    border:1px solid var(--glass-border-strong); box-shadow:var(--shadow-lift);}
+  #catchcard .fishico{display:flex; align-items:center; justify-content:center; width:74px; height:74px; margin:0 auto 8px; filter:drop-shadow(0 6px 10px rgba(0,0,0,0.3));}
+  #catchcard h2{font-family:'Baloo 2',sans-serif; font-size:21px; margin:2px 0 2px;}
+  #catchcard .rarity{font-size:11px; font-weight:800; letter-spacing:1.2px; text-transform:uppercase; margin-bottom:10px;}
   #catchcard .xpline{font-weight:700; font-size:13px; margin-bottom:4px; opacity:.85;}
-  #catchcard .hint{font-size:11px; opacity:.55; font-weight:600; margin-bottom:14px;}
-  #catchcard button{border:none; border-radius:14px; padding:11px 24px; font-weight:800; font-size:14px;
-    background:var(--gold); color:var(--ink); font-family:'Baloo 2',sans-serif;}
+  #catchcard .hint{font-size:11px; opacity:.55; font-weight:600; margin-bottom:16px;}
+  #catchcard button{border:none; border-radius:14px; padding:12px 26px; font-weight:800; font-size:14px;
+    background:linear-gradient(180deg, var(--gold), var(--gold-deep)); color:var(--ink); font-family:'Baloo 2',sans-serif; box-shadow:0 6px 16px rgba(0,0,0,0.3);}
 
-  .r0{color:#BFD9CE;} .r1{color:#BFD9CE;} .r2{color:#7FD68A;} .r3{color:#5AB0E8;} .r4{color:#F2C14E;}
+  .r0{color:#C8DFD6;} .r1{color:#C8DFD6;} .r2{color:#7FE08F;} .r3{color:#63B7EE;} .r4{color:#F6C453;}
 
-  #navbar{position:absolute; left:0; bottom:0; width:100%; height:64px; z-index:10; display:flex;
-    background:rgba(6,20,25,0.95); border-top:1px solid rgba(245,239,227,0.12); padding-bottom:env(safe-area-inset-bottom);}
-  .navbtn{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px;
-    background:none; border:none; color:rgba(245,239,227,0.55); font-family:'Nunito',sans-serif; font-weight:800; font-size:8.5px; padding:0 1px;}
-  .navbtn .navico{font-size:16px;}
-  .navbtn.active{color:var(--gold);}
+  #navbar{position:absolute; left:10px; right:10px; bottom:calc(10px + env(safe-area-inset-bottom)); height:66px; z-index:10; display:flex;
+    background:rgba(9,26,32,0.72); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); border:1px solid var(--glass-border);
+    border-radius:22px; box-shadow:0 12px 30px rgba(0,0,0,0.4); padding:4px;}
+  .navbtn{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; border-radius:18px;
+    background:none; border:none; color:rgba(247,243,232,0.5); font-family:'Nunito',sans-serif; font-weight:800; font-size:8.5px; padding:6px 1px;
+    transition:background .18s ease, color .18s ease, transform .12s ease;}
+  .navbtn .navico{font-size:17px; transition:transform .18s ease;}
+  .navbtn:active{transform:scale(.94);}
+  .navbtn.active{color:var(--gold); background:rgba(246,196,83,0.14);}
+  .navbtn.active .navico{transform:translateY(-1px) scale(1.08);}
 
-  .subscreen{position:absolute; inset:0 0 64px 0; z-index:8; background:var(--water-deep); display:none; flex-direction:column;}
+  .subscreen{position:absolute; inset:0 0 76px 0; z-index:8; background:var(--water-deep); display:none; flex-direction:column;}
   .subscreen.show{display:flex;}
-  .subhead{padding:16px 16px 8px; flex-shrink:0;}
-  .subhead h2{font-family:'Baloo 2',sans-serif; font-size:20px; margin:0 0 2px;}
-  .subhead p{margin:0; font-size:11px; opacity:.7; font-weight:600;}
-  .sublist{flex:1; overflow-y:auto; padding:6px 14px 20px; display:flex; flex-direction:column; gap:10px;}
+  .subhead{padding:calc(16px + env(safe-area-inset-top)) 18px 10px; flex-shrink:0;}
+  .subhead h2{font-family:'Baloo 2',sans-serif; font-size:22px; margin:0 0 3px;}
+  .subhead p{margin:0; font-size:11.5px; opacity:.65; font-weight:600;}
+  .sublist{flex:1; overflow-y:auto; padding:6px 16px 22px; display:flex; flex-direction:column; gap:11px; -webkit-overflow-scrolling:touch;}
 
-  .card2{background:var(--card); border:1px solid rgba(245,239,227,0.12); border-radius:15px; padding:12px; display:flex; align-items:center; gap:10px;}
-  .card2 .icobox{font-size:26px; width:38px; height:38px; text-align:center; flex-shrink:0; display:flex; align-items:center; justify-content:center; overflow:hidden;}
+  .card2{background:var(--card); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border:1px solid var(--glass-border); border-radius:var(--radius-md); padding:13px; display:flex; align-items:center; gap:11px; box-shadow:0 4px 14px rgba(0,0,0,0.18); transition:transform .12s ease;}
+  .card2:active{transform:scale(.985);}
+  .card2 .icobox{font-size:26px; width:42px; height:42px; text-align:center; flex-shrink:0; display:flex; align-items:center; justify-content:center; overflow:hidden; background:rgba(247,243,232,0.06); border-radius:12px;}
   .card2 .info{flex:1; min-width:0;}
-  .card2 .name{font-weight:800; font-size:14px; margin-bottom:1px;}
-  .card2 .desc{font-size:10.5px; opacity:.65; font-weight:600;}
-  .card2 .action{display:flex; flex-direction:column; gap:5px; flex-shrink:0;}
-  .card2 button{border:none; border-radius:10px; padding:7px 11px; font-weight:800; font-size:11px; font-family:'Baloo 2',sans-serif; white-space:nowrap;}
-  .btn-buy{background:var(--gold); color:var(--ink);}
-  .btn-buy:disabled{background:rgba(245,239,227,0.15); color:rgba(245,239,227,0.4);}
-  .btn-owned{background:rgba(127,214,138,0.2); color:#7FD68A;}
-  .btn-active{background:var(--coral); color:var(--cream);}
-  .btn-sell{background:var(--gold); color:var(--ink);}
-  .btn-trade{background:#5AB0E8; color:var(--ink);}
+  .card2 .name{font-weight:800; font-size:14px; margin-bottom:2px;}
+  .card2 .desc{font-size:10.5px; opacity:.6; font-weight:600; line-height:1.4;}
+  .card2 .action{display:flex; flex-direction:column; gap:6px; flex-shrink:0;}
+  .card2 button{border:none; border-radius:11px; padding:8px 12px; font-weight:800; font-size:11px; font-family:'Baloo 2',sans-serif; white-space:nowrap; transition:transform .1s ease;}
+  .card2 button:active{transform:scale(.94);}
+  .btn-buy{background:linear-gradient(180deg, var(--gold), var(--gold-deep)); color:var(--ink);}
+  .btn-buy:disabled{background:rgba(247,243,232,0.12); color:rgba(247,243,232,0.35);}
+  .btn-owned{background:rgba(127,224,143,0.16); color:#7FE08F;}
+  .btn-active{background:linear-gradient(180deg, var(--coral), var(--coral-deep)); color:var(--cream);}
+  .btn-sell{background:linear-gradient(180deg, var(--gold), var(--gold-deep)); color:var(--ink);}
+  .btn-trade{background:linear-gradient(180deg, #6FC3F2, #4499CC); color:var(--ink);}
 
-  .sectiontitle{font-weight:800; font-size:12.5px; opacity:.7; margin:6px 0 -2px;}
+  .sectiontitle{font-weight:800; font-size:12px; letter-spacing:.3px; text-transform:uppercase; opacity:.55; margin:8px 2px -2px;}
   .locked{opacity:.35;}
 
-  #sellall{margin:0 14px 4px; padding:12px; border:none; border-radius:14px; font-family:'Baloo 2',sans-serif;
-    font-weight:800; font-size:14px; background:var(--gold); color:var(--ink);}
+  #sellall{margin:0 16px 6px; padding:13px; border:none; border-radius:var(--radius-md); font-family:'Baloo 2',sans-serif;
+    font-weight:800; font-size:14px; background:linear-gradient(180deg, var(--gold), var(--gold-deep)); color:var(--ink); box-shadow:0 6px 16px rgba(0,0,0,0.25);}
 
-  .lbrow{display:flex; align-items:center; gap:10px; background:var(--card); border-radius:14px; padding:10px 12px; border:1px solid rgba(245,239,227,0.1);}
-  .lbrow.me{border-color:var(--gold);}
-  .lbrank{font-family:'Baloo 2',sans-serif; font-weight:800; font-size:15px; width:26px; text-align:center; opacity:.8;}
+  .lbrow{display:flex; align-items:center; gap:11px; background:var(--card); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border-radius:var(--radius-md); padding:11px 13px; border:1px solid var(--glass-border);}
+  .lbrow.me{border-color:var(--gold); box-shadow:0 0 0 1px rgba(246,196,83,0.25);}
+  .lbrank{font-family:'Baloo 2',sans-serif; font-weight:800; font-size:15px; width:26px; text-align:center; opacity:.75;}
   .lbname{flex:1; font-weight:700; font-size:13px;}
   .lbscore{font-weight:800; font-size:13px; color:var(--gold);}
-  .lbnote{font-size:11px; opacity:.6; padding:0 4px 10px; font-weight:600; line-height:1.5;}
+  .lbnote{font-size:11.5px; opacity:.6; padding:0 4px 10px; font-weight:600; line-height:1.55;}
 
-  .questcard{background:var(--card); border:1px solid rgba(245,239,227,0.12); border-radius:15px; padding:13px;}
-  .questcard.done{border-color:var(--gold);}
-  .questcard .qname{font-weight:800; font-size:13.5px; margin-bottom:6px;}
-  .questcard .qbar{height:8px; border-radius:6px; background:rgba(245,239,227,0.15); overflow:hidden; margin-bottom:8px;}
-  .questcard .qfill{height:100%; background:var(--gold);}
+  .questcard{background:var(--card); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border:1px solid var(--glass-border); border-radius:var(--radius-md); padding:14px; box-shadow:0 4px 14px rgba(0,0,0,0.18);}
+  .questcard.done{border-color:var(--gold); box-shadow:0 0 0 1px rgba(246,196,83,0.2), 0 4px 14px rgba(0,0,0,0.18);}
+  .questcard .qname{font-weight:800; font-size:13.5px; margin-bottom:7px;}
+  .questcard .qbar{height:8px; border-radius:6px; background:rgba(247,243,232,0.14); overflow:hidden; margin-bottom:9px;}
+  .questcard .qfill{height:100%; border-radius:6px; background:linear-gradient(90deg, var(--gold-deep), var(--gold));}
   .questcard .qfoot{display:flex; justify-content:space-between; align-items:center;}
-  .questcard .qreward{font-size:11.5px; opacity:.75; font-weight:700;}
-  .questcard .qclaim{border:none; border-radius:10px; padding:7px 14px; font-weight:800; font-size:12px; font-family:'Baloo 2',sans-serif;
-    background:var(--gold); color:var(--ink);}
-  .questcard .qclaim:disabled{background:rgba(245,239,227,0.15); color:rgba(245,239,227,0.4);}
-  .questcard .qclaim.claimed{background:rgba(127,214,138,0.2); color:#7FD68A;}
+  .questcard .qreward{font-size:11.5px; opacity:.72; font-weight:700;}
+  .questcard .qclaim{border:none; border-radius:11px; padding:8px 15px; font-weight:800; font-size:12px; font-family:'Baloo 2',sans-serif;
+    background:linear-gradient(180deg, var(--gold), var(--gold-deep)); color:var(--ink);}
+  .questcard .qclaim:disabled{background:rgba(247,243,232,0.12); color:rgba(247,243,232,0.35);}
+  .questcard .qclaim.claimed{background:rgba(127,224,143,0.16); color:#7FE08F;}
 
-  #questtabs{display:flex; gap:8px; padding:0 16px 6px;}
-  .qtab{flex:1; border:1px solid rgba(245,239,227,0.25); background:rgba(8,34,42,0.5); color:rgba(245,239,227,0.7);
-    border-radius:12px; padding:8px 6px; font-weight:800; font-size:12px; font-family:'Baloo 2',sans-serif;}
-  .qtab.active{background:var(--gold); color:var(--ink); border-color:var(--gold);}
+  #questtabs{display:flex; gap:8px; padding:0 18px 8px;}
+  .qtab{flex:1; border:1px solid var(--glass-border); background:rgba(10,31,38,0.45); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); color:rgba(247,243,232,0.65);
+    border-radius:13px; padding:9px 6px; font-weight:800; font-size:12px; font-family:'Baloo 2',sans-serif; transition:background .15s ease, color .15s ease;}
+  .qtab.active{background:linear-gradient(180deg, var(--gold), var(--gold-deep)); color:var(--ink); border-color:transparent; box-shadow:0 4px 12px rgba(246,196,83,0.3);}
 
-  .storycard{background:var(--card); border:1px solid rgba(245,239,227,0.12); border-radius:16px; padding:14px;}
-  .storycard .schapter{font-size:10.5px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; color:var(--gold); margin-bottom:4px;}
-  .storycard .stitle{font-family:'Baloo 2',sans-serif; font-weight:800; font-size:15px; margin-bottom:6px;}
-  .storycard .stext{font-size:12px; line-height:1.5; opacity:.85; margin-bottom:10px;}
-  .storycard .qbar{height:8px; border-radius:6px; background:rgba(245,239,227,0.15); overflow:hidden; margin-bottom:8px;}
-  .storycard .qfill{height:100%; background:var(--gold);}
+  .storycard{background:var(--card); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border:1px solid var(--glass-border); border-radius:var(--radius-lg); padding:16px; box-shadow:0 4px 14px rgba(0,0,0,0.18);}
+  .storycard .schapter{font-size:10.5px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:var(--gold); margin-bottom:5px;}
+  .storycard .stitle{font-family:'Baloo 2',sans-serif; font-weight:800; font-size:15.5px; margin-bottom:7px;}
+  .storycard .stext{font-size:12px; line-height:1.55; opacity:.8; margin-bottom:12px;}
+  .storycard .qbar{height:8px; border-radius:6px; background:rgba(247,243,232,0.14); overflow:hidden; margin-bottom:9px;}
+  .storycard .qfill{height:100%; border-radius:6px; background:linear-gradient(90deg, var(--gold-deep), var(--gold));}
   .storycard .qfoot{display:flex; justify-content:space-between; align-items:center;}
-  .storycard .qreward{font-size:11.5px; opacity:.75; font-weight:700;}
-  .storycard .qclaim{border:none; border-radius:10px; padding:7px 14px; font-weight:800; font-size:12px; font-family:'Baloo 2',sans-serif;
-    background:var(--gold); color:var(--ink);}
-  .storycard .qclaim:disabled{background:rgba(245,239,227,0.15); color:rgba(245,239,227,0.4);}
+  .storycard .qreward{font-size:11.5px; opacity:.72; font-weight:700;}
+  .storycard .qclaim{border:none; border-radius:11px; padding:8px 15px; font-weight:800; font-size:12px; font-family:'Baloo 2',sans-serif;
+    background:linear-gradient(180deg, var(--gold), var(--gold-deep)); color:var(--ink);}
+  .storycard .qclaim:disabled{background:rgba(247,243,232,0.12); color:rgba(247,243,232,0.35);}
   .storynext{opacity:.5; font-size:11.5px; font-weight:700; padding:4px 4px;}
-  .weightline{font-size:10px; opacity:.7; font-weight:700;}
+  .weightline{font-size:10px; opacity:.68; font-weight:700;}
 
-  .btn-reset-progress{width:100%; margin-top:4px; padding:13px; border:1px solid rgba(232,90,74,0.5); border-radius:14px;
-    background:rgba(232,90,74,0.12); color:#F0897A; font-family:'Baloo 2',sans-serif; font-weight:800; font-size:13.5px;}
-  .btn-reset-progress:active{background:rgba(232,90,74,0.22);}
+  .btn-reset-progress{width:100%; margin-top:6px; padding:14px; border:1px solid rgba(255,122,89,0.4); border-radius:var(--radius-md);
+    background:rgba(255,122,89,0.1); color:#FF9C82; font-family:'Baloo 2',sans-serif; font-weight:800; font-size:13.5px;}
+  .btn-reset-progress:active{background:rgba(255,122,89,0.2);}
 
   .modal-overlay{position:absolute; inset:0; z-index:40; display:none; align-items:center; justify-content:center;
-    background:rgba(6,20,25,0.86); padding:0 20px;}
+    background:rgba(5,16,20,0.82); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); padding:0 20px;}
   .modal-overlay.show{display:flex;}
-  .modal-card{width:100%; max-width:320px; background:var(--card); border-radius:22px; padding:22px 20px; text-align:center;
-    border:1px solid rgba(232,90,74,0.35); box-shadow:0 20px 40px rgba(0,0,0,0.5);}
-  .modal-card .modal-icon{font-size:34px; margin-bottom:6px;}
-  .modal-card h2{font-family:'Baloo 2',sans-serif; font-size:18px; margin:2px 0 8px; color:#F0897A;}
-  .modal-card p{font-size:12.5px; line-height:1.5; opacity:.85; font-weight:600; margin:0 0 16px;}
+  .modal-card{width:100%; max-width:320px; background:linear-gradient(165deg, rgba(24,66,78,0.97), rgba(15,44,52,0.97)); border-radius:24px; padding:24px 22px; text-align:center;
+    border:1px solid rgba(255,122,89,0.3); box-shadow:var(--shadow-lift);}
+  .modal-card .modal-icon{font-size:34px; margin-bottom:8px;}
+  .modal-card h2{font-family:'Baloo 2',sans-serif; font-size:18px; margin:2px 0 8px; color:#FF9C82;}
+  .modal-card p{font-size:12.5px; line-height:1.55; opacity:.82; font-weight:600; margin:0 0 18px;}
   .modal-actions{display:flex; gap:10px;}
-  .modal-actions button{flex:1; border:none; border-radius:13px; padding:11px 0; font-weight:800; font-size:13.5px; font-family:'Baloo 2',sans-serif;}
-  .modal-btn-cancel{background:rgba(245,239,227,0.14); color:var(--cream);}
-  .modal-btn-danger{background:#E85A4A; color:#fff;}
+  .modal-actions button{flex:1; border:none; border-radius:14px; padding:12px 0; font-weight:800; font-size:13.5px; font-family:'Baloo 2',sans-serif; transition:transform .1s ease;}
+  .modal-actions button:active{transform:scale(.96);}
+  .modal-btn-cancel{background:rgba(247,243,232,0.12); color:var(--cream);}
+  .modal-btn-danger{background:linear-gradient(180deg, #FF7A59, #D9502E); color:#fff;}
 
   #levelupToast{position:absolute; top:14%; left:50%; transform:translateX(-50%) translateY(-14px); z-index:35;
-    background:var(--gold); color:var(--ink); border-radius:16px; padding:10px 18px; font-family:'Baloo 2',sans-serif;
-    font-weight:800; font-size:14px; box-shadow:0 10px 24px rgba(0,0,0,0.4); opacity:0; pointer-events:none;
+    background:linear-gradient(180deg, var(--gold), var(--gold-deep)); color:var(--ink); border-radius:18px; padding:11px 20px; font-family:'Baloo 2',sans-serif;
+    font-weight:800; font-size:14px; box-shadow:0 12px 28px rgba(0,0,0,0.4); opacity:0; pointer-events:none;
     transition:opacity .25s ease, transform .25s ease; text-align:center; white-space:nowrap;}
   #levelupToast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  /* ================= ЖИВАЯ АНИМАЦИЯ РЫБАЛКИ ================= */
+
+  /* ---------- Амбиентные рыбьи тени, плавающие в толще воды ---------- */
+  .fishshadow{position:absolute; z-index:2; pointer-events:none; will-change:transform, opacity, left;}
+  .fishshadow .wiggle{width:100%; height:100%; animation:fishWiggle 1.3s ease-in-out infinite; transform-origin:50% 50%;}
+  .fishshadow svg{display:block; width:100%; height:100%;}
+  @keyframes fishWiggle{0%,100%{transform:scaleY(1) rotate(0deg);} 50%{transform:scaleY(.92) rotate(-3deg);}}
+
+  /* ---------- Рябь на воде вокруг поплавка во время ожидания ---------- */
+  .ripple-ring{position:fixed; z-index:2; pointer-events:none; border-radius:50%;
+    border:1.5px solid rgba(247,243,232,0.5); transform:translate(-50%,-50%) scale(.2); opacity:.6;
+    animation:rippleOut 1.9s ease-out forwards;}
+  @keyframes rippleOut{0%{transform:translate(-50%,-50%) scale(.2); opacity:.6;}
+    100%{transform:translate(-50%,-50%) scale(2.8); opacity:0;}}
+
+  /* ---------- Второе кольцо всплеска для более сочного эффекта ---------- */
+  #splash::after{content:''; position:absolute; inset:0; border-radius:50%; border:2px solid rgba(247,243,232,0.45); opacity:0; transform:scale(.3);}
+  #splash.animate::after{animation:splashRing2 .65s ease-out .08s;}
+  @keyframes splashRing2{0%{opacity:.8; transform:scale(.3);} 100%{opacity:0; transform:scale(2);}}
+
+  /* ---------- Разные варианты поклёвки, чтобы каждая была неповторимой ---------- */
+  #bobber.bite-jitter-2{animation:bobberBite2 .26s ease-in-out infinite;}
+  @keyframes bobberBite2{0%,100%{transform:translate(-50%,-50%) translateX(0) rotate(0deg);}
+    30%{transform:translate(-50%,-50%) translateX(-9px) translateY(4px) rotate(-11deg);}
+    65%{transform:translate(-50%,-50%) translateX(8px) translateY(-3px) rotate(9deg);}}
+  #bobber.bite-jitter-3{animation:bobberBite3 .34s ease-in-out infinite;}
+  @keyframes bobberBite3{0%,100%{transform:translate(-50%,-50%) translateY(0) scale(1);}
+    20%{transform:translate(-50%,-50%) translateY(11px) scale(.9);}
+    50%{transform:translate(-50%,-50%) translateY(-11px) scale(1.08);}
+    80%{transform:translate(-50%,-50%) translateY(6px) scale(.95);}}
+
+  /* ---------- Напряжение при вываживании: поплавок, удочка и леска "борются" ---------- */
+  #bobber.reel-struggle{animation:reelStruggle .22s ease-in-out infinite;}
+  @keyframes reelStruggle{0%,100%{transform:translate(-50%,-50%) translateX(0) translateY(0) rotate(0deg);}
+    25%{transform:translate(-50%,-50%) translateX(-6px) translateY(3px) rotate(-6deg);}
+    50%{transform:translate(-50%,-50%) translateX(5px) translateY(-4px) rotate(5deg);}
+    75%{transform:translate(-50%,-50%) translateX(-4px) translateY(2px) rotate(-3deg);}}
+  #rodsvg.reeling{animation:rodReel .28s ease-in-out infinite;}
+  @keyframes rodReel{0%,100%{transform:rotate(-1.8deg);} 50%{transform:rotate(2deg);}}
+  #line.tense{animation:lineTense .12s ease-in-out infinite;}
+  @keyframes lineTense{0%,100%{filter:none;} 50%{filter:brightness(1.35);}}
+
+  /* ---------- Лёгкая тряска экрана для крупных событий ---------- */
+  #app.shake{animation:microShake .3s ease-in-out;}
+  @keyframes microShake{0%,100%{transform:translate(0,0);} 20%{transform:translate(-3px,2px);} 40%{transform:translate(3px,-2px);}
+    60%{transform:translate(-2px,-2px);} 80%{transform:translate(2px,2px);}}
+
+  /* ---------- Праздничное оформление карточки улова по редкости ---------- */
+  #catchcard .card.r-rare{border-color:rgba(99,183,238,0.5); box-shadow:0 0 0 1px rgba(99,183,238,0.28), var(--shadow-lift);}
+  #catchcard .card.r-legend{border-color:rgba(246,196,83,0.6);
+    animation:legendCardGlow 1.6s ease-in-out infinite, legendCardHue 5s linear infinite;}
+  @keyframes legendCardGlow{0%,100%{box-shadow:0 0 0 1px rgba(246,196,83,0.35), var(--shadow-lift);}
+    50%{box-shadow:0 0 0 3px rgba(246,196,83,0.55), 0 0 34px rgba(246,196,83,0.4), var(--shadow-lift);}}
+  @keyframes legendCardHue{0%{filter:hue-rotate(0deg);} 100%{filter:hue-rotate(30deg);}}
+
+  #screen-flash{position:absolute; inset:0; z-index:41; pointer-events:none; opacity:0;
+    background:radial-gradient(circle, rgba(246,196,83,0.55), rgba(246,196,83,0) 70%);}
+  #screen-flash.flash{animation:screenFlash .7s ease-out;}
+  @keyframes screenFlash{0%{opacity:0;} 15%{opacity:1;} 100%{opacity:0;}}
+
+  /* ---------- Прыжок рыбы над водой в момент поимки ---------- */
+  .fishleap{position:fixed; z-index:26; pointer-events:none; animation:fishLeap .55s cubic-bezier(.3,.6,.3,1) forwards;}
+  @keyframes fishLeap{0%{transform:translate(-50%,-50%) translateY(0) scale(.5) rotate(-8deg); opacity:0;}
+    35%{transform:translate(-50%,-50%) translateY(-46px) scale(1.15) rotate(6deg); opacity:1;}
+    100%{transform:translate(-50%,-50%) translateY(-8px) scale(.9) rotate(0deg); opacity:1;}}
 </style>
 </head>
 <body>
@@ -324,6 +402,7 @@
     <div id="bobber" class="hidden"><div class="body"></div></div>
     <div id="splash"></div>
     <div id="bitebang">💥</div>
+    <div id="screen-flash"></div>
 
     <div id="bottompanel">
       <div id="status">Готов начать</div>
@@ -413,7 +492,7 @@
   }
 
   // ====== ЗАПОЛНИ ЭТУ СТРОКУ ПОСЛЕ НАСТРОЙКИ FIREBASE (см. инструкцию в чате) ======
-  const FIREBASE_URL = "https://guhgg-83fab-default-rtdb.europe-west1.firebasedatabase.app";
+  const FIREBASE_URL = "ВСТАВЬ-СВОЙ-URL-СЮДА";
   // Пример: "https://tihaya-gavan-default-rtdb.europe-west1.firebasedatabase.app"
   // =================================================================================
 
@@ -920,9 +999,18 @@
     xpfill=document.getElementById('xpfill'), gearline=document.getElementById('gearline'), boostline=document.getElementById('boostline'),
     stageEl=document.getElementById('screen-fish'), locTitle=document.getElementById('locTitle'),
     locrow=document.getElementById('locrow'), bonusbanner=document.getElementById('bonusbanner'),
-    icehole=document.getElementById('icehole');
+    icehole=document.getElementById('icehole'), appEl=document.getElementById('app'),
+    screenFlashEl=document.getElementById('screen-flash');
 
-  let gameState='idle', biteTimeout, windowTimeout, currentFish=null;
+  let gameState='idle', biteTimeout, windowTimeout, currentFish=null, rippleInterval=null;
+
+  function shakeScreen(){
+    appEl.classList.remove('shake'); void appEl.offsetWidth; appEl.classList.add('shake');
+    setTimeout(()=>appEl.classList.remove('shake'), 320);
+  }
+  function goldFlash(){
+    screenFlashEl.classList.remove('flash'); void screenFlashEl.offsetWidth; screenFlashEl.classList.add('flash');
+  }
 
   // ---------- ЖИВОЙ ФОН И ЭФФЕКТЫ ЛОКАЦИЙ ----------
   icehole.innerHTML = '<svg viewBox="0 0 80 46" xmlns="http://www.w3.org/2000/svg">'+
@@ -1006,6 +1094,53 @@
       sceneryPartEl.appendChild(el);
     }
   }
+  // ---------- АМБИЕНТНЫЕ РЫБЬИ ТЕНИ В ТОЛЩЕ ВОДЫ ----------
+  function fishShadowSVG(){
+    return '<svg viewBox="0 0 40 20" xmlns="http://www.w3.org/2000/svg">'+
+      '<ellipse cx="24" cy="10" rx="14" ry="6" fill="rgba(5,14,18,0.32)"/>'+
+      '<path d="M10,10 L0,3 L3,10 L0,17 Z" fill="rgba(5,14,18,0.28)"/>'+
+      '</svg>';
+  }
+  function spawnAmbientFish(){
+    if(document.hidden) return;
+    const el = document.createElement('div');
+    el.className = 'fishshadow';
+    const size = 24 + Math.random()*22;
+    el.style.width = size+'px'; el.style.height = (size*0.5)+'px';
+    el.style.top = (36 + Math.random()*32)+'%';
+    el.style.opacity = '0';
+    const dir = Math.random()<0.5 ? 1 : -1;
+    const startX = dir===1 ? -10 : 110, endX = dir===1 ? 110 : -10;
+    el.style.left = startX+'%';
+    el.style.transform = dir===-1 ? 'scaleX(-1)' : 'scaleX(1)';
+    el.innerHTML = '<div class="wiggle">'+fishShadowSVG()+'</div>';
+    sceneryPartEl.appendChild(el);
+    const dur = 10 + Math.random()*9;
+    requestAnimationFrame(()=>{
+      el.style.transition = `left ${dur}s linear, opacity 1.4s ease`;
+      el.style.opacity = '.55';
+      el.style.left = endX+'%';
+    });
+    setTimeout(()=>{ el.style.opacity='0'; }, dur*1000 - 1300);
+    setTimeout(()=>{ el.remove(); }, dur*1000 + 200);
+  }
+  setInterval(()=>{ if(Math.random()<0.75) spawnAmbientFish(); }, 4000);
+  setTimeout(spawnAmbientFish, 800);
+
+  // ---------- РЯБЬ НА ВОДЕ ПОКА ПОПЛАВОК ЖДЁТ ----------
+  function spawnRipple(){
+    if(bobber.classList.contains('hidden')) return;
+    const rect = bobber.getBoundingClientRect();
+    const ring = document.createElement('div');
+    ring.className = 'ripple-ring';
+    const size = 26 + Math.random()*14;
+    ring.style.width = size+'px'; ring.style.height = (size*0.45)+'px';
+    ring.style.left = (rect.left+rect.width/2)+'px';
+    ring.style.top = (rect.top+rect.height*0.7)+'px';
+    document.body.appendChild(ring);
+    setTimeout(()=>ring.remove(), 2000);
+  }
+
   function burstParticles(x, y, emojis, count){
     for(let i=0;i<(count||5);i++){
       const el = document.createElement('div');
@@ -1077,6 +1212,9 @@
     timerbar.style.display='none'; status.textContent='Готов начать'; btn.textContent='Закинуть удочку';
     lineEl.style.transition='none'; lineEl.style.transform='scaleX(0)';
     icehole.classList.remove('show');
+    clearInterval(rippleInterval);
+    bobber.classList.remove('bite-jitter','bite-jitter-2','bite-jitter-3','reel-struggle');
+    rodsvg.classList.remove('reeling'); lineEl.classList.remove('tense');
   }
 
   const rodsvg = document.getElementById('rodsvg');
@@ -1132,17 +1270,29 @@
       const baitNow = getBait(state.activeBait);
       const delay = (1400 + Math.random()*2600) * baitStat(baitNow,'biteDelayMult',1);
       biteTimeout = setTimeout(triggerBite, delay);
+      clearInterval(rippleInterval);
+      rippleInterval = setInterval(()=>{ if(gameState==='waiting') spawnRipple(); }, 1500+Math.random()*700);
     }, 560);
   }
 
+  const BITE_VARIANTS = ['bite-jitter','bite-jitter-2','bite-jitter-3'];
+  const BITE_BANGS = ['💥','✨','❗','🎯'];
+
   function triggerBite(){
     if(gameState!=='waiting') return;
+    clearInterval(rippleInterval);
     gameState='biting'; currentFish=pickFish(); haptic('light');
-    bobber.classList.remove('idle-bob'); bobber.classList.add('bite-jitter');
+    const variant = BITE_VARIANTS[Math.floor(Math.random()*BITE_VARIANTS.length)];
+    bobber.classList.remove('idle-bob'); bobber.classList.add(variant);
     const rect = bobber.getBoundingClientRect();
     splash.style.left=rect.left+rect.width/2+'px'; splash.style.top=rect.top+rect.height/2+'px';
     splash.classList.remove('animate'); void splash.offsetWidth; splash.classList.add('animate');
     burstParticles(rect.left+rect.width/2, rect.top+rect.height/2, currentLoc().splashFx, 6);
+    if(currentFish.tier >= 2){
+      burstParticles(rect.left+rect.width/2, rect.top+rect.height/2, ['✨','⭐'], currentFish.tier>=4?12:7);
+    }
+    if(currentFish.tier >= 3) shakeScreen();
+    biteBang.textContent = BITE_BANGS[Math.floor(Math.random()*BITE_BANGS.length)];
     biteBang.style.left=rect.left+rect.width/2+'px'; biteBang.style.top=rect.top+'px';
     biteBang.classList.remove('show'); void biteBang.offsetWidth; biteBang.classList.add('show');
     status.textContent='КЛЮЁТ! Тяни!'; btn.textContent='Тяни!'; btn.classList.add('pull'); btn.disabled=false;
@@ -1158,7 +1308,7 @@
   function pull(){
     if(gameState!=='biting') return;
     clearTimeout(windowTimeout); haptic('success');
-    bobber.classList.remove('bite-jitter');
+    bobber.classList.remove('bite-jitter','bite-jitter-2','bite-jitter-3');
     startReeling();
   }
 
@@ -1170,6 +1320,7 @@
     btn.classList.add('pull'); btn.disabled = false;
     btn.textContent = `Тяни! (0/${reelTarget})`;
     timerbar.style.display='block'; timerfill.style.transition='none'; timerfill.style.transform='scaleX(0)';
+    bobber.classList.add('reel-struggle'); rodsvg.classList.add('reeling'); lineEl.classList.add('tense');
     clearInterval(reelDecayInterval);
     const decayAmount = baitStat(bait,'reelDecayMult',1);
     reelDecayInterval = setInterval(()=>{
@@ -1192,6 +1343,8 @@
     reelProgress++;
     haptic('light');
     updateReelBar();
+    const rect = bobber.getBoundingClientRect();
+    burstParticles(rect.left+rect.width/2, rect.top+rect.height/2, ['💦'], 2);
     if(reelProgress >= reelTarget){
       clearInterval(reelDecayInterval); clearTimeout(reelTimeout);
       landFish();
@@ -1202,15 +1355,26 @@
     if(gameState!=='reeling') return;
     clearInterval(reelDecayInterval);
     gameState='idle'; haptic('error');
+    bobber.classList.remove('reel-struggle'); rodsvg.classList.remove('reeling'); lineEl.classList.remove('tense');
     status.textContent='Рыба сорвалась с крючка... Попробуй снова';
     setTimeout(resetVisual, 900);
   }
 
   function missedBite(){
     if(gameState!=='biting') return;
-    gameState='idle'; haptic('error'); bobber.classList.remove('bite-jitter');
+    gameState='idle'; haptic('error'); bobber.classList.remove('bite-jitter','bite-jitter-2','bite-jitter-3');
     status.textContent='Рыба сорвалась... Попробуй снова';
     setTimeout(resetVisual, 900);
+  }
+
+  function fishLeapEffect(fishDef){
+    const rect = bobber.getBoundingClientRect();
+    const el = document.createElement('div');
+    el.className = 'fishleap'; el.style.width='28px'; el.style.height='28px';
+    el.style.left = (rect.left+rect.width/2)+'px'; el.style.top = (rect.top+rect.height/2)+'px';
+    el.innerHTML = fishIconSVG(fishDef);
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(), 600);
   }
 
   function flyFishToCounter(fishDef){
@@ -1233,10 +1397,17 @@
 
   function landFish(){
     gameState='idle'; haptic('success');
+    bobber.classList.remove('reel-struggle'); rodsvg.classList.remove('reeling'); lineEl.classList.remove('tense');
     const fish = currentFish;
     const bait = getBait(state.activeBait);
     const weight = Math.round(randomWeight(fish.tier) * baitStat(bait,'weightMult',1) * 100) / 100;
-    flyFishToCounter(fish);
+    fishLeapEffect(fish);
+    setTimeout(()=>flyFishToCounter(fish), 260);
+    if(fish.tier >= 2){
+      const rect = bobber.getBoundingClientRect();
+      burstParticles(rect.left+rect.width/2, rect.top+rect.height/2, ['✨','⭐'], fish.tier>=4?16:9);
+    }
+    if(fish.tier >= 4){ goldFlash(); shakeScreen(); }
     state.totalCatches += 1;
     const isNewSpecies = !(state.collectionTotal[fish.id] > 0);
     if(!Array.isArray(state.inventory[fish.id])) state.inventory[fish.id] = [];
@@ -1262,6 +1433,8 @@
     rarityEl.textContent = RARITY_LABEL[fish.tier]; rarityEl.className = 'rarity r' + fish.tier;
     document.getElementById('cc-xp').textContent = '+' + (fish.xp * (xpBoosted?2:1)) + ' опыта' + (xpBoosted?' (x2 буст)':'');
     document.getElementById('cc-weight').textContent = 'Вес: ' + weight.toFixed(2) + ' кг · цена ~' + fishPrice(fish, weight) + ' 🪙';
+    const ccCard = document.querySelector('#catchcard .card');
+    ccCard.className = 'card' + (fish.tier>=4?' r-legend':(fish.tier>=2?' r-rare':''));
     catchcard.style.display = 'flex';
     resetVisual();
   }
