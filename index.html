@@ -34,6 +34,7 @@
   #scenery-back svg{position:absolute; bottom:0; left:0; width:100%; height:100%;}
   #scenery-particles{position:absolute; inset:0; overflow:hidden; z-index:1; pointer-events:none;}
   .fx-p{position:absolute; will-change:transform, opacity;}
+  .fx-p svg{display:block; width:100%; height:100%;}
   @keyframes snowFall{0%{transform:translateY(-10vh) translateX(0); opacity:0;} 8%{opacity:.9;} 100%{transform:translateY(70vh) translateX(18px); opacity:.2;}}
   @keyframes leafFall{0%{transform:translateY(-8vh) translateX(0) rotate(0deg); opacity:0;} 10%{opacity:.95;} 100%{transform:translateY(65vh) translateX(-26px) rotate(200deg); opacity:.15;}}
   @keyframes moteFloat{0%{transform:translateY(0) translateX(0); opacity:.15;} 50%{transform:translateY(-16px) translateX(8px); opacity:.9;} 100%{transform:translateY(0) translateX(0); opacity:.15;}}
@@ -52,8 +53,9 @@
   #icehole svg{width:100%; height:100%; display:block;}
 
   /* ---------- ЧАСТИЦЫ ЗАБРОСА / ПОКЛЁВКИ ПО ЛОКАЦИЯМ ---------- */
-  .burst-p{position:fixed; font-size:14px; pointer-events:none; z-index:4; will-change:transform,opacity;
+  .burst-p{position:fixed; pointer-events:none; z-index:4; will-change:transform,opacity;
     animation:burstFly .75s ease-out forwards;}
+  .burst-p svg{display:block; width:100%; height:100%;}
   .aurora{animation:auroraShift 7s ease-in-out infinite; transform-origin:50% 100%;}
   .glowdot{animation:glowPulseFar 2.6s ease-in-out infinite;}
   @keyframes burstFly{0%{transform:translate(-50%,-50%) translate(0,0) scale(.5) rotate(0deg); opacity:1;}
@@ -63,6 +65,15 @@
   .pill{background:rgba(10,31,38,0.55); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); border:1px solid var(--glass-border);
     border-radius:999px; padding:6px 12px; font-weight:800; font-size:12px; display:flex; align-items:center; gap:5px;
     flex-shrink:0; white-space:nowrap; box-shadow:0 4px 12px rgba(0,0,0,0.2);}
+  /* Собственная иконка золотой монеты (SVG) — не зависит от эмодзи-шрифта устройства,
+     поэтому всегда выглядит золотой, а не серой */
+  .coin-ico{display:inline-flex; width:1.05em; height:1.05em; vertical-align:-0.16em; flex-shrink:0; filter:drop-shadow(0 1px 1px rgba(0,0,0,0.35));}
+  .coin-ico svg{display:block; width:100%; height:100%;}
+  /* Универсальная обёртка для мелких инлайн-SVG-иконок (замена эмодзи 🔒🎉🎁 и т.п.
+     в текстовых строках) — тот же принцип, что и coin-ico: фиксированный масштаб
+     и предсказуемый цвет вместо эмодзи-шрифта устройства */
+  .ico-inline{display:inline-flex; width:1em; height:1em; vertical-align:-0.14em; flex-shrink:0;}
+  .ico-inline svg{display:block; width:100%; height:100%;}
   #levelbox{background:rgba(10,31,38,0.45); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); border:1px solid var(--glass-border); border-radius:16px; padding:6px 12px 7px;
     flex:1 1 0; min-width:0; max-width:230px; box-shadow:0 4px 12px rgba(0,0,0,0.2);}
   #levelbox .lvltop{display:flex; justify-content:space-between; align-items:center; font-size:10px; font-weight:800; margin-bottom:4px; gap:6px;}
@@ -135,7 +146,8 @@
     border-radius:50%; opacity:0; pointer-events:none; z-index:3; will-change:transform,opacity;}
   #splash.animate{animation:splash .5s ease-out;}
   @keyframes splash{0%{opacity:.9; transform:translate(-50%,-50%) scale(.15);} 100%{opacity:0; transform:translate(-50%,-50%) scale(1.5);}}
-  #bitebang{position:absolute; transform:translate(-50%,-140%); z-index:6; font-size:26px; opacity:0; pointer-events:none;}
+  #bitebang{position:absolute; width:34px; height:34px; transform:translate(-50%,-140%); z-index:6; opacity:0; pointer-events:none;}
+  #bitebang svg{display:block; width:100%; height:100%;}
   #bitebang.show{animation:pop .55s ease-out;}
   @keyframes pop{0%{opacity:0; transform:translate(-50%,-100%) scale(.4);} 30%{opacity:1; transform:translate(-50%,-160%) scale(1.15);} 100%{opacity:0; transform:translate(-50%,-190%) scale(1);}}
 
@@ -173,7 +185,8 @@
   .navbtn{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; border-radius:18px;
     background:none; border:none; color:rgba(247,243,232,0.5); font-family:'Nunito',sans-serif; font-weight:800; font-size:8.5px; padding:6px 1px;
     transition:background .18s ease, color .18s ease, transform .12s ease;}
-  .navbtn .navico{font-size:17px; transition:transform .18s ease;}
+  .navbtn .navico{font-size:17px; width:19px; height:19px; display:flex; align-items:center; justify-content:center; transition:transform .18s ease;}
+  .navbtn .navico svg{display:block; width:100%; height:100%;}
   .navbtn:active{transform:scale(.94);}
   .navbtn.active{color:var(--gold); background:rgba(246,196,83,0.14);}
   .navbtn.active .navico{transform:translateY(-1px) scale(1.08);}
@@ -188,6 +201,7 @@
   .card2{background:var(--card); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border:1px solid var(--glass-border); border-radius:var(--radius-md); padding:13px; display:flex; align-items:center; gap:11px; box-shadow:0 4px 14px rgba(0,0,0,0.18); transition:transform .12s ease;}
   .card2:active{transform:scale(.985);}
   .card2 .icobox{font-size:26px; width:42px; height:42px; text-align:center; flex-shrink:0; display:flex; align-items:center; justify-content:center; overflow:hidden; background:rgba(247,243,232,0.06); border-radius:12px;}
+  .card2 .icobox svg{display:block; width:26px; height:26px;}
   .card2 .info{flex:1; min-width:0;}
   .card2 .name{font-weight:800; font-size:14px; margin-bottom:2px;}
   .card2 .desc{font-size:10.5px; opacity:.6; font-weight:600; line-height:1.4;}
@@ -262,6 +276,28 @@
   .modal-actions button:active{transform:scale(.96);}
   .modal-btn-cancel{background:rgba(247,243,232,0.12); color:var(--cream);}
   .modal-btn-danger{background:linear-gradient(180deg, #FF7A59, #D9502E); color:#fff;}
+  .modal-btn-primary{background:linear-gradient(180deg, var(--gold), var(--gold-deep)); color:var(--ink);}
+
+  /* ---------- ПРИГЛАСИТЬ ДРУГА (виральность) ---------- */
+  .invite-btn{margin:0 16px 8px; padding:12px; border:1px dashed var(--glass-border-strong); border-radius:var(--radius-md);
+    background:rgba(246,196,83,0.1); color:var(--gold); font-weight:800; font-size:12.5px; font-family:'Baloo 2',sans-serif;
+    display:flex; align-items:center; justify-content:center; gap:8px; transition:transform .1s ease;}
+  .invite-btn:active{transform:scale(.97);}
+
+  /* ---------- ОНБОРДИНГ (обучение при первом запуске) ---------- */
+  #onboardModal .modal-card{max-width:300px;}
+  .onboard-dots{display:flex; justify-content:center; gap:6px; margin-bottom:14px;}
+  .onboard-dots span{width:6px; height:6px; border-radius:3px; background:rgba(247,243,232,0.25); transition:background .2s ease, width .2s ease;}
+  .onboard-dots span.active{background:var(--gold); width:16px;}
+  .onboard-icon{width:60px; height:60px; margin:0 auto 10px; display:flex; align-items:center; justify-content:center;
+    filter:drop-shadow(0 4px 10px rgba(0,0,0,0.3));}
+  .onboard-icon svg{width:100%; height:100%; display:block;}
+  #onboardModal h2{color:var(--gold);}
+  .onboard-share-wrap{margin:-4px 0 16px;}
+  .onboard-share-btn{width:100%; border:none; border-radius:14px; padding:11px 0; font-weight:800; font-size:12.5px;
+    font-family:'Baloo 2',sans-serif; background:rgba(246,196,83,0.14); color:var(--gold);
+    display:flex; align-items:center; justify-content:center; gap:7px;}
+  .onboard-share-btn svg{width:16px; height:16px;}
 
   #levelupToast{position:absolute; top:14%; left:50%; transform:translateX(-50%) translateY(-14px); z-index:35;
     background:linear-gradient(180deg, var(--gold), var(--gold-deep)); color:var(--ink); border-radius:18px; padding:11px 20px; font-family:'Baloo 2',sans-serif;
@@ -351,7 +387,7 @@
       <div class="wave" style="top:65%; height:50px; animation-duration:11s;"></div>
     </div>
     <div id="topbar">
-      <div class="pill"><span>🪙</span><span id="coinsVal">0</span></div>
+      <div class="pill"><span class="coin-ico"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="coinShine" cx="35%" cy="28%" r="80%"><stop offset="0%" stop-color="#FFF6DC"/><stop offset="45%" stop-color="#F6C453"/><stop offset="100%" stop-color="#C6811F"/></radialGradient></defs><circle cx="16" cy="16" r="14.5" fill="url(#coinShine)" stroke="#8A5A16" stroke-width="1.3"/><circle cx="16" cy="16" r="11" fill="none" stroke="#FFEDB8" stroke-width="1" opacity="0.55"/><path d="M9.5 20c-.6-3.2.6-6.7 3.6-8.6 2-1.3 4.5-1.5 6.6-.6-2.4-.3-4.8.4-6.5 2-1.9 1.7-2.7 4.3-2.2 6.8-1.1-.3-1.5.3-1.5.4z" fill="#A66A17" opacity="0.65"/><path d="M12 20.5c2.6.9 5.6.2 7.5-1.9 1.5-1.7 2-3.9 1.6-6 .6 2.2.2 4.6-1.3 6.5-1.7 2.1-4.5 3-7.1 2.2-.4-.1-.6-.5-.7-.8z" fill="#A66A17" opacity="0.5"/><ellipse cx="11.2" cy="10.8" rx="4" ry="2.2" fill="#FFFFFF" opacity="0.5" transform="rotate(-28 11.2 10.8)"/></svg></span><span id="coinsVal">0</span></div>
       <div id="levelbox">
         <div class="lvltop"><span id="lvlVal">Ур. 1</span><span id="xpText">0/100</span></div>
         <div class="xpbar"><div class="xpfill" id="xpfill"></div></div>
@@ -405,7 +441,7 @@
     <div id="line"></div>
     <div id="bobber" class="hidden"><div class="body"></div></div>
     <div id="splash"></div>
-    <div id="bitebang">💥</div>
+    <div id="bitebang"></div>
     <div id="screen-flash"></div>
 
     <div id="bottompanel">
@@ -428,7 +464,7 @@
       </div>
     </div>
 
-    <div id="levelupToast">🎉 Уровень 2! +76 🪙</div>
+    <div id="levelupToast"><span class="ico-inline"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 26 22 10" stroke="#D9962C" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="9" r="2" fill="#FF7A59"/><circle cx="20" cy="6" r="1.6" fill="#F6C453"/><circle cx="25" cy="16" r="2" fill="#63B7EE"/><circle cx="14" cy="16" r="1.4" fill="#7FE08F"/><rect x="21.7" y="20.3" width="3" height="3" fill="#F6C453" transform="rotate(20 23.2 21.8)"/><circle cx="6" cy="19" r="1.4" fill="#F6C453"/></svg></span> Уровень 2! +76 <span class="coin-ico"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="coinShine3" cx="35%" cy="28%" r="80%"><stop offset="0%" stop-color="#FFF6DC"/><stop offset="45%" stop-color="#F6C453"/><stop offset="100%" stop-color="#C6811F"/></radialGradient></defs><circle cx="16" cy="16" r="14.5" fill="url(#coinShine3)" stroke="#8A5A16" stroke-width="1.3"/><circle cx="16" cy="16" r="11" fill="none" stroke="#FFEDB8" stroke-width="1" opacity="0.55"/><path d="M9.5 20c-.6-3.2.6-6.7 3.6-8.6 2-1.3 4.5-1.5 6.6-.6-2.4-.3-4.8.4-6.5 2-1.9 1.7-2.7 4.3-2.2 6.8-1.1-.3-1.5.3-1.5.4z" fill="#A66A17" opacity="0.65"/><path d="M12 20.5c2.6.9 5.6.2 7.5-1.9 1.5-1.7 2-3.9 1.6-6 .6 2.2.2 4.6-1.3 6.5-1.7 2.1-4.5 3-7.1 2.2-.4-.1-.6-.5-.7-.8z" fill="#A66A17" opacity="0.5"/><ellipse cx="11.2" cy="10.8" rx="4" ry="2.2" fill="#FFFFFF" opacity="0.5" transform="rotate(-28 11.2 10.8)"/></svg></span></div>
   </div>
 
   <div class="subscreen" id="screen-shop">
@@ -458,16 +494,20 @@
 
   <div class="subscreen" id="screen-top">
     <div class="subhead"><h2>Топ рыбаков</h2><p>Рейтинг по общему опыту</p></div>
+    <button id="inviteBtn" class="invite-btn">
+      <span class="ico-inline"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M4 16 27 5 20 27l-5-9-9-2z" fill="#F6C453" stroke="#8A5A16" stroke-width="1.3" stroke-linejoin="round"/><path d="M15 18 27 5" fill="none" stroke="#8A5A16" stroke-width="1.1"/></svg></span>
+      Пригласить друга · бонус монеты обоим
+    </button>
     <div class="sublist" id="toplist"></div>
   </div>
 
   <div id="navbar">
-    <button class="navbtn active" data-screen="fish"><span class="navico">🎣</span>Рыбалка</button>
-    <button class="navbtn" data-screen="shop"><span class="navico">🛒</span>Магазин</button>
-    <button class="navbtn" data-screen="market"><span class="navico">💰</span>Рынок</button>
-    <button class="navbtn" data-screen="quests"><span class="navico">📋</span>Задания</button>
-    <button class="navbtn" data-screen="collection"><span class="navico">📖</span>Коллекция</button>
-    <button class="navbtn" data-screen="top"><span class="navico">🏆</span>Топ</button>
+    <button class="navbtn active" data-screen="fish"><span class="navico"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 27 L24 6" stroke="#B98550" stroke-width="2.6" stroke-linecap="round"/><path d="M24 6 Q28 16 22.5 25" fill="none" stroke="#F7F3E8" stroke-width="1.3" stroke-dasharray="2 2.4"/><path d="M22.5 25q-2.4 2-1.2 4.4" fill="none" stroke="#D9962C" stroke-width="1.8" stroke-linecap="round"/></svg></span>Рыбалка</button>
+    <button class="navbtn" data-screen="shop"><span class="navico"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 8h3l2.6 13.5a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 2-1.6L27 12H10.4" fill="none" stroke="#F7F3E8" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="13.5" cy="27" r="1.9" fill="#F7F3E8"/><circle cx="21.5" cy="27" r="1.9" fill="#F7F3E8"/></svg></span>Магазин</button>
+    <button class="navbtn" data-screen="market"><span class="navico"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><ellipse cx="16" cy="23" rx="10" ry="4" fill="#D9962C"/><ellipse cx="16" cy="18.3" rx="10" ry="4" fill="#F6C453" stroke="#8A5A16" stroke-width="1"/><ellipse cx="16" cy="13.6" rx="10" ry="4" fill="#FFE9B0" stroke="#8A5A16" stroke-width="1"/></svg></span>Рынок</button>
+    <button class="navbtn" data-screen="quests"><span class="navico"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="6" width="16" height="22" rx="3" fill="#F7F3E8" opacity=".16"/><rect x="8" y="6" width="16" height="22" rx="3" fill="none" stroke="#F7F3E8" stroke-width="2"/><rect x="12" y="4" width="8" height="5" rx="2" fill="#F6C453"/><path d="M11 14h10M11 18h10M11 22h6" stroke="#F7F3E8" stroke-width="1.8" stroke-linecap="round"/></svg></span>Задания</button>
+    <button class="navbtn" data-screen="collection"><span class="navico"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 9c-2.5-2-6-2.6-9-2v17c3-.6 6.5 0 9 2 2.5-2 6-2.6 9-2V7c-3-.6-6.5.4-9 2z" fill="#F6C453" stroke="#8A5A16" stroke-width="1.2" stroke-linejoin="round"/><path d="M16 9v17" stroke="#8A5A16" stroke-width="1.1"/></svg></span>Коллекция</button>
+    <button class="navbtn" data-screen="top"><span class="navico"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M10 6h12v7a6 6 0 0 1-12 0V6z" fill="#F6C453" stroke="#8A5A16" stroke-width="1.3"/><path d="M10 8H6a4 4 0 0 0 4 6" fill="none" stroke="#D9962C" stroke-width="2" stroke-linecap="round"/><path d="M22 8h4a4 4 0 0 1-4 6" fill="none" stroke="#D9962C" stroke-width="2" stroke-linecap="round"/><rect x="14" y="19" width="4" height="5" fill="#D9962C"/><rect x="10" y="24" width="12" height="3" rx="1.5" fill="#F6C453" stroke="#8A5A16" stroke-width="1"/></svg></span>Топ</button>
   </div>
 
   <div class="modal-overlay" id="resetModal">
@@ -478,6 +518,25 @@
       <div class="modal-actions">
         <button id="resetCancelBtn" class="modal-btn-cancel">Отмена</button>
         <button id="resetConfirmBtn" class="modal-btn-danger">Далее</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="onboardModal">
+    <div class="modal-card">
+      <div class="onboard-dots" id="onboardDots"></div>
+      <div class="onboard-icon" id="onboardIcon"></div>
+      <h2 id="onboardTitle">Добро пожаловать!</h2>
+      <p id="onboardText">Давай быстро покажем, как всё устроено.</p>
+      <div class="onboard-share-wrap" id="onboardShareWrap" style="display:none;">
+        <button id="onboardShareBtn" class="onboard-share-btn">
+          <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M4 16 27 5 20 27l-5-9-9-2z" fill="currentColor" opacity=".9"/></svg>
+          Пригласить друга
+        </button>
+      </div>
+      <div class="modal-actions">
+        <button id="onboardSkipBtn" class="modal-btn-cancel">Пропустить</button>
+        <button id="onboardNextBtn" class="modal-btn-primary">Далее</button>
       </div>
     </div>
   </div>
@@ -499,6 +558,23 @@
   const FIREBASE_URL = "ВСТАВЬ-СВОЙ-URL-СЮДА";
   // Пример: "https://tihaya-gavan-default-rtdb.europe-west1.firebasedatabase.app"
   // =================================================================================
+
+  // ====== ЗАПОЛНИ ССЫЛКУ НА СВОЕГО TELEGRAM-БОТА/ПРИЛОЖЕНИЕ ДЛЯ ПРИГЛАШЕНИЙ ======
+  // Формат: "https://t.me/имя_бота/имя_приложения" (короткое имя Mini App, задаётся в BotFather).
+  const BOT_LINK = "ВСТАВЬ-ССЫЛКУ-НА-БОТА";
+  // Пример: "https://t.me/tihaya_gavan_bot/play"
+  // ===============================================================================
+  function inviteReady(){ return BOT_LINK && BOT_LINK.indexOf('ВСТАВЬ') === -1; }
+
+  // Собственная SVG-иконка монеты (используется вместо эмодзи 🪙, которое на части
+  // устройств/шрифтов отображается плоским серым кружком вместо золотого)
+  const COIN_SVG = '<span class="coin-ico"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="coinShine2" cx="35%" cy="28%" r="80%"><stop offset="0%" stop-color="#FFF6DC"/><stop offset="45%" stop-color="#F6C453"/><stop offset="100%" stop-color="#C6811F"/></radialGradient></defs><circle cx="16" cy="16" r="14.5" fill="url(#coinShine2)" stroke="#8A5A16" stroke-width="1.3"/><circle cx="16" cy="16" r="11" fill="none" stroke="#FFEDB8" stroke-width="1" opacity="0.55"/><path d="M9.5 20c-.6-3.2.6-6.7 3.6-8.6 2-1.3 4.5-1.5 6.6-.6-2.4-.3-4.8.4-6.5 2-1.9 1.7-2.7 4.3-2.2 6.8-1.1-.3-1.5.3-1.5.4z" fill="#A66A17" opacity="0.65"/><path d="M12 20.5c2.6.9 5.6.2 7.5-1.9 1.5-1.7 2-3.9 1.6-6 .6 2.2.2 4.6-1.3 6.5-1.7 2.1-4.5 3-7.1 2.2-.4-.1-.6-.5-.7-.8z" fill="#A66A17" opacity="0.5"/><ellipse cx="11.2" cy="10.8" rx="4" ry="2.2" fill="#FFFFFF" opacity="0.5" transform="rotate(-28 11.2 10.8)"/></svg></span>';
+
+  // Собственные SVG-иконки взамен эмодзи 🔒 и 🎉 — используются в текстовых строках,
+  // которые генерирует JS (те же соображения, что и для COIN_SVG выше)
+  const LOCK_SVG = '<span class="ico-inline"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M10 14V10a6 6 0 0 1 12 0v4" fill="none" stroke="#D9962C" stroke-width="2.6" stroke-linecap="round"/><rect x="7" y="14" width="18" height="14" rx="4" fill="#F6C453" stroke="#8A5A16" stroke-width="1.3"/><circle cx="16" cy="20" r="2.2" fill="#8A5A16"/><rect x="15" y="21" width="2" height="4" rx="1" fill="#8A5A16"/></svg></span>';
+  const PARTY_SVG = '<span class="ico-inline"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 26 22 10" stroke="#D9962C" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="9" r="2" fill="#FF7A59"/><circle cx="20" cy="6" r="1.6" fill="#F6C453"/><circle cx="25" cy="16" r="2" fill="#63B7EE"/><circle cx="14" cy="16" r="1.4" fill="#7FE08F"/><rect x="21.7" y="20.3" width="3" height="3" fill="#F6C453" transform="rotate(20 23.2 21.8)"/><circle cx="6" cy="19" r="1.4" fill="#F6C453"/></svg></span>';
+  const GIFT_SVG = '<span class="ico-inline"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="13" width="20" height="14" rx="2" fill="#FF7A59"/><rect x="6" y="13" width="20" height="5" fill="#D9502E"/><rect x="14" y="13" width="4" height="14" fill="#F6C453"/><path d="M16 13c-2-6-9-6-9-1 0 1.5 2 1 9 1zM16 13c2-6 9-6 9-1 0 1.5-2 1-9 1z" fill="#F6C453" stroke="#D9962C" stroke-width="1"/></svg></span>';
 
   const RARITY_LABEL = ['обычная','обычная','редкая','ценная','легендарная'];
   const RARITY_SPEED = [1, 1, 0.8, 0.6, 0.42]; // множитель окна поклёва: чем реже рыба, тем короче окно
@@ -578,7 +654,7 @@
   const CREATURE_BUILDERS = { fish:fishBase, crab:crabIcon, shrimp:shrimpIcon, cephalopod:cephalopodIcon, mammal:mammalIcon, reptile:reptileIcon };
   function fishIconSVG(fishDef){
     const d = fishDef.design || {type:'fish', body:'#BFD9CE', belly:'#EFF5F2', fin:'#8FA6AC', tail:'round'};
-    d._id = fishDef.id;
+    d._id = fishDef.id + '_' + Math.random().toString(36).slice(2,8);
     const builder = CREATURE_BUILDERS[d.type] || fishBase;
     return svgTag(builder(d));
   }
@@ -607,7 +683,7 @@
 
   const LOCATIONS = [
     { id:'harbor', name:'Тихая Гавань', unlockLevel:1, top:'#F2A65A', bottom:'#1E5A6B', scenery:'harbor',
-      splashFx:['💦','🌊'], flavor:{cast:'Закидываем удочку с причала...', wait:'Тихо... жди клёва'},
+      splashFx:['droplet','wave'], flavor:{cast:'Закидываем удочку с причала...', wait:'Тихо... жди клёва'},
       fish:[
         {id:'roach', name:'Плотвичка', ico:'🐟', tier:0, coins:[5,10], xp:5, design:{type:'fish', body:'#C9D6DA', belly:'#EFF5F2', fin:'#8FA6AC', tail:'fork'}},
         {id:'gudgeon', name:'Пескарь', ico:'🐠', tier:0, coins:[4,9], xp:5, design:{type:'fish', body:'#B99A6B', belly:'#EDDFC5', fin:'#8A6B42', tail:'round', pattern:'spots', patternColor:'#6B4A2B'}},
@@ -620,7 +696,7 @@
         {id:'golden', name:'Золотая рыбка', ico:'✨', tier:4, coins:[80,120], xp:60, design:{type:'fish', body:'#F2C14E', belly:'#FFF0C2', fin:'#E8A93E', tail:'fan', pattern:'scale', patternColor:'#E8A93E'}},
       ]},
     { id:'reef', name:'Морской Риф', unlockLevel:5, top:'#4FB3BF', bottom:'#0E3B4A', scenery:'reef',
-      splashFx:['🫧','🐚'], flavor:{cast:'Заброс к коралловому рифу...', wait:'Бирюзовые волны... жди клёва'},
+      splashFx:['bubble','shell'], flavor:{cast:'Заброс к коралловому рифу...', wait:'Бирюзовые волны... жди клёва'},
       fish:[
         {id:'herring', name:'Сельдь', ico:'🐟', tier:0, coins:[8,15], xp:8, design:{type:'fish', body:'#A9C9D9', belly:'#F0F7FA', fin:'#7397A8', tail:'fork'}},
         {id:'sardine', name:'Ставрида', ico:'🐠', tier:0, coins:[7,14], xp:8, design:{type:'fish', body:'#6FAFA0', belly:'#E4F2EC', fin:'#4A8071', tail:'fork', pattern:'stripes', patternColor:'#2E5A4D'}},
@@ -633,7 +709,7 @@
         {id:'octopus', name:'Редкий осьминог', ico:'🐙', tier:4, coins:[130,200], xp:85, design:{type:'cephalopod', body:'#8F4E8C', arms:8}},
       ]},
     { id:'ice', name:'Ледяное Озеро', unlockLevel:10, top:'#BFE8F2', bottom:'#123244', scenery:'ice',
-      splashFx:['❄️','🧊'], flavor:{cast:'Пробиваем лунку во льду и опускаем леску...', wait:'Тишина подо льдом... жди поклёвки'},
+      splashFx:['snowflake','iceChip'], flavor:{cast:'Пробиваем лунку во льду и опускаем леску...', wait:'Тишина подо льдом... жди поклёвки'},
       fish:[
         {id:'icebass', name:'Ледяной окунь', ico:'🧊', tier:0, coins:[15,25], xp:12, design:{type:'fish', body:'#BFE0E8', belly:'#F0FAFC', fin:'#7FB8C9', tail:'round'}},
         {id:'smelt', name:'Полярная навага', ico:'🐟', tier:0, coins:[14,24], xp:12, design:{type:'fish', body:'#D8E8ED', belly:'#F5FBFC', fin:'#A6C7D1', tail:'fork'}},
@@ -646,7 +722,7 @@
         {id:'dragonfish', name:'Снежный дракон', ico:'🐉', tier:4, coins:[220,320], xp:120, design:{type:'reptile', body:'#D9F0F5', spike:'#A9D8E8', horns:true}},
       ]},
     { id:'jungle', name:'Тропическая Река', unlockLevel:15, top:'#8FBF6B', bottom:'#1B4D3E', scenery:'jungle',
-      splashFx:['🍃','💧'], flavor:{cast:'Заброс в заросли тропической реки...', wait:'Влажная духота джунглей... жди клёва'},
+      splashFx:['leaf','dew'], flavor:{cast:'Заброс в заросли тропической реки...', wait:'Влажная духота джунглей... жди клёва'},
       fish:[
         {id:'tetra', name:'Тетра', ico:'🐠', tier:0, coins:[18,28], xp:15, design:{type:'fish', body:'#3E8CC9', belly:'#E8734A', fin:'#2A5F8C', tail:'fork'}},
         {id:'guppy', name:'Гуппи', ico:'🐟', tier:0, coins:[16,26], xp:14, design:{type:'fish', body:'#4EBFA0', belly:'#D8F2E8', fin:'#E8A93E', tail:'fan'}},
@@ -659,7 +735,7 @@
         {id:'arapaima', name:'Золотая Аравана', ico:'🐲', tier:4, coins:[250,360], xp:140, design:{type:'fish', body:'#8FA83E', belly:'#C9543E', fin:'#6B8028', tail:'fan', elong:1.3, pattern:'scale', patternColor:'#C9543E'}},
       ]},
     { id:'abyss', name:'Глубокий Океан', unlockLevel:20, top:'#2E3A59', bottom:'#050912', scenery:'abyss',
-      splashFx:['✨','🔵'], flavor:{cast:'Опускаем леску в бездну...', wait:'Давящая тьма бездны... жди клёва'},
+      splashFx:['sparkle','glowBlue'], flavor:{cast:'Опускаем леску в бездну...', wait:'Давящая тьма бездны... жди клёва'},
       fish:[
         {id:'lanternfish', name:'Светящийся анчоус', ico:'🐟', tier:0, coins:[30,45], xp:22, design:{type:'fish', body:'#1A2438', belly:'#3E4A63', fin:'#111827', tail:'fork', lure:true, glow:'#6FE8E8'}},
         {id:'deepherring', name:'Глубоководная сельдь', ico:'🐠', tier:0, coins:[28,42], xp:20, design:{type:'fish', body:'#2A2540', belly:'#4A4166', fin:'#1A1730', tail:'fork'}},
@@ -674,20 +750,20 @@
   ];
 
   const RODS = [
-    {id:'bamboo', name:'Бамбуковая удочка', ico:'🎣', desc:'Базовое окно поклёва 700 мс', window:700, price:0, unlockLevel:1},
-    {id:'carbon', name:'Карбоновая удочка', ico:'🪝', desc:'Окно поклёва 950 мс', window:950, price:900, unlockLevel:5},
-    {id:'titan', name:'Титановая удочка', ico:'⚙️', desc:'Окно поклёва 1300 мс', window:1300, price:5200, unlockLevel:13},
-    {id:'abyssal', name:'Абиссальная удочка', ico:'🔱', desc:'Окно поклёва 1700 мс', window:1700, price:9500, unlockLevel:19},
+    {id:'bamboo', name:'Бамбуковая удочка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 27 L24 6" stroke="#B98550" stroke-width="2.6" stroke-linecap="round"/><path d="M24 6 Q28 16 22.5 25" fill="none" stroke="#F7F3E8" stroke-width="1.3" stroke-dasharray="2 2.4"/><path d="M22.5 25q-2.4 2-1.2 4.4" fill="none" stroke="#D9962C" stroke-width="1.8" stroke-linecap="round"/></svg>', desc:'Базовое окно поклёва 700 мс', window:700, price:0, unlockLevel:1},
+    {id:'carbon', name:'Карбоновая удочка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 5v14a5 5 0 1 0 5-5" fill="none" stroke="#9AA7AD" stroke-width="2.6" stroke-linecap="round"/><circle cx="16" cy="5" r="2" fill="none" stroke="#9AA7AD" stroke-width="2"/></svg>', desc:'Окно поклёва 950 мс', window:950, price:900, unlockLevel:5},
+    {id:'titan', name:'Титановая удочка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 8v-3M16 27v-3M8 16H5M27 16h-3M10.3 10.3l-2-2M23.7 23.7l-2-2M10.3 21.7l-2 2M23.7 8.3l-2 2" stroke="#C9D6DA" stroke-width="2.4" stroke-linecap="round"/><circle cx="16" cy="16" r="7" fill="#9AA7AD" stroke="#5c6a70" stroke-width="1.2"/><circle cx="16" cy="16" r="3" fill="#0A1F26" opacity=".4"/></svg>', desc:'Окно поклёва 1300 мс', window:1300, price:5200, unlockLevel:13},
+    {id:'abyssal', name:'Абиссальная удочка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 10v18M9 6l7 8 7-8M9 6v6M23 6v6" fill="none" stroke="#6FE8E8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>', desc:'Окно поклёва 1700 мс', window:1700, price:9500, unlockLevel:19},
   ];
   const BAITS = [
-    {id:'plain', name:'Обычная наживка', ico:'🪱', desc:'Стандартные шансы улова · без особенностей', weights:[40,30,18,9,3], price:0, unlockLevel:1},
-    {id:'quick', name:'Шустрый мотыль', ico:'🪰', desc:'Клёв начинается заметно быстрее · рыба чуть попроще', weights:[45,28,16,8,3], price:450, unlockLevel:2, biteDelayMult:0.55},
-    {id:'patient', name:'Ленивый опарыш', ico:'🐛', desc:'Гораздо больше времени на подсечку · рыба попроще', weights:[42,29,17,9,3], price:650, unlockLevel:3, biteWindowMult:1.45},
-    {id:'aroma', name:'Ароматная наживка', ico:'🌿', desc:'Больше редкой и ценной рыбы', weights:[30,25,25,15,5], price:900, unlockLevel:6},
-    {id:'sticky', name:'Плотный жмых', ico:'🧈', desc:'Вываживать намного проще и нужно меньше рывков · окно подсечки короче', weights:[38,30,19,10,3], price:1300, unlockLevel:8, reelDecayMult:0.4, reelTargetDelta:-1, biteWindowMult:0.85},
-    {id:'heavy', name:'Кровяная наживка', ico:'🩸', desc:'Рыба крупнее и тяжелее обычного · клюёт реже', weights:[25,28,24,16,7], price:1800, unlockLevel:11, weightMult:1.4, biteDelayMult:1.25},
-    {id:'magic', name:'Магическая наживка', ico:'🔮', desc:'Сильно больше шанс легендарной', weights:[20,20,25,20,15], price:3200, unlockLevel:15},
-    {id:'royal', name:'Королевская наживка', ico:'👑', desc:'Лучший баланс: редкая рыба крупнее обычного', weights:[18,22,26,22,12], price:5200, unlockLevel:19, weightMult:1.15},
+    {id:'plain', name:'Обычная наживка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 22c2-6 4 4 8-2s2-10 8-8 4 8 2 12" fill="none" stroke="#E8938A" stroke-width="4" stroke-linecap="round"/></svg>', desc:'Стандартные шансы улова · без особенностей', weights:[40,30,18,9,3], price:0, unlockLevel:1},
+    {id:'quick', name:'Шустрый мотыль', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><ellipse cx="16" cy="18" rx="4.5" ry="6" fill="#3a3a3a"/><ellipse cx="10" cy="13" rx="5" ry="3" fill="#CFE8EE" opacity=".8" transform="rotate(-20 10 13)"/><ellipse cx="22" cy="13" rx="5" ry="3" fill="#CFE8EE" opacity=".8" transform="rotate(20 22 13)"/><circle cx="16" cy="10" r="3" fill="#1c1c1c"/></svg>', desc:'Клёв начинается заметно быстрее · рыба чуть попроще', weights:[45,28,16,8,3], price:450, unlockLevel:2, biteDelayMult:0.55},
+    {id:'patient', name:'Ленивый опарыш', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 22a4 4 0 1 1 4-4 4 4 0 1 1 4 4 4 4 0 1 1 4-4 4 4 0 1 1 4 4 4 4 0 1 1 4-4" fill="none" stroke="#8FBF6E" stroke-width="4.2" stroke-linecap="round"/><circle cx="6" cy="18" r="2.6" fill="#5F8F45"/></svg>', desc:'Гораздо больше времени на подсечку · рыба попроще', weights:[42,29,17,9,3], price:650, unlockLevel:3, biteWindowMult:1.45},
+    {id:'aroma', name:'Ароматная наживка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 27V13" stroke="#4c7a3a" stroke-width="2" stroke-linecap="round"/><path d="M16 13c-6-1-9 3-10 8 6 1 9-3 10-8zM16 17c6-1 9 3 10 8-6 1-9-3-10-8z" fill="#6FAE55" stroke="#4c7a3a" stroke-width="1"/></svg>', desc:'Больше редкой и ценной рыбы', weights:[30,25,25,15,5], price:900, unlockLevel:6},
+    {id:'sticky', name:'Плотный жмых', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="9" y="11" width="14" height="10" rx="3" fill="#F5E27A" stroke="#C9A93A" stroke-width="1.2" transform="rotate(-8 16 16)"/></svg>', desc:'Вываживать намного проще и нужно меньше рывков · окно подсечки короче', weights:[38,30,19,10,3], price:1300, unlockLevel:8, reelDecayMult:0.4, reelTargetDelta:-1, biteWindowMult:0.85},
+    {id:'heavy', name:'Кровяная наживка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 6c5 7 8 11 8 15a8 8 0 1 1-16 0c0-4 3-8 8-15z" fill="#D9502E" stroke="#8a1f10" stroke-width="1"/><ellipse cx="13" cy="20" rx="2" ry="3" fill="#F2A897" opacity=".6"/></svg>', desc:'Рыба крупнее и тяжелее обычного · клюёт реже', weights:[25,28,24,16,7], price:1800, unlockLevel:11, weightMult:1.4, biteDelayMult:1.25},
+    {id:'magic', name:'Магическая наживка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="15" r="9" fill="#B98CF2" opacity=".85" stroke="#7A4BC9" stroke-width="1"/><ellipse cx="12.5" cy="11.5" rx="3" ry="1.8" fill="#FFFFFF" opacity=".5" transform="rotate(-25 12.5 11.5)"/><rect x="9" y="25" width="14" height="3" rx="1.5" fill="#7A4BC9"/></svg>', desc:'Сильно больше шанс легендарной', weights:[20,20,25,20,15], price:3200, unlockLevel:15},
+    {id:'royal', name:'Королевская наживка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 24 4 12l7 5 5-9 5 9 7-5-2 12z" fill="#F6C453" stroke="#8A5A16" stroke-width="1.2" stroke-linejoin="round"/><rect x="5" y="24" width="22" height="3" rx="1.2" fill="#D9962C"/></svg>', desc:'Лучший баланс: редкая рыба крупнее обычного', weights:[18,22,26,22,12], price:5200, unlockLevel:19, weightMult:1.15},
   ];
   // Доп. свойства наживки со значениями по умолчанию (если не указаны в самой наживке)
   function baitStat(bait, key, def){ return (bait && typeof bait[key]==='number') ? bait[key] : def; }
@@ -707,9 +783,9 @@
     {id:'legend', name:'Легенда Тихой Гавани', desc:'Награда за сюжет · переливается всеми цветами', colors:['#F2C14E','#B14EF2'], glow:'#F2C14E', legend:true, price:null, storyOnly:true},
   ];
   const BOOST_ITEMS = [
-    {id:'xp2', name:'Ускоритель опыта', ico:'⚡', desc:'x2 опыт за пойманную рыбу', basePrice:120, baseDuration:8*60000, minDuration:3*60000},
-    {id:'coins2', name:'Удвоение дохода', ico:'💰', desc:'x2 монеты при продаже на рынке', basePrice:140, baseDuration:8*60000, minDuration:3*60000},
-    {id:'luck', name:'Везение рыбака', ico:'🍀', desc:'Выше шанс редкой и ценной рыбы', basePrice:170, baseDuration:6*60000, minDuration:2*60000},
+    {id:'xp2', name:'Ускоритель опыта', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M18 4 8 18h6l-2 10 12-16h-6z" fill="#F6E27A" stroke="#C9A93A" stroke-width="1"/></svg>', desc:'x2 опыт за пойманную рыбу', basePrice:120, baseDuration:8*60000, minDuration:3*60000},
+    {id:'coins2', name:'Удвоение дохода', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><ellipse cx="16" cy="23" rx="10" ry="4" fill="#D9962C"/><ellipse cx="16" cy="18.3" rx="10" ry="4" fill="#F6C453" stroke="#8A5A16" stroke-width="1"/><ellipse cx="16" cy="13.6" rx="10" ry="4" fill="#FFE9B0" stroke="#8A5A16" stroke-width="1"/></svg>', desc:'x2 монеты при продаже на рынке', basePrice:140, baseDuration:8*60000, minDuration:3*60000},
+    {id:'luck', name:'Везение рыбака', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 16c0-4-3-7-6-7s-5 3-3 6 6 3 9 1zM16 16c0-4 3-7 6-7s5 3 3 6-6 3-9 1zM16 16c4 0 7 3 7 6s-3 5-6 3-3-6-1-9zM16 16c-4 0-7 3-7 6s3 5 6 3 3-6 1-9z" fill="#6FAE55" stroke="#3d6b2c" stroke-width="1"/><path d="M16 16v9" stroke="#4c7a3a" stroke-width="2" stroke-linecap="round"/></svg>', desc:'Выше шанс редкой и ценной рыбы', basePrice:170, baseDuration:6*60000, minDuration:2*60000},
   ];
   // Бусты дорожают и становятся короче с каждым уровнем игрока.
   // Цена растёт на 12% за уровень (рост мультипликатора ограничен x4).
@@ -839,7 +915,8 @@
       lastBonusDate:null, dailyStreak:0, anonId:null,
       questsDate:null, dailyQuests:[],
       storyChapter:0, storyProgress:0,
-      boosts:{xp2:0, coins2:0, luck:0}
+      boosts:{xp2:0, coins2:0, luck:0},
+      onboardingDone:false, referralClaimed:false, referredBy:null
     };
   }
   let state = freshState();
@@ -869,8 +946,10 @@
 
   function resetProgress(){
     const keepAnonId = state.anonId;
+    const keepOnboarding = state.onboardingDone;
     const clean = freshState();
     clean.anonId = keepAnonId;
+    clean.onboardingDone = keepOnboarding;
     Object.keys(state).forEach(k=>delete state[k]);
     Object.assign(state, clean);
     fixInventory(); ensureQuests(); ensureStory();
@@ -965,13 +1044,16 @@
   }
 
   let levelupToastTimer = null;
-  function showLevelUpToast(level, coins){
+  function showToast(html){
     const el = document.getElementById('levelupToast');
-    el.textContent = '🎉 Уровень ' + level + '! +' + formatNum(coins) + ' 🪙';
+    el.innerHTML = html;
     clearTimeout(levelupToastTimer);
     el.classList.add('show');
     haptic('success');
     levelupToastTimer = setTimeout(()=>{ el.classList.remove('show'); }, 2400);
+  }
+  function showLevelUpToast(level, coins){
+    showToast(PARTY_SVG + ' Уровень ' + level + '! +' + formatNum(coins) + ' ' + COIN_SVG);
   }
 
   function getUserId(){
@@ -990,6 +1072,64 @@
     fetch(FIREBASE_URL + '/leaderboard/' + uid + '.json', {
       method:'PUT', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ name:getUserName(), level:state.level, score:state.totalXpEarned })
+    }).catch(()=>{});
+  }
+
+  // ---------- ПРИГЛАШЕНИЯ ДРУЗЕЙ (виральность) ----------
+  // Ссылка вида .../play?startapp=ref_u123 — Telegram передаёт "ref_u123" в
+  // tg.initDataUnsafe.start_param, когда приглашённый открывает Mini App по ней.
+  function inviteLink(){
+    const uid = getUserId();
+    return (inviteReady() ? BOT_LINK : 'https://t.me') + '?startapp=ref_' + encodeURIComponent(uid);
+  }
+  function shareInvite(){
+    if(!inviteReady()){
+      if(tg && tg.showAlert) tg.showAlert('Сначала укажи BOT_LINK в коде игры — это ссылка на твоего Telegram-бота с Mini App.');
+      else alert('Сначала укажи BOT_LINK в коде игры — это ссылка на твоего Telegram-бота с Mini App.');
+      return;
+    }
+    const link = inviteLink();
+    const text = 'Уже поймал ' + formatNum(state.totalCatches) + ' рыб и дошёл до ' + state.level + ' уровня в Тихой Гавани 🎣 '
+      + 'Присоединяйся — мы оба получим бонус монет!';
+    const shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent(text);
+    if(tg && tg.openTelegramLink) tg.openTelegramLink(shareUrl);
+    else window.open(shareUrl, '_blank');
+    haptic();
+  }
+  // Новый игрок пришёл по приглашению — даём бонус ему, а другу-пригласившему
+  // ставим "отложенную" награду в Firebase (заберёт при следующем открытии игры).
+  function processReferral(){
+    if(state.referralClaimed) return;
+    const sp = tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param;
+    const m = /^ref_(.+)$/.exec(sp || '');
+    if(!m){ return; }
+    const refCode = m[1];
+    state.referralClaimed = true;
+    if(refCode === getUserId() || state.totalCatches > 0 || state.level > 1){ saveState(); return; }
+    state.referredBy = refCode;
+    state.coins += 100;
+    saveState(); refreshTopUI();
+    showToast(GIFT_SVG + ' Бонус за приглашение! +100 ' + COIN_SVG);
+    if(fbReady()){
+      fetch(FIREBASE_URL + '/inviteRewards/' + refCode + '.json', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ amount:150, ts:Date.now(), from:getUserId() })
+      }).catch(()=>{});
+    }
+  }
+  // Забираем награды за друзей, которые присоединились по нашей ссылке с прошлого визита.
+  function claimInviteRewards(){
+    if(!fbReady()) return;
+    const myId = getUserId();
+    fetch(FIREBASE_URL + '/inviteRewards/' + myId + '.json').then(r=>r.json()).then(data=>{
+      if(!data) return;
+      let total = 0, count = 0;
+      Object.keys(data).forEach(k=>{ total += (data[k].amount||0); count++; });
+      if(total > 0){
+        state.coins += total; saveState(); refreshTopUI();
+        showToast(GIFT_SVG + ' Друзья присоединились! +' + formatNum(total) + ' ' + COIN_SVG);
+        fetch(FIREBASE_URL + '/inviteRewards/' + myId + '.json', { method:'DELETE' }).catch(()=>{});
+      }
     }).catch(()=>{});
   }
 
@@ -1071,12 +1211,31 @@
       '<circle class="glowdot" cx="650" cy="120" r="2.6" fill="#6f9be8" opacity="0.7" style="animation-delay:-0.5s;"/>'+
       '</svg>',
   };
+  // ---------- УНИКАЛЬНЫЕ SVG-ИКОНКИ ДЛЯ ЭФФЕКТОВ (вместо системных эмодзи) ----------
+  // Заменяют эмодзи во всплесках заброса/поклёва и в летающих частицах фона локаций —
+  // выглядят одинаково на любом устройстве и вписаны в стиль игры.
+  const FX_SVG = {
+    bubble: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" fill="rgba(255,255,255,0.12)" stroke="rgba(234,247,255,0.65)" stroke-width="1.4"/><circle cx="8.6" cy="8.6" r="2.1" fill="rgba(255,255,255,0.7)"/></svg>',
+    droplet: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C12 2 5 12.5 5 16.5A7 7 0 0 0 19 16.5C19 12.5 12 2 12 2Z" fill="#8FD9F2"/><ellipse cx="9.6" cy="14.2" rx="1.6" ry="2.2" fill="#fff" opacity="0.55"/></svg>',
+    wave: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M1 13c2.2-3 4.4-3 6.6 0s4.4 3 6.6 0 4.4-3 6.6 0" fill="none" stroke="#EAF7FF" stroke-width="2" stroke-linecap="round" opacity="0.7"/></svg>',
+    shell: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 3c4.5 1 8 5.2 8 10.2A8 8 0 0 1 4 13.2C4 8.2 7.5 4 12 3Z" fill="#F2C9A0"/><path d="M12 5.5v12M8.3 8.4l3.7-2.9 3.7 2.9M6 12l6-4.3 6 4.3M4.6 16l7.4-5.2 7.4 5.2" stroke="#D9A26B" stroke-width="0.9" fill="none" opacity="0.75" stroke-linecap="round"/></svg>',
+    snowflake: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><g stroke="#EAF7FF" stroke-width="1.7" stroke-linecap="round"><path d="M12 2v20"/><path d="M4.5 7l15 10"/><path d="M19.5 7l-15 10"/></g></svg>',
+    iceChip: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="12,2 20,8 17,20 7,20 4,8" fill="#CDEEF7" opacity="0.9" stroke="#EAF7FF" stroke-width="1"/></svg>',
+    leaf: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 20C4 10 12 4 20 4c0 8-6 16-16 16Z" fill="#4E8A3C"/><path d="M6.5 17.5C9.5 12 13 8.5 18 6.3" stroke="#2E5A24" stroke-width="1.1" fill="none" opacity="0.65" stroke-linecap="round"/></svg>',
+    dew: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C12 2 5 12.5 5 16.5A7 7 0 0 0 19 16.5C19 12.5 12 2 12 2Z" fill="#9FE0A0"/><ellipse cx="9.6" cy="14.2" rx="1.6" ry="2.2" fill="#fff" opacity="0.5"/></svg>',
+    sparkle: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2l1.9 6.1L20 10l-6.1 1.9L12 18l-1.9-6.1L4 10l6.1-1.9Z" fill="#FFF3C4"/></svg>',
+    star: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="12,2 15,9 22,9 16.5,13.5 18.5,21 12,16.8 5.5,21 7.5,13.5 2,9 9,9" fill="#F6C453"/></svg>',
+    glowBlue: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" fill="#6fe8e8" opacity="0.22"/><circle cx="12" cy="12" r="5.5" fill="#6fe8e8" opacity="0.85"/></svg>',
+    burst: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="12,1 14.3,8.2 21.5,6.3 16.6,12 21.5,17.7 14.3,15.8 12,23 9.7,15.8 2.5,17.7 7.4,12 2.5,6.3 9.7,8.2" fill="#FF7A59"/><polygon points="12,5 13.3,10 18,9 14.7,12 18,15 13.3,14 12,19 10.7,14 6,15 9.3,12 6,9 10.7,10" fill="#FFD98F"/></svg>',
+    exclaim: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="9.5" y="2" width="5" height="13" rx="2.4" fill="#FF7A59"/><circle cx="12" cy="20" r="2.6" fill="#FF7A59"/></svg>',
+    target: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9.5" fill="none" stroke="#F6C453" stroke-width="2"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="#F6C453" stroke-width="2"/><circle cx="12" cy="12" r="2" fill="#F6C453"/></svg>',
+  };
   const PARTICLE_CFG = {
     harbor: null,
-    reef: {emoji:['🫧'], count:9, anim:'bubbleRise', dur:[6,11], top:55, size:9},
-    ice: {emoji:['❄️'], count:16, anim:'snowFall', dur:[7,13], top:0, size:9},
-    jungle: {emoji:['🍃'], count:9, anim:'leafFall', dur:[8,14], top:0, size:11},
-    abyss: {emoji:['✨','🔵'], count:14, anim:'moteFloat', dur:[3,6], top:15, size:7},
+    reef: {icons:['bubble'], count:9, anim:'bubbleRise', dur:[6,11], top:55, size:13},
+    ice: {icons:['snowflake'], count:16, anim:'snowFall', dur:[7,13], top:0, size:12},
+    jungle: {icons:['leaf'], count:9, anim:'leafFall', dur:[8,14], top:0, size:15},
+    abyss: {icons:['sparkle','glowBlue'], count:14, anim:'moteFloat', dur:[3,6], top:15, size:10},
   };
   const sceneryBackEl = document.getElementById('scenery-back');
   const sceneryPartEl = document.getElementById('scenery-particles');
@@ -1088,48 +1247,95 @@
     for(let i=0;i<cfg.count;i++){
       const el = document.createElement('div');
       el.className = 'fx-p';
-      el.textContent = cfg.emoji[Math.floor(Math.random()*cfg.emoji.length)];
+      el.innerHTML = FX_SVG[cfg.icons[Math.floor(Math.random()*cfg.icons.length)]];
       el.style.left = (Math.random()*100)+'%';
       el.style.top = (cfg.top + Math.random()*30)+'%';
-      el.style.fontSize = (cfg.size + Math.random()*6)+'px';
+      const s = cfg.size + Math.random()*6;
+      el.style.width = s+'px'; el.style.height = s+'px';
       const dur = cfg.dur[0] + Math.random()*(cfg.dur[1]-cfg.dur[0]);
       el.style.animation = `${cfg.anim} ${dur}s linear infinite`;
       el.style.animationDelay = (-Math.random()*dur)+'s';
       sceneryPartEl.appendChild(el);
     }
   }
-  // ---------- АМБИЕНТНЫЕ РЫБЬИ ТЕНИ В ТОЛЩЕ ВОДЫ ----------
-  function fishShadowSVG(){
-    return '<svg viewBox="0 0 40 20" xmlns="http://www.w3.org/2000/svg">'+
-      '<ellipse cx="24" cy="10" rx="14" ry="6" fill="rgba(5,14,18,0.32)"/>'+
-      '<path d="M10,10 L0,3 L3,10 L0,17 Z" fill="rgba(5,14,18,0.28)"/>'+
-      '</svg>';
+  // ---------- ЖИВОЙ ФОН: НАСТОЯЩИЕ РЫБЫ ПЛАВАЮТ В ТОЛЩЕ ВОДЫ ----------
+  // Вместо одинаковой серой тени теперь плавают силуэты реальных видов рыб текущей
+  // локации (по её же SVG-дизайну, что и в коллекции/садке), в 3 слоях глубины —
+  // ближние крупнее и ярче, дальние мельче, туманнее и медленнее. Изредка проплывает
+  // крупный редкий вид, а некоторые рыбы оставляют за собой цепочку пузырьков.
+  const AMBIENT_LAYERS = [
+    {yMin:29, yMax:40, scaleMul:0.55, opacity:0.22, blur:1.1, speedMul:0.7,  z:1}, // дальний план
+    {yMin:37, yMax:55, scaleMul:0.88, opacity:0.42, blur:0.3, speedMul:1,    z:1}, // средний план
+    {yMin:46, yMax:70, scaleMul:1.25, opacity:0.7,  blur:0,   speedMul:1.35, z:2}, // ближний план
+  ];
+  function pickAmbientFish(){
+    const loc = currentLoc();
+    if(!loc || !loc.fish || !loc.fish.length) return null;
+    const common = loc.fish.filter(f=>f.tier<=2);
+    const rare = loc.fish.filter(f=>f.tier>=3);
+    if(rare.length && Math.random()<0.12) return rare[Math.floor(Math.random()*rare.length)];
+    const pool = common.length ? common : loc.fish;
+    return pool[Math.floor(Math.random()*pool.length)];
+  }
+  function spawnTrailBubble(hostEl){
+    if(!hostEl.isConnected) return;
+    const rect = hostEl.getBoundingClientRect();
+    const appRect = appEl.getBoundingClientRect();
+    const flipped = hostEl.dataset.flip === '1';
+    const bx = flipped ? rect.right : rect.left;
+    const by = rect.top + rect.height*0.4;
+    const el = document.createElement('div');
+    el.className = 'fx-p';
+    el.innerHTML = FX_SVG.bubble;
+    const s = 5+Math.random()*4;
+    el.style.width = s+'px'; el.style.height = s+'px';
+    el.style.left = (bx - appRect.left)+'px'; el.style.top = (by - appRect.top)+'px';
+    el.style.opacity = '.6';
+    el.style.animation = `bubbleRise ${2.4+Math.random()*1.4}s ease-out forwards`;
+    sceneryPartEl.appendChild(el);
+    setTimeout(()=>el.remove(), 4000);
   }
   function spawnAmbientFish(){
     if(document.hidden) return;
+    const fishDef = pickAmbientFish();
+    if(!fishDef) return;
+    const layer = AMBIENT_LAYERS[Math.floor(Math.random()*AMBIENT_LAYERS.length)];
     const el = document.createElement('div');
     el.className = 'fishshadow';
-    const size = 24 + Math.random()*22;
-    el.style.width = size+'px'; el.style.height = (size*0.5)+'px';
-    el.style.top = (36 + Math.random()*32)+'%';
+    const bigBonus = fishDef.tier>=3 ? 1.4 : 1;
+    const size = (26 + Math.random()*16) * layer.scaleMul * bigBonus;
+    el.style.width = size+'px'; el.style.height = (size*0.62)+'px';
+    el.style.top = (layer.yMin + Math.random()*(layer.yMax-layer.yMin))+'%';
     el.style.opacity = '0';
+    el.style.zIndex = layer.z;
+    el.style.filter = layer.blur ? `blur(${layer.blur}px)` : 'none';
     const dir = Math.random()<0.5 ? 1 : -1;
-    const startX = dir===1 ? -10 : 110, endX = dir===1 ? 110 : -10;
+    const startX = dir===1 ? -14 : 114, endX = dir===1 ? 114 : -14;
     el.style.left = startX+'%';
+    el.dataset.flip = dir===-1 ? '1' : '0';
     el.style.transform = dir===-1 ? 'scaleX(-1)' : 'scaleX(1)';
-    el.innerHTML = '<div class="wiggle">'+fishShadowSVG()+'</div>';
+    el.innerHTML = '<div class="wiggle">'+fishIconSVG(fishDef)+'</div>';
     sceneryPartEl.appendChild(el);
-    const dur = 10 + Math.random()*9;
+    const dur = (9 + Math.random()*8) / layer.speedMul;
     requestAnimationFrame(()=>{
       el.style.transition = `left ${dur}s linear, opacity 1.4s ease`;
-      el.style.opacity = '.55';
+      el.style.opacity = String(layer.opacity);
       el.style.left = endX+'%';
     });
+    let bubbleTimer = null;
+    if(layer.z===2 && Math.random()<0.55){
+      bubbleTimer = setInterval(()=>spawnTrailBubble(el), 1300+Math.random()*900);
+    }
     setTimeout(()=>{ el.style.opacity='0'; }, dur*1000 - 1300);
-    setTimeout(()=>{ el.remove(); }, dur*1000 + 200);
+    setTimeout(()=>{ if(bubbleTimer) clearInterval(bubbleTimer); el.remove(); }, dur*1000 + 200);
   }
-  setInterval(()=>{ if(Math.random()<0.75) spawnAmbientFish(); }, 4000);
-  setTimeout(spawnAmbientFish, 800);
+  setInterval(()=>{
+    if(Math.random()<0.82) spawnAmbientFish();
+    if(Math.random()<0.24) setTimeout(spawnAmbientFish, 300+Math.random()*500);
+  }, 3200);
+  setTimeout(spawnAmbientFish, 500);
+  setTimeout(spawnAmbientFish, 1600);
+  setTimeout(spawnAmbientFish, 2700);
 
   // ---------- РЯБЬ НА ВОДЕ ПОКА ПОПЛАВОК ЖДЁТ ----------
   function spawnRipple(){
@@ -1145,11 +1351,13 @@
     setTimeout(()=>ring.remove(), 2000);
   }
 
-  function burstParticles(x, y, emojis, count){
+  function burstParticles(x, y, icons, count){
     for(let i=0;i<(count||5);i++){
       const el = document.createElement('div');
       el.className = 'burst-p';
-      el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+      el.innerHTML = FX_SVG[icons[Math.floor(Math.random()*icons.length)]] || '';
+      const size = 13+Math.random()*9;
+      el.style.width = size+'px'; el.style.height = size+'px';
       el.style.left = x+'px'; el.style.top = y+'px';
       const ang = Math.random()*Math.PI*2, dist = 16+Math.random()*28;
       el.style.setProperty('--bx', (Math.cos(ang)*dist)+'px');
@@ -1167,8 +1375,8 @@
     xpText.textContent = formatNum(state.xp) + '/' + formatNum(xpNeeded(state.level));
     xpfill.style.width = Math.min(100, (state.xp/xpNeeded(state.level))*100) + '%';
     gearline.textContent = getRod(state.activeRod).name + ' · ' + getBait(state.activeBait).name;
-    const activeBoosts = BOOST_ITEMS.filter(b=>isBoostActive(b.id)).map(b=>b.ico+boostRemaining(b.id)+'м');
-    boostline.textContent = activeBoosts.join('  ');
+    const activeBoosts = BOOST_ITEMS.filter(b=>isBoostActive(b.id)).map(b=>'<span class="ico-inline">'+b.ico+'</span>'+boostRemaining(b.id)+'м');
+    boostline.innerHTML = activeBoosts.join('&nbsp; ');
     applySkin(state.activeSkin);
     locTitle.textContent = currentLoc().name;
     stageEl.style.background = `linear-gradient(to bottom, ${currentLoc().top} 0%, ${currentLoc().bottom} 32%, ${currentLoc().bottom} 33%, var(--water-deep) 100%)`;
@@ -1186,7 +1394,7 @@
       const unlocked = isLocUnlocked(loc);
       const p = document.createElement('div');
       p.className = 'locpill' + (loc.id===state.currentLocation?' active':'') + (!unlocked?' locked':'');
-      p.textContent = unlocked ? loc.name : ('🔒 ур.' + loc.unlockLevel);
+      p.innerHTML = unlocked ? loc.name : (LOCK_SVG + ' ур.' + loc.unlockLevel);
       if(unlocked) p.addEventListener('click', ()=>{ state.currentLocation = loc.id; saveState(); refreshTopUI(); });
       locrow.appendChild(p);
     });
@@ -1196,7 +1404,7 @@
     const today = todayStr();
     if(state.lastBonusDate !== today){
       const reward = 50 + Math.min(state.dailyStreak,10)*15;
-      document.getElementById('bonusText').textContent = 'Бонус за вход! +' + reward + ' 🪙';
+      document.getElementById('bonusText').innerHTML = 'Бонус за вход! +' + reward + ' ' + COIN_SVG;
       bonusbanner.classList.add('show');
       bonusbanner.dataset.reward = reward;
     } else {
@@ -1280,7 +1488,7 @@
   }
 
   const BITE_VARIANTS = ['bite-jitter','bite-jitter-2','bite-jitter-3'];
-  const BITE_BANGS = ['💥','✨','❗','🎯'];
+  const BITE_BANGS = ['burst','sparkle','exclaim','target'];
 
   function triggerBite(){
     if(gameState!=='waiting') return;
@@ -1293,10 +1501,10 @@
     splash.classList.remove('animate'); void splash.offsetWidth; splash.classList.add('animate');
     burstParticles(rect.left+rect.width/2, rect.top+rect.height/2, currentLoc().splashFx, 6);
     if(currentFish.tier >= 2){
-      burstParticles(rect.left+rect.width/2, rect.top+rect.height/2, ['✨','⭐'], currentFish.tier>=4?12:7);
+      burstParticles(rect.left+rect.width/2, rect.top+rect.height/2, ['sparkle','star'], currentFish.tier>=4?12:7);
     }
     if(currentFish.tier >= 3) shakeScreen();
-    biteBang.textContent = BITE_BANGS[Math.floor(Math.random()*BITE_BANGS.length)];
+    biteBang.innerHTML = FX_SVG[BITE_BANGS[Math.floor(Math.random()*BITE_BANGS.length)]];
     biteBang.style.left=rect.left+rect.width/2+'px'; biteBang.style.top=rect.top+'px';
     biteBang.classList.remove('show'); void biteBang.offsetWidth; biteBang.classList.add('show');
     status.textContent='КЛЮЁТ! Тяни!'; btn.textContent='Тяни!'; btn.classList.add('pull'); btn.disabled=false;
@@ -1348,7 +1556,7 @@
     haptic('light');
     updateReelBar();
     const rect = bobber.getBoundingClientRect();
-    burstParticles(rect.left+rect.width/2, rect.top+rect.height/2, ['💦'], 2);
+    burstParticles(rect.left+rect.width/2, rect.top+rect.height/2, ['droplet'], 2);
     if(reelProgress >= reelTarget){
       clearInterval(reelDecayInterval); clearTimeout(reelTimeout);
       landFish();
@@ -1409,7 +1617,7 @@
     setTimeout(()=>flyFishToCounter(fish), 260);
     if(fish.tier >= 2){
       const rect = bobber.getBoundingClientRect();
-      burstParticles(rect.left+rect.width/2, rect.top+rect.height/2, ['✨','⭐'], fish.tier>=4?16:9);
+      burstParticles(rect.left+rect.width/2, rect.top+rect.height/2, ['sparkle','star'], fish.tier>=4?16:9);
     }
     if(fish.tier >= 4){ goldFlash(); shakeScreen(); }
     state.totalCatches += 1;
@@ -1436,7 +1644,7 @@
     const rarityEl = document.getElementById('cc-rarity');
     rarityEl.textContent = RARITY_LABEL[fish.tier]; rarityEl.className = 'rarity r' + fish.tier;
     document.getElementById('cc-xp').textContent = '+' + (fish.xp * (xpBoosted?2:1)) + ' опыта' + (xpBoosted?' (x2 буст)':'');
-    document.getElementById('cc-weight').textContent = 'Вес: ' + weight.toFixed(2) + ' кг · цена ~' + fishPrice(fish, weight) + ' 🪙';
+    document.getElementById('cc-weight').innerHTML = 'Вес: ' + weight.toFixed(2) + ' кг · цена ~' + fishPrice(fish, weight) + ' ' + COIN_SVG;
     const ccCard = document.querySelector('#catchcard .card');
     ccCard.className = 'card' + (fish.tier>=4?' r-legend':(fish.tier>=2?' r-rare':''));
     catchcard.style.display = 'flex';
@@ -1488,6 +1696,59 @@
     haptic('light');
   });
 
+  // ---------- ОНБОРДИНГ (обучение при первом запуске) ----------
+  const ONBOARD_STEPS = [
+    { icon:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 27 L24 6" stroke="#B98550" stroke-width="2.6" stroke-linecap="round"/><path d="M24 6 Q28 16 22.5 25" fill="none" stroke="#F7F3E8" stroke-width="1.3" stroke-dasharray="2 2.4"/><path d="M22.5 25q-2.4 2-1.2 4.4" fill="none" stroke="#D9962C" stroke-width="1.8" stroke-linecap="round"/></svg>',
+      title:'Добро пожаловать в Тихую Гавань!', text:'Жми «Закинуть удочку» внизу экрана и жди, пока клюнет.' },
+    { icon:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 4a11 11 0 0 0-11 11v5l-2 4h26l-2-4v-5A11 11 0 0 0 16 4z" fill="#F6C453" stroke="#8A5A16" stroke-width="1.2"/><path d="M13 26a3 3 0 0 0 6 0z" fill="#8A5A16"/></svg>',
+      title:'Лови момент поклёвки', text:'Когда поплавок задёргается — быстро жми и тяни, чтобы подсечь рыбу, пока не сорвалась.' },
+    { icon:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><ellipse cx="16" cy="23" rx="10" ry="4" fill="#D9962C"/><ellipse cx="16" cy="18.3" rx="10" ry="4" fill="#F6C453" stroke="#8A5A16" stroke-width="1"/><ellipse cx="16" cy="13.6" rx="10" ry="4" fill="#FFE9B0" stroke="#8A5A16" stroke-width="1"/></svg>',
+      title:'Продавай улов', text:'Пойманная рыба попадает в инвентарь — заходи в «Рынок», чтобы обменять её на монеты.' },
+    { icon:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 8h3l2.6 13.5a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 2-1.6L27 12H10.4" fill="none" stroke="#F7F3E8" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="13.5" cy="27" r="1.9" fill="#F7F3E8"/><circle cx="21.5" cy="27" r="1.9" fill="#F7F3E8"/></svg>',
+      title:'Прокачивай снаряжение', text:'В «Магазине» покупай удочки, наживку и бусты, чтобы ловить рыбу крупнее и реже, плюс выполняй задания за награды.' },
+    { icon:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M4 16 27 5 20 27l-5-9-9-2z" fill="#F6C453" stroke="#8A5A16" stroke-width="1.3" stroke-linejoin="round"/><path d="M15 18 27 5" fill="none" stroke="#8A5A16" stroke-width="1.1"/></svg>',
+      title:'Позови друга на рыбалку', text:'Отправь другу свою ссылку — вы оба получите бонус монет, как только он начнёт играть.', share:true },
+  ];
+  let onboardIndex = 0;
+  const onboardModal = document.getElementById('onboardModal'),
+    onboardDots = document.getElementById('onboardDots'),
+    onboardIcon = document.getElementById('onboardIcon'),
+    onboardTitle = document.getElementById('onboardTitle'),
+    onboardText = document.getElementById('onboardText'),
+    onboardShareWrap = document.getElementById('onboardShareWrap'),
+    onboardNextBtn = document.getElementById('onboardNextBtn'),
+    onboardSkipBtn = document.getElementById('onboardSkipBtn');
+
+  function renderOnboardStep(){
+    const step = ONBOARD_STEPS[onboardIndex];
+    const last = onboardIndex === ONBOARD_STEPS.length - 1;
+    onboardIcon.innerHTML = step.icon;
+    onboardTitle.textContent = step.title;
+    onboardText.textContent = step.text;
+    onboardShareWrap.style.display = step.share ? 'block' : 'none';
+    onboardNextBtn.textContent = last ? 'Начать игру!' : 'Далее';
+    onboardSkipBtn.style.display = last ? 'none' : '';
+    onboardDots.innerHTML = ONBOARD_STEPS.map((_,i)=>'<span' + (i===onboardIndex?' class="active"':'') + '></span>').join('');
+  }
+  function openOnboarding(){
+    onboardIndex = 0;
+    renderOnboardStep();
+    onboardModal.classList.add('show');
+  }
+  function closeOnboarding(){
+    onboardModal.classList.remove('show');
+    if(!state.onboardingDone){ state.onboardingDone = true; saveState(); }
+  }
+  onboardNextBtn.addEventListener('click', ()=>{
+    haptic('light');
+    if(onboardIndex === ONBOARD_STEPS.length - 1){ closeOnboarding(); return; }
+    onboardIndex++;
+    renderOnboardStep();
+  });
+  onboardSkipBtn.addEventListener('click', closeOnboarding);
+  document.getElementById('onboardShareBtn').addEventListener('click', shareInvite);
+  document.getElementById('inviteBtn').addEventListener('click', shareInvite);
+
   // ---------- SHOP (gear) ----------
   function renderShop(){
     const list = document.getElementById('shoplist'); list.innerHTML = '';
@@ -1514,7 +1775,7 @@
     const durationMin = Math.max(1, Math.round(durationMs/60000));
     const el = document.createElement('div'); el.className='card2' + (active?' done':'');
     const disabled = state.coins < price;
-    const label = active ? ('Продлить · '+boostRemaining(item.id)+' мин') : (price + ' 🪙');
+    const label = active ? ('Продлить · '+boostRemaining(item.id)+' мин') : (price + ' ' + COIN_SVG);
     el.innerHTML = `<div class="icobox">${item.ico}</div>
       <div class="info"><div class="name">${item.name}${active?' · активен':''}</div><div class="desc">${item.desc} · ${durationMin} мин</div></div>
       <div class="action"><button class="${active?'btn-active':'btn-buy'}" ${disabled?'disabled':''}>${label}</button></div>`;
@@ -1543,8 +1804,8 @@
     let label, cls, disabled=false;
     if(active){ label='Выбрано'; cls='btn-owned'; disabled=true; }
     else if(owned){ label='Выбрать'; cls='btn-active'; }
-    else if(levelLocked){ label = '🔒 ур. ' + reqLevel; cls='btn-buy'; disabled=true; }
-    else { label = item.price===0 ? 'Выбрать' : (item.price + ' 🪙'); cls='btn-buy'; disabled = !affordable; }
+    else if(levelLocked){ label = LOCK_SVG + ' ур. ' + reqLevel; cls='btn-buy'; disabled=true; }
+    else { label = item.price===0 ? 'Выбрать' : (item.price + ' ' + COIN_SVG); cls='btn-buy'; disabled = !affordable; }
     const icoHTML = kind==='skin' ? skinSwatchHTML(item) : item.ico;
     el.className = 'card2' + (levelLocked?' locked':'');
     el.innerHTML = `<div class="icobox">${icoHTML}</div>
@@ -1584,7 +1845,7 @@
       el.innerHTML = `<div class="icobox">${fishIconSVG(f)}</div>
         <div class="info"><div class="name">${f.name} ×${count}</div><div class="desc">~${avgWeight.toFixed(2)} кг сред. · ${RARITY_LABEL[f.tier]} · вес влияет на цену</div></div>
         <div class="action">
-          <button class="btn-sell" data-act="sellstack">Продать всё · ${formatNum(total)} 🪙</button>
+          <button class="btn-sell" data-act="sellstack">Продать всё · ${formatNum(total)} ${COIN_SVG}</button>
         </div>`;
       el.querySelector('[data-act="sellstack"]').addEventListener('click', ()=>{
         const { total:sum } = stackValue(f);
@@ -1637,7 +1898,7 @@
       el.innerHTML = `<div class="qname">${q.text}</div>
         <div class="qbar"><div class="qfill" style="width:${pct}%"></div></div>
         <div class="qfoot">
-          <div class="qreward">${Math.min(q.progress,q.target)}/${q.target} · +${q.rewardCoins} 🪙 +${q.rewardXp} XP</div>
+          <div class="qreward">${Math.min(q.progress,q.target)}/${q.target} · +${q.rewardCoins} ${COIN_SVG} +${q.rewardXp} XP</div>
           <button class="qclaim ${q.claimed?'claimed':''}" ${(!done||q.claimed)?'disabled':''}>${q.claimed?'Получено':'Забрать'}</button>
         </div>`;
       el.querySelector('button').addEventListener('click', ()=>{
@@ -1680,7 +1941,7 @@
       <div class="stext">${ch.story}</div>
       <div class="qbar"><div class="qfill" style="width:${pct}%"></div></div>
       <div class="qfoot">
-        <div class="qreward">${Math.min(state.storyProgress,ch.target)}/${ch.target} · +${ch.rewardCoins} 🪙${ch.rewardXp?(' +'+ch.rewardXp+' XP'):''}${ch.rewardSkin?' · скин удочки':''}</div>
+        <div class="qreward">${Math.min(state.storyProgress,ch.target)}/${ch.target} · +${ch.rewardCoins} ${COIN_SVG}${ch.rewardXp?(' +'+ch.rewardXp+' XP'):''}${ch.rewardSkin?' · скин удочки':''}</div>
         <button class="qclaim" ${!done?'disabled':''}>Забрать и продолжить</button>
       </div>`;
     el.querySelector('button').addEventListener('click', ()=>{
@@ -1691,7 +1952,7 @@
     list.appendChild(el);
     if(STORY_QUESTS[state.storyChapter+1]){
       const next = document.createElement('div'); next.className='storynext';
-      next.textContent = '🔒 Следующая глава откроется после этой...';
+      next.innerHTML = LOCK_SVG + ' Следующая глава откроется после этой...';
       list.appendChild(next);
     }
   }
@@ -1746,7 +2007,12 @@
 
   // ---------- INIT ----------
   buildSkinDefs();
-  loadState(function(){ fixInventory(); ensureQuests(); ensureStory(); refreshTopUI(); syncLeaderboard(); });
+  loadState(function(){
+    fixInventory(); ensureQuests(); ensureStory(); refreshTopUI(); syncLeaderboard();
+    processReferral();
+    claimInviteRewards();
+    if(!state.onboardingDone) openOnboarding();
+  });
 })();
 </script>
 </body>
