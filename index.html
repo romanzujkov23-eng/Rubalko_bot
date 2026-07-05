@@ -25,13 +25,46 @@
   .wave{position:absolute; width:220%; left:-60%; background:rgba(245,239,227,0.05); border-radius:50%; animation:drift linear infinite;}
   @keyframes drift{0%{transform:translateX(0);} 100%{transform:translateX(30%);}}
 
+  /* ---------- ЖИВОЙ ФОН ЛОКАЦИЙ ---------- */
+  #scenery-back{position:absolute; top:0; left:0; width:100%; height:33%; overflow:hidden; z-index:0; pointer-events:none;}
+  #scenery-back svg{position:absolute; bottom:0; left:0; width:100%; height:100%;}
+  #scenery-particles{position:absolute; inset:0; overflow:hidden; z-index:1; pointer-events:none;}
+  .fx-p{position:absolute; will-change:transform, opacity;}
+  @keyframes snowFall{0%{transform:translateY(-10vh) translateX(0); opacity:0;} 8%{opacity:.9;} 100%{transform:translateY(70vh) translateX(18px); opacity:.2;}}
+  @keyframes leafFall{0%{transform:translateY(-8vh) translateX(0) rotate(0deg); opacity:0;} 10%{opacity:.95;} 100%{transform:translateY(65vh) translateX(-26px) rotate(200deg); opacity:.15;}}
+  @keyframes moteFloat{0%{transform:translateY(0) translateX(0); opacity:.15;} 50%{transform:translateY(-16px) translateX(8px); opacity:.9;} 100%{transform:translateY(0) translateX(0); opacity:.15;}}
+  @keyframes bubbleRise{0%{transform:translateY(0) scale(.6); opacity:0;} 15%{opacity:.85;} 100%{transform:translateY(-60vh) scale(1.1); opacity:0;}}
+  @keyframes auroraShift{0%{transform:translateX(-6%) scaleY(1);} 50%{transform:translateX(6%) scaleY(1.08);} 100%{transform:translateX(-6%) scaleY(1);}}
+  @keyframes swayTree{0%,100%{transform:rotate(-1.2deg);} 50%{transform:rotate(1.2deg);}}
+  @keyframes glowPulseFar{0%,100%{opacity:.35;} 50%{opacity:.9;}}
+  .sway{transform-origin:bottom center; animation:swayTree 4.5s ease-in-out infinite;}
+  #screen-fish[data-loc="abyss"] .sun, #screen-fish[data-loc="abyss"] .cloud{display:none;}
+  #screen-fish[data-loc="ice"] .sun{background:radial-gradient(circle, #EAF7FF, #BFE0EE 70%); box-shadow:0 0 30px 8px rgba(191,224,238,0.5);}
+  #screen-fish[data-loc="ice"] .cloud, #screen-fish[data-loc="jungle"] .cloud{opacity:.35;}
+
+  /* ---------- ЛУНКА ВО ЛЬДУ (ледяная локация) ---------- */
+  #icehole{position:absolute; width:78px; height:44px; transform:translate(-50%,-50%) scale(0); z-index:2; opacity:0; pointer-events:none; transition:opacity .3s ease, transform .35s cubic-bezier(.34,1.56,.64,1);}
+  #icehole.show{opacity:1; transform:translate(-50%,-50%) scale(1);}
+  #icehole svg{width:100%; height:100%; display:block;}
+
+  /* ---------- ЧАСТИЦЫ ЗАБРОСА / ПОКЛЁВКИ ПО ЛОКАЦИЯМ ---------- */
+  .burst-p{position:fixed; font-size:14px; pointer-events:none; z-index:4; will-change:transform,opacity;
+    animation:burstFly .75s ease-out forwards;}
+  .aurora{animation:auroraShift 7s ease-in-out infinite; transform-origin:50% 100%;}
+  .glowdot{animation:glowPulseFar 2.6s ease-in-out infinite;}
+  @keyframes burstFly{0%{transform:translate(-50%,-50%) translate(0,0) scale(.5) rotate(0deg); opacity:1;}
+    100%{transform:translate(-50%,-50%) translate(var(--bx), var(--by)) scale(1.05) rotate(var(--br)); opacity:0;}}
+
   #topbar{position:absolute; top:0; left:0; width:100%; padding:calc(10px + env(safe-area-inset-top)) 12px 10px; display:flex; justify-content:space-between; align-items:flex-start; z-index:5; gap:6px;}
   .pill{background:rgba(8,34,42,0.72); border:1px solid rgba(245,239,227,0.25);
     border-radius:999px; padding:5px 11px; font-weight:800; font-size:12px; display:flex; align-items:center; gap:5px;
     flex-shrink:0; white-space:nowrap;}
   #levelbox{background:rgba(8,34,42,0.55); border:1px solid rgba(245,239,227,0.25); border-radius:14px; padding:5px 11px 6px;
-    min-width:100px; flex-shrink:0;}
-  #levelbox .lvltop{display:flex; justify-content:space-between; font-size:10px; font-weight:800; margin-bottom:3px;}
+    flex:1 1 0; min-width:0; max-width:230px;}
+  #levelbox .lvltop{display:flex; justify-content:space-between; align-items:center; font-size:10px; font-weight:800; margin-bottom:3px; gap:6px;}
+  #levelbox .lvltop span{white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-variant-numeric:tabular-nums;}
+  #levelbox #lvlVal{flex-shrink:0; max-width:46%;}
+  #levelbox #xpText{min-width:0; flex-shrink:1; text-align:right;}
   #levelbox .xpbar{height:5px; border-radius:4px; background:rgba(245,239,227,0.2); overflow:hidden;}
   #levelbox .xpfill{height:100%; background:var(--gold); width:0%;}
 
@@ -57,8 +90,19 @@
   #rodsvg.casting{animation:rodCast .55s cubic-bezier(.3,.1,.3,1);}
   @keyframes rodIdle{0%,100%{transform:rotate(0deg);} 50%{transform:rotate(-1.6deg);}}
   @keyframes rodCast{0%{transform:rotate(2deg);} 25%{transform:rotate(-22deg);} 55%{transform:rotate(8deg);} 78%{transform:rotate(-4deg);} 100%{transform:rotate(0deg);}}
-  #rodpath{fill:var(--rod-color, #6b4726); stroke:none;}
+  #rodpath{fill:var(--rod-color, #6b4726); stroke:none; transition:filter .4s ease;}
   #reelpath{fill:var(--rod-color, #6b4726); opacity:.9;}
+  #cork ellipse{fill:#D8C39A;}
+  #rodsvg.glow-skin{filter:drop-shadow(0 0 7px var(--glow-color,#33f0ff)) drop-shadow(0 0 16px var(--glow-color,#33f0ff)); animation:rodGlowPulse 1.8s ease-in-out infinite;}
+  @keyframes rodGlowPulse{0%,100%{filter:drop-shadow(0 0 5px var(--glow-color,#33f0ff)) drop-shadow(0 0 10px var(--glow-color,#33f0ff));}
+    50%{filter:drop-shadow(0 0 10px var(--glow-color,#33f0ff)) drop-shadow(0 0 22px var(--glow-color,#33f0ff));}}
+  #rodsvg.legend-skin{animation:legendHue 4s linear infinite, rodIdle 3.4s ease-in-out infinite;}
+  #rodsvg.legend-skin.casting{animation:legendHue 4s linear infinite, rodCast .55s cubic-bezier(.3,.1,.3,1);}
+  @keyframes legendHue{0%{filter:hue-rotate(0deg) drop-shadow(0 0 10px #F2C14E);} 50%{filter:hue-rotate(180deg) drop-shadow(0 0 14px #B14EF2);} 100%{filter:hue-rotate(360deg) drop-shadow(0 0 10px #F2C14E);}}
+
+  .skinswatch{width:36px; height:36px; border-radius:11px; border:1px solid rgba(245,239,227,0.35); flex-shrink:0;}
+  @keyframes skinGlowPulse{0%,100%{filter:brightness(1) saturate(1);} 50%{filter:brightness(1.4) saturate(1.3);}}
+  @keyframes skinLegendSwatch{0%{filter:hue-rotate(0deg);} 100%{filter:hue-rotate(360deg);}}
 
   #line{position:fixed; left:0; top:0; height:2px; width:1px;
     background:linear-gradient(to right, rgba(245,239,227,0.92), rgba(245,239,227,0.5));
@@ -203,24 +247,152 @@
   .modal-btn-cancel{background:rgba(245,239,227,0.14); color:var(--cream);}
   .modal-btn-danger{background:#E85A4A; color:#fff;}
 
-  #levelupToast{position:absolute; top:14%; left:50%; transform:translateX(-50%) translateY(-14px); z-index:35;
-    background:var(--gold); color:var(--ink); border-radius:16px; padding:10px 18px; font-family:'Baloo 2',sans-serif;
-    font-weight:800; font-size:14px; box-shadow:0 10px 24px rgba(0,0,0,0.4); opacity:0; pointer-events:none;
-    transition:opacity .25s ease, transform .25s ease; text-align:center; white-space:nowrap;}
-  #levelupToast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  #levelupToast{position:absolute; top:14%; left:50%; transform:translateX(-50%) translateY(-14px) scale(.7); z-index:35;
+    background:linear-gradient(180deg, var(--gold), #D89A2E); color:var(--ink); border-radius:16px; padding:10px 18px; font-family:'Baloo 2',sans-serif;
+    font-weight:800; font-size:14px; box-shadow:0 10px 24px rgba(0,0,0,0.4), 0 0 0 3px rgba(255,255,255,0.25) inset; opacity:0; pointer-events:none;
+    transition:opacity .3s cubic-bezier(.34,1.56,.64,1), transform .4s cubic-bezier(.34,1.56,.64,1); text-align:center; white-space:nowrap;}
+  #levelupToast.show{opacity:1; transform:translateX(-50%) translateY(0) scale(1); animation:toastWiggle 2.2s ease-in-out .3s;}
+  @keyframes toastWiggle{0%,100%{transform:translateX(-50%) translateY(0) scale(1) rotate(0deg);} 20%{transform:translateX(-50%) translateY(0) scale(1) rotate(-2deg);} 35%{transform:translateX(-50%) translateY(0) scale(1) rotate(2deg);} 50%{transform:translateX(-50%) translateY(0) scale(1) rotate(-1deg);}}
+
+  /* ==================== ЖИВОЙ КАРТУННЫЙ СЛОЙ: анимации, полировка UI, переходы ==================== */
+  :root{ --bounce:cubic-bezier(.34,1.56,.64,1); --smooth:cubic-bezier(.22,.9,.32,1); }
+
+  /* Заголовки в мультяшном стиле — мягкая обводка + объёмная тень */
+  .title h1, .subhead h2, #catchcard h2, .modal-card h2{
+    -webkit-text-stroke:.6px rgba(8,34,42,0.55);
+    text-shadow:0 3px 0 rgba(8,34,42,0.35), 0 6px 10px rgba(0,0,0,0.25);
+  }
+  .title h1{ animation:titleFloat 4s ease-in-out infinite; }
+  @keyframes titleFloat{0%,100%{transform:translateY(0);} 50%{transform:translateY(-2px);}}
+
+  /* Солнце живее */
+  .sun{ animation:sunPulse 3.6s ease-in-out infinite; }
+  @keyframes sunPulse{0%,100%{box-shadow:0 0 40px 10px rgba(242,193,78,0.5); transform:translateX(-50%) scale(1);} 50%{box-shadow:0 0 54px 16px rgba(242,193,78,0.7); transform:translateX(-50%) scale(1.05);}}
+  .sun-ray{position:absolute; top:5%; left:50%; width:160px; height:160px; transform:translate(-50%,-50%);
+    background:radial-gradient(circle, rgba(255,231,176,0.35), transparent 70%); animation:sunRaySpin 14s linear infinite; pointer-events:none;}
+  @keyframes sunRaySpin{0%{transform:translate(-50%,-50%) rotate(0deg) scale(1);} 50%{transform:translate(-50%,-50%) rotate(180deg) scale(1.15);} 100%{transform:translate(-50%,-50%) rotate(360deg) scale(1);}}
+  #screen-fish[data-loc="abyss"] .sun-ray, #screen-fish[data-loc="ice"] .sun-ray{opacity:.4;}
+  .birds{position:absolute; font-size:13px; opacity:.6; animation:cloudDrift linear infinite; will-change:transform;}
+  #screen-fish[data-loc="abyss"] .birds{display:none;}
+  .sparkle{position:absolute; width:4px; height:4px; border-radius:50%; background:rgba(255,255,255,0.85);
+    box-shadow:0 0 6px 1px rgba(255,255,255,0.6); animation:sparkleTwinkle 2.4s ease-in-out infinite;}
+  @keyframes sparkleTwinkle{0%,100%{opacity:0; transform:scale(.5);} 50%{opacity:.95; transform:scale(1.3);}}
+
+  /* Плюшки верхней панели — приятный поп при изменении значения */
+  .pill, #levelbox{ transition:transform .12s var(--bounce); }
+  .pill.bump, #levelbox.bump{ animation:pillBump .38s var(--bounce); }
+  @keyframes pillBump{0%{transform:scale(1);} 40%{transform:scale(1.18);} 100%{transform:scale(1);}}
+  #levelbox .xpfill{ transition:width .5s var(--smooth); background:linear-gradient(90deg, var(--gold), #FFE39A); box-shadow:0 0 8px rgba(242,193,78,0.6); }
+
+  /* Кнопка заброса — дышит, пока ждёт тапа, и даёт объёмный отклик при нажатии */
+  #mainbtn{ animation:mainbtnBreathe 2.4s ease-in-out infinite; position:relative; overflow:hidden; }
+  #mainbtn:disabled{ animation:none; }
+  #mainbtn.pull{ animation:mainbtnUrge 0.5s ease-in-out infinite; }
+  @keyframes mainbtnBreathe{0%,100%{box-shadow:0 6px 0 #8A6318, 0 8px 16px rgba(0,0,0,0.35), 0 0 0 0 rgba(242,193,78,0.5);} 50%{box-shadow:0 6px 0 #8A6318, 0 10px 22px rgba(0,0,0,0.4), 0 0 0 8px rgba(242,193,78,0);}}
+  @keyframes mainbtnUrge{0%,100%{transform:scale(1);} 50%{transform:scale(1.035);}}
+  #mainbtn::after{content:''; position:absolute; top:0; left:-60%; width:40%; height:100%;
+    background:linear-gradient(120deg, transparent, rgba(255,255,255,0.55), transparent);
+    transform:skewX(-20deg); animation:btnShine 3.2s ease-in-out infinite;}
+  @keyframes btnShine{0%{left:-60%;} 35%{left:130%;} 100%{left:130%;}}
+  .ripple{position:absolute; border-radius:50%; background:rgba(255,255,255,0.55); transform:scale(0); opacity:.9;
+    animation:rippleGrow .55s ease-out forwards; pointer-events:none;}
+  @keyframes rippleGrow{to{transform:scale(2.6); opacity:0;}}
+
+  /* Карточки улова — влетают с упругим поклоном, рамка светится по редкости */
+  #catchcard .card{ animation:cardPop .5s var(--bounce); }
+  @keyframes cardPop{0%{transform:scale(.55) rotate(-4deg); opacity:0;} 60%{transform:scale(1.06) rotate(1deg); opacity:1;} 100%{transform:scale(1) rotate(0deg);}}
+  #catchcard .card.r2{ box-shadow:0 20px 40px rgba(0,0,0,0.5), 0 0 0 2px #7FD68A, 0 0 26px 4px rgba(127,214,138,0.45); }
+  #catchcard .card.r3{ box-shadow:0 20px 40px rgba(0,0,0,0.5), 0 0 0 2px #5AB0E8, 0 0 26px 4px rgba(90,176,232,0.5); }
+  #catchcard .card.r4{ box-shadow:0 20px 40px rgba(0,0,0,0.5), 0 0 0 3px #F2C14E, 0 0 34px 8px rgba(242,193,78,0.65); animation:cardPop .5s var(--bounce), legendCardGlow 1.6s ease-in-out infinite .5s; }
+  @keyframes legendCardGlow{0%,100%{box-shadow:0 20px 40px rgba(0,0,0,0.5), 0 0 0 3px #F2C14E, 0 0 34px 8px rgba(242,193,78,0.65);} 50%{box-shadow:0 20px 40px rgba(0,0,0,0.5), 0 0 0 3px #F2C14E, 0 0 48px 14px rgba(242,193,78,0.9);}}
+  #catchcard .fishico{ animation:fishicoWiggle 1.6s ease-in-out infinite; }
+  @keyframes fishicoWiggle{0%,100%{transform:rotate(-4deg);} 50%{transform:rotate(4deg);}}
+  #catchcard{ transition:background .25s ease; }
+
+  /* Всплывающие конфетти/звёздочки */
+  .confetti-p{position:fixed; z-index:45; pointer-events:none; will-change:transform,opacity;
+    animation:confettiFall var(--cdur,1.1s) ease-in forwards;}
+  @keyframes confettiFall{0%{transform:translate(-50%,-50%) translate(0,0) rotate(0deg) scale(1); opacity:1;}
+    100%{transform:translate(-50%,-50%) translate(var(--cx),var(--cy)) rotate(var(--cr)) scale(.6); opacity:0;}}
+
+  /* Навигация — активная иконка подпрыгивает, лёгкий отклик на тап */
+  .navbtn{ transition:color .15s ease, transform .12s var(--bounce); }
+  .navbtn:active{ transform:scale(.9); }
+  .navbtn.active .navico{ animation:navBounce .45s var(--bounce); }
+  @keyframes navBounce{0%{transform:translateY(0) scale(1);} 35%{transform:translateY(-5px) scale(1.2);} 100%{transform:translateY(0) scale(1);}}
+  .navbtn.active{ position:relative; }
+  .navbtn.active::before{content:''; position:absolute; top:2px; width:5px; height:5px; border-radius:50%; background:var(--gold);
+    animation:navDot .3s var(--bounce); box-shadow:0 0 6px var(--gold);}
+  @keyframes navDot{0%{transform:scale(0);} 100%{transform:scale(1);}}
+
+  /* Переходы между разделами меню — мягкое всплытие вместо резкого display:none */
+  .subscreen{ opacity:0; transform:translateY(16px) scale(.98); pointer-events:none; display:flex;
+    transition:opacity .32s var(--smooth), transform .32s var(--smooth); }
+  .subscreen.show{ opacity:1; transform:translateY(0) scale(1); pointer-events:auto; }
+
+  /* Списки карточек — упругое появление по очереди */
+  .pop-in{ animation:popIn .45s var(--bounce) backwards; }
+  @keyframes popIn{0%{opacity:0; transform:translateY(16px) scale(.92);} 100%{opacity:1; transform:translateY(0) scale(1);}}
+
+  /* Кнопки карточек и вкладок — живой тактильный отклик */
+  .card2, .questcard, .storycard, .lbrow{ transition:transform .15s var(--bounce), box-shadow .15s ease; }
+  button{ position:relative; overflow:hidden; }
+  .card2 button, .questcard .qclaim, .storycard .qclaim, #sellall, .qtab, .btn-reset-progress{
+    transition:transform .1s var(--bounce), filter .15s ease; position:relative; overflow:hidden;}
+  .card2 button:active:not(:disabled), .questcard .qclaim:active:not(:disabled), .storycard .qclaim:active:not(:disabled),
+  #sellall:active, .qtab:active, .btn-reset-progress:active{ transform:scale(.92); filter:brightness(.94); }
+  .qtab.active{ animation:tabPop .3s var(--bounce); }
+  @keyframes tabPop{0%{transform:scale(.9);} 100%{transform:scale(1);}}
+
+  /* Полоски прогресса квестов — переливаются, когда выполнены */
+  .qbar{ position:relative; }
+  .qfill{ transition:width .5s var(--smooth); position:relative; }
+  .questcard.done .qfill, .storycard.done .qfill{ background:linear-gradient(90deg, var(--gold), #FFE9B8, var(--gold)); background-size:200% 100%; animation:goldShimmer 1.8s linear infinite; }
+  @keyframes goldShimmer{0%{background-position:0% 0;} 100%{background-position:200% 0;}}
+  .questcard.done, .storycard.done{ animation:questDoneGlow 1.8s ease-in-out infinite; }
+  @keyframes questDoneGlow{0%,100%{box-shadow:0 0 0 0 rgba(242,193,78,0);} 50%{box-shadow:0 0 16px 2px rgba(242,193,78,0.35);}}
+
+  /* Плашка бонуса за вход — заметнее приглашает нажать */
+  #bonusbanner.show{ animation:bonusIn .45s var(--bounce), bonusPulse 1.8s ease-in-out .5s infinite; }
+  @keyframes bonusIn{0%{opacity:0; transform:translateX(-50%) translateY(-14px) scale(.7);} 100%{opacity:1; transform:translateX(-50%) translateY(0) scale(1);}}
+  @keyframes bonusPulse{0%,100%{box-shadow:0 6px 14px rgba(0,0,0,0.3);} 50%{box-shadow:0 6px 22px rgba(242,193,78,0.55);}}
+
+  /* Иконки/значки рыб в списках — лёгкое покачивание, как живые */
+  .card2:not(.locked) .icobox svg{ animation:iconSway 3.4s ease-in-out infinite; }
+  @keyframes iconSway{0%,100%{transform:rotate(-3deg);} 50%{transform:rotate(3deg);}}
+
+  /* Модалка сброса — влетает с упругостью */
+  .modal-card{ animation:cardPop .4s var(--bounce); }
+
+  /* Локационные пилюли — активная слегка увеличена и подсвечена */
+  .locpill{ transition:transform .18s var(--bounce), background .2s ease; }
+  .locpill.active{ transform:scale(1.06); box-shadow:0 0 0 2px rgba(242,193,78,0.4), 0 4px 10px rgba(0,0,0,0.25); }
+  .locpill:active:not(.locked){ transform:scale(.94); }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
+  }
 </style>
 </head>
 <body>
 
 <div id="app">
   <div id="screen-fish">
+    <div id="scenery-back"></div>
+    <div id="scenery-particles"></div>
     <div class="sun"></div>
+    <div class="sun-ray"></div>
     <div class="cloud" style="top:6%; animation-duration:38s;">☁️</div>
     <div class="cloud" style="top:13%; animation-duration:52s; animation-delay:-20s; font-size:20px;">☁️</div>
+    <div class="cloud" style="top:2%; animation-duration:64s; animation-delay:-40s; font-size:16px;">☁️</div>
+    <div class="birds" style="top:9%; animation-duration:46s; animation-delay:-14s;">🐦</div>
     <div class="ripple-layer">
       <div class="wave" style="top:10%; height:40px; animation-duration:9s;"></div>
       <div class="wave" style="top:35%; height:60px; animation-duration:13s;"></div>
       <div class="wave" style="top:65%; height:50px; animation-duration:11s;"></div>
+      <div class="sparkle" style="top:18%; left:20%; animation-delay:-.4s;"></div>
+      <div class="sparkle" style="top:42%; left:66%; animation-delay:-1.6s;"></div>
+      <div class="sparkle" style="top:58%; left:38%; animation-delay:-.9s;"></div>
     </div>
     <div id="topbar">
       <div class="pill"><span>🪙</span><span id="coinsVal">0</span></div>
@@ -235,17 +407,45 @@
     <div id="bonusbanner">🎁 <span id="bonusText">Бонус готов!</span><button id="bonusBtn">Забрать</button></div>
 
     <svg id="rodsvg" viewBox="0 0 300 500" preserveAspectRatio="xMaxYMax meet">
+      <defs id="skinDefs"></defs>
+      <!-- бланк удочки -->
       <path id="rodpath" d="M 281 494 Q 145 260 148.5 24 L 151.5 24 Q 155 260 295 494 Z"/>
-      <path d="M 283 490 Q 147 260 149.5 26" fill="none" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round"/>
-      <circle cx="217.6" cy="353.4" r="4.2" fill="none" stroke="#1c1108" stroke-width="2.4"/>
-      <circle cx="177.9" cy="236" r="3.5" fill="none" stroke="#1c1108" stroke-width="2.1"/>
-      <circle cx="155.5" cy="118.3" r="2.7" fill="none" stroke="#1c1108" stroke-width="1.8"/>
+      <path d="M 283 490 Q 147 260 149.5 26" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/>
+      <path d="M 279 492 Q 143 260 147.5 24" fill="none" stroke="rgba(0,0,0,0.18)" stroke-width="1.4" stroke-linecap="round"/>
+      <!-- пробковая рукоять -->
+      <g id="cork" opacity="0.92">
+        <ellipse cx="288" cy="475" rx="10.5" ry="4.2" transform="rotate(-35 288 475)"/>
+        <ellipse cx="281.5" cy="458" rx="10" ry="4" transform="rotate(-35 281.5 458)"/>
+        <ellipse cx="275" cy="441" rx="9.4" ry="3.7" transform="rotate(-35 275 441)"/>
+        <ellipse cx="268.5" cy="424" rx="8.8" ry="3.4" transform="rotate(-35 268.5 424)"/>
+      </g>
+      <!-- кольца обмотки (тюльпаны) -->
+      <g id="rodguides">
+        <ellipse cx="219" cy="356" rx="7.5" ry="3" fill="none" stroke="#1c1108" stroke-width="1.3" opacity="0.8"/>
+        <circle cx="219" cy="356" r="4.6" fill="none" stroke="#1c1108" stroke-width="2.5"/>
+        <ellipse cx="196" cy="304" rx="6.6" ry="2.7" fill="none" stroke="#1c1108" stroke-width="1.2" opacity="0.8"/>
+        <circle cx="196" cy="304" r="4.1" fill="none" stroke="#1c1108" stroke-width="2.2"/>
+        <ellipse cx="177.9" cy="236" rx="5.8" ry="2.4" fill="none" stroke="#1c1108" stroke-width="1.1" opacity="0.8"/>
+        <circle cx="177.9" cy="236" r="3.5" fill="none" stroke="#1c1108" stroke-width="2.1"/>
+        <ellipse cx="163.5" cy="170" rx="4.8" ry="2" fill="none" stroke="#1c1108" stroke-width="1" opacity="0.8"/>
+        <circle cx="163.5" cy="170" r="3" fill="none" stroke="#1c1108" stroke-width="1.9"/>
+        <circle cx="155.5" cy="118.3" r="2.7" fill="none" stroke="#1c1108" stroke-width="1.8"/>
+        <circle cx="150.8" cy="60" r="2.1" fill="none" stroke="#1c1108" stroke-width="1.4"/>
+      </g>
+      <!-- катушкодержатель -->
       <rect x="266" y="450" width="30" height="58" rx="14" fill="#3b2a1c" transform="rotate(-35 281 479)"/>
+      <!-- катушка -->
       <ellipse id="reelpath" cx="270" cy="440" rx="17" ry="21"/>
-      <circle cx="270" cy="440" r="7" fill="#1c1108" opacity=".55"/>
-      <rect x="266" y="418" width="8" height="16" rx="3" fill="#1c1108" opacity=".7" transform="rotate(20 270 426)"/>
+      <ellipse cx="270" cy="440" rx="17" ry="21" fill="none" stroke="rgba(0,0,0,0.25)" stroke-width="1.5"/>
+      <circle cx="270" cy="440" r="9" fill="none" stroke="#1c1108" stroke-width="1.4" opacity=".5"/>
+      <circle cx="270" cy="440" r="4.5" fill="#1c1108" opacity=".6"/>
+      <rect x="266" y="418" width="8" height="16" rx="3" fill="#1c1108" opacity=".75" transform="rotate(20 270 426)"/>
+      <circle cx="270" cy="416" r="2.6" fill="#1c1108" opacity=".85"/>
+      <!-- комель -->
+      <ellipse cx="291" cy="498" rx="9.5" ry="5.2" fill="#1c1108" opacity="0.85" transform="rotate(-35 291 498)"/>
       <circle id="rodtip" cx="150" cy="24" r="3" fill="none" stroke="#1c1108" stroke-width="2"/>
     </svg>
+    <div id="icehole"></div>
     <div id="line"></div>
     <div id="bobber" class="hidden"><div class="body"></div></div>
     <div id="splash"></div>
@@ -338,8 +538,71 @@
     }
   }
 
+  // ---------- ЖИВОЙ UI: тактильный отклик на кнопках ----------
+  document.addEventListener('pointerdown', function(e){
+    const btn = e.target.closest('button');
+    if(!btn || btn.disabled) return;
+    const rect = btn.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height) * 1.3;
+    const rip = document.createElement('span');
+    rip.className = 'ripple';
+    rip.style.width = rip.style.height = size + 'px';
+    rip.style.left = (e.clientX - rect.left - size/2) + 'px';
+    rip.style.top = (e.clientY - rect.top - size/2) + 'px';
+    btn.appendChild(rip);
+    setTimeout(()=>rip.remove(), 600);
+  }, {passive:true});
+
+  // ---------- ЖИВОЙ UI: конфетти для приятных моментов (улов, уровень, награды) ----------
+  const CONFETTI_COLORS = ['#F2C14E','#E8734A','#7FD68A','#5AB0E8','#F5EFE3','#B14EF2'];
+  function confettiBurst(x, y, count){
+    const n = count || 18;
+    for(let i=0;i<n;i++){
+      const el = document.createElement('div');
+      el.className = 'confetti-p';
+      const isDot = Math.random() < 0.4;
+      const size = 5 + Math.random()*6;
+      el.style.width = size + 'px'; el.style.height = (isDot?size:size*1.6) + 'px';
+      el.style.background = CONFETTI_COLORS[Math.floor(Math.random()*CONFETTI_COLORS.length)];
+      el.style.borderRadius = isDot ? '50%' : '2px';
+      el.style.left = x + 'px'; el.style.top = y + 'px';
+      const ang = (-Math.PI/2) + (Math.random()-0.5)*Math.PI*1.4;
+      const dist = 40 + Math.random()*90;
+      el.style.setProperty('--cx', (Math.cos(ang)*dist) + 'px');
+      el.style.setProperty('--cy', (Math.sin(ang)*dist + 40) + 'px');
+      el.style.setProperty('--cr', (Math.random()*520-260) + 'deg');
+      el.style.setProperty('--cdur', (0.7 + Math.random()*0.6) + 's');
+      document.body.appendChild(el);
+      setTimeout(()=>el.remove(), 1400);
+    }
+  }
+  function confettiFromEl(el, count){
+    if(!el) return;
+    const r = el.getBoundingClientRect();
+    confettiBurst(r.left + r.width/2, r.top + r.height/2, count);
+  }
+
+  // ---------- ЖИВОЙ UI: карточки списков появляются по очереди ----------
+  function animateListIn(container){
+    if(!container) return;
+    Array.from(container.children).forEach((el, i)=>{
+      el.style.animationDelay = Math.min(i*35, 350) + 'ms';
+      el.classList.add('pop-in');
+    });
+  }
+
+  // ---------- ЖИВОЙ UI: плюшки шапки подпрыгивают при изменении значения ----------
+  const bumpTracker = {};
+  function bumpIfChanged(el, key, value){
+    if(!el) return;
+    if(bumpTracker[key] !== undefined && bumpTracker[key] !== value){
+      el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
+    }
+    bumpTracker[key] = value;
+  }
+
   // ====== ЗАПОЛНИ ЭТУ СТРОКУ ПОСЛЕ НАСТРОЙКИ FIREBASE (см. инструкцию в чате) ======
-  const FIREBASE_URL = "https://guhgg-83fab-default-rtdb.europe-west1.firebasedatabase.app";
+  const FIREBASE_URL = "ВСТАВЬ-СВОЙ-URL-СЮДА";
   // Пример: "https://tihaya-gavan-default-rtdb.europe-west1.firebasedatabase.app"
   // =================================================================================
 
@@ -449,7 +712,8 @@
   }
 
   const LOCATIONS = [
-    { id:'harbor', name:'Тихая Гавань', unlockLevel:1, top:'#F2A65A', bottom:'#1E5A6B',
+    { id:'harbor', name:'Тихая Гавань', unlockLevel:1, top:'#F2A65A', bottom:'#1E5A6B', scenery:'harbor',
+      splashFx:['💦','🌊'], flavor:{cast:'Закидываем удочку с причала...', wait:'Тихо... жди клёва'},
       fish:[
         {id:'roach', name:'Плотвичка', ico:'🐟', tier:0, coins:[5,10], xp:5, design:{type:'fish', body:'#C9D6DA', belly:'#EFF5F2', fin:'#8FA6AC', tail:'fork'}},
         {id:'gudgeon', name:'Пескарь', ico:'🐠', tier:0, coins:[4,9], xp:5, design:{type:'fish', body:'#B99A6B', belly:'#EDDFC5', fin:'#8A6B42', tail:'round', pattern:'spots', patternColor:'#6B4A2B'}},
@@ -461,7 +725,8 @@
         {id:'catfish', name:'Сом', ico:'🐊', tier:3, coins:[32,55], xp:27, design:{type:'fish', body:'#5C5347', belly:'#A69A82', fin:'#3E362B', tail:'round', elong:1.3, whiskers:true}},
         {id:'golden', name:'Золотая рыбка', ico:'✨', tier:4, coins:[80,120], xp:60, design:{type:'fish', body:'#F2C14E', belly:'#FFF0C2', fin:'#E8A93E', tail:'fan', pattern:'scale', patternColor:'#E8A93E'}},
       ]},
-    { id:'reef', name:'Морской Риф', unlockLevel:5, top:'#4FB3BF', bottom:'#0E3B4A',
+    { id:'reef', name:'Морской Риф', unlockLevel:5, top:'#4FB3BF', bottom:'#0E3B4A', scenery:'reef',
+      splashFx:['🫧','🐚'], flavor:{cast:'Заброс к коралловому рифу...', wait:'Бирюзовые волны... жди клёва'},
       fish:[
         {id:'herring', name:'Сельдь', ico:'🐟', tier:0, coins:[8,15], xp:8, design:{type:'fish', body:'#A9C9D9', belly:'#F0F7FA', fin:'#7397A8', tail:'fork'}},
         {id:'sardine', name:'Ставрида', ico:'🐠', tier:0, coins:[7,14], xp:8, design:{type:'fish', body:'#6FAFA0', belly:'#E4F2EC', fin:'#4A8071', tail:'fork', pattern:'stripes', patternColor:'#2E5A4D'}},
@@ -473,7 +738,8 @@
         {id:'moray', name:'Мурена', ico:'🐍', tier:3, coins:[52,85], xp:36, design:{type:'fish', body:'#8A7052', belly:'#B9A886', fin:'#5C4A34', tail:'pointed', elong:2.0, depth:0.55, pattern:'spots', patternColor:'#4A3B2A', teeth:true}},
         {id:'octopus', name:'Редкий осьминог', ico:'🐙', tier:4, coins:[130,200], xp:85, design:{type:'cephalopod', body:'#8F4E8C', arms:8}},
       ]},
-    { id:'ice', name:'Ледяное Озеро', unlockLevel:10, top:'#BFE8F2', bottom:'#123244',
+    { id:'ice', name:'Ледяное Озеро', unlockLevel:10, top:'#BFE8F2', bottom:'#123244', scenery:'ice',
+      splashFx:['❄️','🧊'], flavor:{cast:'Пробиваем лунку во льду и опускаем леску...', wait:'Тишина подо льдом... жди поклёвки'},
       fish:[
         {id:'icebass', name:'Ледяной окунь', ico:'🧊', tier:0, coins:[15,25], xp:12, design:{type:'fish', body:'#BFE0E8', belly:'#F0FAFC', fin:'#7FB8C9', tail:'round'}},
         {id:'smelt', name:'Полярная навага', ico:'🐟', tier:0, coins:[14,24], xp:12, design:{type:'fish', body:'#D8E8ED', belly:'#F5FBFC', fin:'#A6C7D1', tail:'fork'}},
@@ -485,7 +751,8 @@
         {id:'narwhal', name:'Малый нарвал', ico:'🐋', tier:3, coins:[95,145], xp:52, design:{type:'mammal', body:'#7A93A3', belly:'#DCE6EA', tusk:true}},
         {id:'dragonfish', name:'Снежный дракон', ico:'🐉', tier:4, coins:[220,320], xp:120, design:{type:'reptile', body:'#D9F0F5', spike:'#A9D8E8', horns:true}},
       ]},
-    { id:'jungle', name:'Тропическая Река', unlockLevel:15, top:'#8FBF6B', bottom:'#1B4D3E',
+    { id:'jungle', name:'Тропическая Река', unlockLevel:15, top:'#8FBF6B', bottom:'#1B4D3E', scenery:'jungle',
+      splashFx:['🍃','💧'], flavor:{cast:'Заброс в заросли тропической реки...', wait:'Влажная духота джунглей... жди клёва'},
       fish:[
         {id:'tetra', name:'Тетра', ico:'🐠', tier:0, coins:[18,28], xp:15, design:{type:'fish', body:'#3E8CC9', belly:'#E8734A', fin:'#2A5F8C', tail:'fork'}},
         {id:'guppy', name:'Гуппи', ico:'🐟', tier:0, coins:[16,26], xp:14, design:{type:'fish', body:'#4EBFA0', belly:'#D8F2E8', fin:'#E8A93E', tail:'fan'}},
@@ -497,7 +764,8 @@
         {id:'giantcatfish', name:'Гигантский сом', ico:'🦈', tier:3, coins:[95,148], xp:57, design:{type:'fish', body:'#4A4E52', belly:'#8F969B', fin:'#2E3134', tail:'round', elong:1.5, whiskers:true}},
         {id:'arapaima', name:'Золотая Аравана', ico:'🐲', tier:4, coins:[250,360], xp:140, design:{type:'fish', body:'#8FA83E', belly:'#C9543E', fin:'#6B8028', tail:'fan', elong:1.3, pattern:'scale', patternColor:'#C9543E'}},
       ]},
-    { id:'abyss', name:'Глубокий Океан', unlockLevel:20, top:'#2E3A59', bottom:'#050912',
+    { id:'abyss', name:'Глубокий Океан', unlockLevel:20, top:'#2E3A59', bottom:'#050912', scenery:'abyss',
+      splashFx:['✨','🔵'], flavor:{cast:'Опускаем леску в бездну...', wait:'Давящая тьма бездны... жди клёва'},
       fish:[
         {id:'lanternfish', name:'Светящийся анчоус', ico:'🐟', tier:0, coins:[30,45], xp:22, design:{type:'fish', body:'#1A2438', belly:'#3E4A63', fin:'#111827', tail:'fork', lure:true, glow:'#6FE8E8'}},
         {id:'deepherring', name:'Глубоководная сельдь', ico:'🐠', tier:0, coins:[28,42], xp:20, design:{type:'fish', body:'#2A2540', belly:'#4A4166', fin:'#1A1730', tail:'fork'}},
@@ -512,27 +780,56 @@
   ];
 
   const RODS = [
-    {id:'bamboo', name:'Бамбуковая удочка', ico:'🎣', desc:'Базовое окно поклёва 700 мс', window:700, price:0},
-    {id:'carbon', name:'Карбоновая удочка', ico:'🪝', desc:'Окно поклёва 950 мс', window:950, price:600},
-    {id:'titan', name:'Титановая удочка', ico:'⚙️', desc:'Окно поклёва 1300 мс', window:1300, price:2400},
+    {id:'bamboo', name:'Бамбуковая удочка', ico:'🎣', desc:'Базовое окно поклёва 700 мс', window:700, price:0, unlockLevel:1},
+    {id:'carbon', name:'Карбоновая удочка', ico:'🪝', desc:'Окно поклёва 950 мс', window:950, price:900, unlockLevel:5},
+    {id:'titan', name:'Титановая удочка', ico:'⚙️', desc:'Окно поклёва 1300 мс', window:1300, price:5200, unlockLevel:13},
+    {id:'abyssal', name:'Абиссальная удочка', ico:'🔱', desc:'Окно поклёва 1700 мс', window:1700, price:9500, unlockLevel:19},
   ];
   const BAITS = [
-    {id:'plain', name:'Обычная наживка', ico:'🪱', desc:'Стандартные шансы улова', weights:[40,30,18,9,3], price:0},
-    {id:'aroma', name:'Ароматная наживка', ico:'🌿', desc:'Больше редкой и ценной рыбы', weights:[30,25,25,15,5], price:380},
-    {id:'magic', name:'Магическая наживка', ico:'🔮', desc:'Сильно больше шанс легендарной', weights:[20,20,25,20,15], price:1900},
+    {id:'plain', name:'Обычная наживка', ico:'🪱', desc:'Стандартные шансы улова · без особенностей', weights:[40,30,18,9,3], price:0, unlockLevel:1},
+    {id:'quick', name:'Шустрый мотыль', ico:'🪰', desc:'Клёв начинается заметно быстрее · рыба чуть попроще', weights:[45,28,16,8,3], price:450, unlockLevel:2, biteDelayMult:0.55},
+    {id:'patient', name:'Ленивый опарыш', ico:'🐛', desc:'Гораздо больше времени на подсечку · рыба попроще', weights:[42,29,17,9,3], price:650, unlockLevel:3, biteWindowMult:1.45},
+    {id:'aroma', name:'Ароматная наживка', ico:'🌿', desc:'Больше редкой и ценной рыбы', weights:[30,25,25,15,5], price:900, unlockLevel:6},
+    {id:'sticky', name:'Плотный жмых', ico:'🧈', desc:'Вываживать намного проще и нужно меньше рывков · окно подсечки короче', weights:[38,30,19,10,3], price:1300, unlockLevel:8, reelDecayMult:0.4, reelTargetDelta:-1, biteWindowMult:0.85},
+    {id:'heavy', name:'Кровяная наживка', ico:'🩸', desc:'Рыба крупнее и тяжелее обычного · клюёт реже', weights:[25,28,24,16,7], price:1800, unlockLevel:11, weightMult:1.4, biteDelayMult:1.25},
+    {id:'magic', name:'Магическая наживка', ico:'🔮', desc:'Сильно больше шанс легендарной', weights:[20,20,25,20,15], price:3200, unlockLevel:15},
+    {id:'royal', name:'Королевская наживка', ico:'👑', desc:'Лучший баланс: редкая рыба крупнее обычного', weights:[18,22,26,22,12], price:5200, unlockLevel:19, weightMult:1.15},
   ];
+  // Доп. свойства наживки со значениями по умолчанию (если не указаны в самой наживке)
+  function baitStat(bait, key, def){ return (bait && typeof bait[key]==='number') ? bait[key] : def; }
   const ROD_SKINS = [
-    {id:'classic', name:'Классическое дерево', ico:'🟫', color:'#6b4726', price:0},
-    {id:'crimson', name:'Алая карбоновая', ico:'🟥', color:'#C1443C', price:350},
-    {id:'gold', name:'Золотая парадная', ico:'🟨', color:'#D4AF37', price:1100},
-    {id:'neon', name:'Неоновая', ico:'🟦', color:'#37D4C9', price:2000},
-    {id:'legend', name:'Легенда Тихой Гавани', ico:'🟪', color:'#B14EF2', price:null, desc:'Награда за сюжет', storyOnly:true},
+    {id:'classic', name:'Классическое дерево', desc:'Тёплый лак и натуральная текстура', colors:['#8a6a45','#5a3d22'], price:0, unlockLevel:1},
+    {id:'crimson', name:'Алая карбоновая', desc:'Матовый карбон с алым отливом', colors:['#e0453c','#7a1712'], price:500, unlockLevel:2},
+    {id:'forest', name:'Лесной изумруд', desc:'Мшистая отделка для любителей природы', colors:['#5fae4a','#1f4d1a'], price:750, unlockLevel:3},
+    {id:'ocean', name:'Океанская волна', desc:'Переливы бирюзы и морской пены', colors:['#3fd0e0','#0a5566'], price:1000, unlockLevel:4},
+    {id:'sunset', name:'Тропический закат', desc:'Градиент манго и малины', colors:['#ff8a5b','#c9366e'], price:1300, unlockLevel:6},
+    {id:'sakura', name:'Сакура', desc:'Розовое дерево в лепестках цветения', colors:['#ffb6d0','#e0578a'], price:1500, unlockLevel:7},
+    {id:'gold', name:'Золотая парадная', desc:'Церемониальное золото с гравировкой', colors:['#ffe08a','#a9781a'], price:1700, unlockLevel:8},
+    {id:'royal', name:'Королевский пурпур', desc:'Бархат и серебряная окантовка', colors:['#a06ae0','#3a1a5c'], price:2000, unlockLevel:9},
+    {id:'arctic', name:'Арктический мороз', desc:'Лёд и морозные искры на бланке', colors:['#dff6ff','#7fb8d9'], glow:'#bdeeff', price:2300, unlockLevel:11},
+    {id:'cyber', name:'Кибер-неон', desc:'Светящиеся неоновые полосы', colors:['#33f0ff','#0a2a33'], glow:'#33f0ff', price:3000, unlockLevel:13},
+    {id:'volcanic', name:'Вулканическая', desc:'Пылающие трещины лавы', colors:['#ff7a30','#2a0a05'], glow:'#ff5522', price:3400, unlockLevel:16},
+    {id:'galaxy', name:'Галактика', desc:'Звёздная пыль и туманности', colors:['#8a4bf2','#0a0620'], glow:'#a86bff', price:4200, unlockLevel:18},
+    {id:'legend', name:'Легенда Тихой Гавани', desc:'Награда за сюжет · переливается всеми цветами', colors:['#F2C14E','#B14EF2'], glow:'#F2C14E', legend:true, price:null, storyOnly:true},
   ];
   const BOOST_ITEMS = [
-    {id:'xp2', name:'Ускоритель опыта', ico:'⚡', desc:'x2 опыт за пойманную рыбу · 8 минут', price:120, duration:8*60000},
-    {id:'coins2', name:'Удвоение дохода', ico:'💰', desc:'x2 монеты при продаже на рынке · 8 минут', price:140, duration:8*60000},
-    {id:'luck', name:'Везение рыбака', ico:'🍀', desc:'Выше шанс редкой и ценной рыбы · 6 минут', price:170, duration:6*60000},
+    {id:'xp2', name:'Ускоритель опыта', ico:'⚡', desc:'x2 опыт за пойманную рыбу', basePrice:120, baseDuration:8*60000, minDuration:3*60000},
+    {id:'coins2', name:'Удвоение дохода', ico:'💰', desc:'x2 монеты при продаже на рынке', basePrice:140, baseDuration:8*60000, minDuration:3*60000},
+    {id:'luck', name:'Везение рыбака', ico:'🍀', desc:'Выше шанс редкой и ценной рыбы', basePrice:170, baseDuration:6*60000, minDuration:2*60000},
   ];
+  // Бусты дорожают и становятся короче с каждым уровнем игрока.
+  // Цена растёт на 12% за уровень (рост мультипликатора ограничен x4).
+  // Длительность сокращается на 3% за уровень, но не короче minDuration.
+  function boostPrice(item){
+    const lvl = Math.max(1, state.level);
+    const mult = 1 + Math.min(3, (lvl-1)*0.12);
+    return Math.round((item.basePrice*mult)/5)*5;
+  }
+  function boostDuration(item){
+    const lvl = Math.max(1, state.level);
+    const reduction = Math.min(0.65, (lvl-1)*0.03);
+    return Math.max(item.minDuration, Math.round(item.baseDuration*(1-reduction)));
+  }
   const LUCK_WEIGHTS = [14,14,28,26,18];
 
   function formatNum(n){
@@ -555,21 +852,27 @@
     {type:'catch_any', min:6, max:15, label:n=>`Поймать ${n} рыб`, rc:n=>n*8, rx:n=>n*4},
     {type:'catch_rare', min:1, max:3, label:n=>`Поймать ${n} редких или ценных рыб`, rc:n=>n*45, rx:n=>n*22},
     {type:'sell_coins', min:100, max:350, label:n=>`Заработать ${n} монет на рынке`, rc:n=>Math.floor(n*0.3), rx:n=>Math.floor(n*0.15)},
+    {type:'catch_heavy', min:2, max:6, label:n=>`Поймать рыбу весом от ${n} кг`, rc:n=>n*40, rx:n=>n*20},
+    {type:'catch_new_species', min:1, max:2, label:n=>`Поймать ${n} ${n===1?'вид рыбы, которого':'вида рыбы, которых'} у тебя ещё нет`, rc:n=>n*90, rx:n=>n*45},
   ];
   function ensureQuests(){
     const today = todayStr();
     if(state.questsDate !== today){
       state.questsDate = today;
+      const totalSpecies = LOCATIONS.reduce((s,l)=>s+l.fish.length,0);
       state.dailyQuests = QUEST_POOL.map(q=>{
+        if(q.type==='catch_new_species' && distinctSpeciesCaught() >= totalSpecies) return null;
         const n = q.min + Math.floor(Math.random()*(q.max-q.min+1));
         return { type:q.type, target:n, progress:0, rewardCoins:q.rc(n), rewardXp:q.rx(n), claimed:false, text:q.label(n) };
-      });
+      }).filter(Boolean);
     }
   }
-  function bumpQuest(type, amount){
+  function bumpQuest(type, amount, mode){
     ensureQuests();
     const q = state.dailyQuests.find(x=>x.type===type && !x.claimed);
-    if(q) q.progress = Math.min(q.target, q.progress + amount);
+    if(!q) return;
+    if(mode==='max') q.progress = Math.min(q.target, Math.max(q.progress, amount));
+    else q.progress = Math.min(q.target, q.progress + amount);
   }
 
   // ---------- СЮЖЕТНЫЕ ЗАДАНИЯ (не сбрасываются, идут по цепочке глав) ----------
@@ -581,11 +884,25 @@
     { title:'Глава 4: Курс на Риф', story:'Смотритель кивает на горизонт: «За Тихой Гаванью есть Морской Риф. Но туда пускают только опытных». Достигни 5 уровня.', type:'reach_level', target:5, rewardCoins:200, rewardXp:0 },
     { title:'Глава 5: Легенда рифа', story:'Среди кораллов, говорят, живёт рыба, что светится золотом. Поймай хотя бы одну легендарную рыбу.', type:'catch_legendary', target:1, rewardCoins:300, rewardXp:150 },
     { title:'Глава 6: Гигант из глубин', story:'Твоя снасть уже не та, что раньше. Пришло время побороться с настоящим гигантом — поймай рыбу весом от 5 кг.', type:'catch_heavy', target:5, rewardCoins:350, rewardXp:180 },
-    { title:'Глава 7: Ледяной зов', story:'За Рифом лежат воды, что никогда не оттаивают. Чтобы дойти туда, нужно стать сильнее. Достигни 10 уровня.', type:'reach_level', target:10, rewardCoins:400, rewardXp:0 },
-    { title:'Глава 8: Богатый улов', story:'Торговцы Ледяного озера уважают только тех, кто умеет зарабатывать. Заработай 2000 монет на рынке.', type:'sell_coins', target:2000, rewardCoins:500, rewardXp:250 },
-    { title:'Глава 9: Гроза бездны', story:'Чем глубже ты заходишь, тем чаще встречаешь настоящих монстров. Поймай 5 легендарных рыб.', type:'catch_legendary', target:5, rewardCoins:800, rewardXp:400 },
-    { title:'Финал: Легенда Тихой Гавани', story:'Говорят, где-то в темных водах живёт существо весом больше десяти килограмм, о котором слагают легенды. Поймай его и стань частью этой истории.', type:'catch_heavy', target:10, rewardCoins:1500, rewardXp:800, rewardSkin:'legend' },
+    { title:'Глава 7: Течения и слухи', story:'Ныряльщики рифа шепчутся о косяках редкой рыбы у самой кромки коралловой стены. Поймай 8 редких или ценных рыб.', type:'catch_rare', target:8, rewardCoins:420, rewardXp:210 },
+    { title:'Глава 8: Торговый путь', story:'Торговцы рифа готовы платить хорошую цену за твой улов, если докажешь размах своей рыбалки. Заработай 1200 монет на рынке.', type:'sell_coins', target:1200, rewardCoins:480, rewardXp:240 },
+    { title:'Глава 9: Ледяной зов', story:'За Рифом лежат воды, что никогда не оттаивают. Чтобы дойти туда, нужно стать сильнее. Достигни 10 уровня.', type:'reach_level', target:10, rewardCoins:400, rewardXp:0 },
+    { title:'Глава 10: Богатый улов', story:'Торговцы Ледяного озера уважают только тех, кто умеет зарабатывать. Заработай 2000 монет на рынке.', type:'sell_coins', target:2000, rewardCoins:500, rewardXp:250 },
+    { title:'Глава 11: Ледяные чудовища', story:'Подо льдом прячутся твари, что светятся в темноте воды. Поймай 5 легендарных рыб.', type:'catch_legendary', target:5, rewardCoins:800, rewardXp:400 },
+    { title:'Глава 12: Испытание льда', story:'Смотритель Ледяного озера считает, что выдержки в тебе маловато. Поймай 60 любых рыб и докажи обратное.', type:'catch_any', target:60, rewardCoins:600, rewardXp:300 },
+    { title:'Глава 13: Курс на джунгли', story:'За морозными водами скрывается душная тропическая река. Чтобы пробраться туда, нужно стать ещё сильнее. Достигни 15 уровня.', type:'reach_level', target:15, rewardCoins:700, rewardXp:0 },
+    { title:'Глава 14: Зов реки', story:'Проводник по джунглям качает головой: «Здесь водятся твари покрупнее, чем ты видел прежде». Поймай рыбу весом от 12 кг.', type:'catch_heavy', target:12, rewardCoins:900, rewardXp:450 },
+    { title:'Глава 15: Хищники вод', story:'В мутных водах реки таятся создания, о которых редко говорят вслух. Поймай 8 легендарных рыб.', type:'catch_legendary', target:8, rewardCoins:1100, rewardXp:550 },
+    { title:'Глава 16: Золото реки', story:'Местные торговцы скупают улов джунглей по особой цене — если знаешь, как его продать. Заработай 4000 монет на рынке.', type:'sell_coins', target:4000, rewardCoins:1200, rewardXp:600 },
+    { title:'Глава 17: Бездна зовёт', story:'Дальше только тьма — Глубокий Океан, куда пускают лишь легенд этих вод. Достигни 20 уровня.', type:'reach_level', target:20, rewardCoins:1000, rewardXp:0 },
+    { title:'Глава 18: Чудовище из тьмы', story:'Говорят, где-то в темных водах живёт существо весом больше пятнадцати килограмм, о котором слагают легенды. Поймай его.', type:'catch_heavy', target:15, rewardCoins:1500, rewardXp:800 },
+    { title:'Финал: Легенда Тихой Гавани', story:'Смотритель гавани смотрит на тебя с гордостью: «Ты прошёл путь от новичка до легенды. Осталось последнее — докажи, что нет ни одной рыбы в этих водах, что ускользнула бы от тебя». Поймай хотя бы по одному экземпляру каждого вида рыбы во всех локациях.', type:'catch_all_species', target:45, rewardCoins:3000, rewardXp:1500, rewardSkin:'legend' },
   ];
+  // Финальная цель "поймать всех рыб" считается по фактическому числу видов во всех локациях.
+  (function syncCatchAllTarget(){
+    const finale = STORY_QUESTS.find(c=>c.type==='catch_all_species');
+    if(finale) finale.target = LOCATIONS.reduce((sum,loc)=>sum+loc.fish.length,0);
+  })();
   function ensureStory(){
     if(typeof state.storyChapter !== 'number') state.storyChapter = 0;
     if(typeof state.storyProgress !== 'number') state.storyProgress = 0;
@@ -602,6 +919,11 @@
     ensureStory();
     const ch = currentStoryChapter();
     if(ch && ch.type === 'reach_level') state.storyProgress = Math.min(ch.target, Math.max(state.storyProgress, state.level));
+    if(ch && ch.type === 'catch_all_species') state.storyProgress = Math.min(ch.target, Math.max(state.storyProgress, distinctSpeciesCaught()));
+  }
+  function distinctSpeciesCaught(){
+    const total = state.collectionTotal || {};
+    return Object.keys(total).filter(id=>(total[id]||0) > 0).length;
   }
   function claimStoryChapter(){
     const ch = currentStoryChapter();
@@ -686,6 +1008,31 @@
   function getRod(id){ return RODS.find(r=>r.id===id); }
   function getBait(id){ return BAITS.find(b=>b.id===id); }
   function getSkin(id){ return ROD_SKINS.find(s=>s.id===id); }
+
+  // ---------- СКИНЫ УДОЧКИ: градиенты + свечение ----------
+  function buildSkinDefs(){
+    const defs = document.getElementById('skinDefs');
+    if(!defs) return;
+    defs.innerHTML = ROD_SKINS.map(s=>{
+      const stops = s.colors.map((c,i)=>`<stop offset="${(i/(s.colors.length-1||1))*100}%" stop-color="${c}"/>`).join('');
+      return `<linearGradient id="sk-${s.id}" x1="0" y1="0" x2="1" y2="1">${stops}</linearGradient>`;
+    }).join('');
+  }
+  const rodsvgEl = document.getElementById('rodsvg');
+  function applySkin(skinId){
+    const skin = getSkin(skinId) || ROD_SKINS[0];
+    document.documentElement.style.setProperty('--rod-color', `url(#sk-${skin.id})`);
+    rodsvgEl.classList.remove('glow-skin','legend-skin');
+    if(skin.legend){ rodsvgEl.classList.add('legend-skin'); }
+    else if(skin.glow){ rodsvgEl.style.setProperty('--glow-color', skin.glow); rodsvgEl.classList.add('glow-skin'); }
+  }
+  function skinSwatchHTML(skin){
+    const grad = `linear-gradient(135deg, ${skin.colors.join(',')})`;
+    let extra = '';
+    if(skin.legend) extra = 'animation:skinLegendSwatch 3s linear infinite;';
+    else if(skin.glow) extra = `animation:skinGlowPulse 1.8s ease-in-out infinite; box-shadow:0 0 10px ${skin.glow}, 0 0 18px ${skin.glow};`;
+    return `<div class="skinswatch" style="background:${grad}; ${extra}"></div>`;
+  }
   function getLocation(id){ return LOCATIONS.find(l=>l.id===id); }
   function currentLoc(){ return getLocation(state.currentLocation); }
   function isLocUnlocked(loc){ return state.level >= loc.unlockLevel; }
@@ -730,6 +1077,7 @@
     clearTimeout(levelupToastTimer);
     el.classList.add('show');
     haptic('success');
+    setTimeout(()=>confettiFromEl(el, 22), 150);
     levelupToastTimer = setTimeout(()=>{ el.classList.remove('show'); }, 2400);
   }
 
@@ -761,22 +1109,127 @@
     lvlVal=document.getElementById('lvlVal'), xpText=document.getElementById('xpText'),
     xpfill=document.getElementById('xpfill'), gearline=document.getElementById('gearline'), boostline=document.getElementById('boostline'),
     stageEl=document.getElementById('screen-fish'), locTitle=document.getElementById('locTitle'),
-    locrow=document.getElementById('locrow'), bonusbanner=document.getElementById('bonusbanner');
+    locrow=document.getElementById('locrow'), bonusbanner=document.getElementById('bonusbanner'),
+    icehole=document.getElementById('icehole');
 
   let gameState='idle', biteTimeout, windowTimeout, currentFish=null;
 
+  // ---------- ЖИВОЙ ФОН И ЭФФЕКТЫ ЛОКАЦИЙ ----------
+  icehole.innerHTML = '<svg viewBox="0 0 80 46" xmlns="http://www.w3.org/2000/svg">'+
+    '<ellipse cx="40" cy="23" rx="36" ry="16" fill="#0b2f3a"/>'+
+    '<ellipse cx="40" cy="23" rx="36" ry="16" fill="none" stroke="#eaf7ff" stroke-width="3"/>'+
+    '<path d="M10,15 L25,10 M55,8 L70,14 M14,32 L28,36 M52,34 L68,30" stroke="#eaf7ff" stroke-width="1.6" opacity="0.7" stroke-linecap="round"/>'+
+    '</svg>';
+
+  const SCENERY_SVG = {
+    harbor: '<svg viewBox="0 0 800 200" preserveAspectRatio="xMidYMax slice">'+
+      '<polygon points="0,150 120,45 220,150" fill="#3a5a6b" opacity="0.5"/>'+
+      '<polygon points="150,150 300,20 430,150" fill="#2f4a58" opacity="0.6"/>'+
+      '<polygon points="380,150 520,55 650,150" fill="#3a5a6b" opacity="0.45"/>'+
+      '<polygon points="600,150 760,35 800,150" fill="#2f4a58" opacity="0.55"/>'+
+      '<rect x="0" y="148" width="800" height="30" fill="#5a7a4a" opacity="0.5"/>'+
+      '<g class="sway"><rect x="57" y="150" width="6" height="35" fill="#3a2a18"/><polygon points="60,180 42,128 78,128" fill="#254a2e"/><polygon points="60,160 46,120 74,120" fill="#2f5a38"/></g>'+
+      '<g class="sway" style="animation-delay:-1.4s;"><rect x="106" y="145" width="7" height="38" fill="#3a2a18"/><polygon points="110,178 90,116 130,116" fill="#1f3f28"/><polygon points="110,155 96,110 124,110" fill="#295336"/></g>'+
+      '<g class="sway" style="animation-delay:-2.6s;"><rect x="696" y="143" width="7" height="38" fill="#3a2a18"/><polygon points="700,176 680,114 720,114" fill="#254a2e"/><polygon points="700,153 686,108 714,108" fill="#2f5a38"/></g>'+
+      '</svg>',
+    reef: '<svg viewBox="0 0 800 200" preserveAspectRatio="xMidYMax slice">'+
+      '<ellipse cx="640" cy="150" rx="95" ry="16" fill="#2a6b5a" opacity="0.5"/>'+
+      '<g class="sway" style="animation-delay:-0.6s;"><rect x="618" y="95" width="6" height="55" fill="#3a2a18"/><path d="M621,95 Q598,75 578,90 Q603,88 621,100 Z" fill="#1f5a3a"/><path d="M621,95 Q648,70 673,85 Q643,85 621,100 Z" fill="#256b45"/></g>'+
+      '<g class="sway" style="animation-delay:-1.8s;"><rect x="668" y="100" width="6" height="50" fill="#3a2a18"/><path d="M671,100 Q653,82 635,95 Q655,92 671,105 Z" fill="#1f5a3a"/></g>'+
+      '<path d="M40,60 Q52,48 64,60" stroke="#eaf7ff" stroke-width="2" fill="none" opacity="0.55"/>'+
+      '<path d="M100,42 Q112,30 124,42" stroke="#eaf7ff" stroke-width="2" fill="none" opacity="0.5"/>'+
+      '<ellipse cx="120" cy="152" rx="26" ry="10" fill="#E8734A" opacity="0.35"/>'+
+      '<ellipse cx="180" cy="156" rx="20" ry="8" fill="#F2C14E" opacity="0.3"/>'+
+      '</svg>',
+    ice: '<svg viewBox="0 0 800 200" preserveAspectRatio="xMidYMax slice">'+
+      '<ellipse class="aurora" cx="250" cy="10" rx="260" ry="45" fill="#7fe8b0" opacity="0.28"/>'+
+      '<ellipse class="aurora" cx="520" cy="0" rx="240" ry="40" fill="#b06bf2" opacity="0.22" style="animation-delay:-3s;"/>'+
+      '<polygon points="0,150 130,35 260,150" fill="#9fd6e8" opacity="0.55"/>'+
+      '<polygon points="120,150 250,12 400,150" fill="#cdeef7" opacity="0.6"/>'+
+      '<polygon points="360,150 500,48 640,150" fill="#9fd6e8" opacity="0.5"/>'+
+      '<polygon points="580,150 700,55 800,150" fill="#cdeef7" opacity="0.55"/>'+
+      '<g class="sway" style="animation-delay:-0.8s;"><rect x="86" y="150" width="6" height="30" fill="#2a2018"/><polygon points="89,178 73,132 105,132" fill="#1f4a30"/><polygon points="89,160 78,128 100,128" fill="#eaf7ff" opacity="0.8"/></g>'+
+      '<g class="sway" style="animation-delay:-2.1s;"><rect x="716" y="146" width="6" height="34" fill="#2a2018"/><polygon points="719,176 703,126 735,126" fill="#1f4a30"/><polygon points="719,156 708,122 730,122" fill="#eaf7ff" opacity="0.8"/></g>'+
+      '</svg>',
+    jungle: '<svg viewBox="0 0 800 200" preserveAspectRatio="xMidYMax slice">'+
+      '<rect x="0" y="128" width="800" height="30" fill="#12331f" opacity="0.55"/>'+
+      '<g class="sway"><path d="M40,150 Q8,88 62,36 Q42,92 74,150 Z" fill="#173d22"/><path d="M40,150 Q20,100 45,60" stroke="#0e2818" stroke-width="3" fill="none" opacity="0.6"/></g>'+
+      '<g class="sway" style="animation-delay:-1s;"><path d="M150,150 Q108,78 168,16 Q146,90 198,150 Z" fill="#1f4a2b"/></g>'+
+      '<g class="sway" style="animation-delay:-2s;"><path d="M700,150 Q658,84 728,28 Q702,94 762,150 Z" fill="#173d22"/></g>'+
+      '<path d="M95,38 Q100,90 88,148" stroke="#2a5a35" stroke-width="3" fill="none" opacity="0.65"/>'+
+      '<path d="M660,32 Q666,86 652,148" stroke="#2a5a35" stroke-width="3" fill="none" opacity="0.6"/>'+
+      '<ellipse cx="400" cy="150" rx="420" ry="16" fill="#0a2015" opacity="0.35"/>'+
+      '</svg>',
+    abyss: '<svg viewBox="0 0 800 200" preserveAspectRatio="xMidYMax slice">'+
+      '<polygon points="0,150 200,90 400,150" fill="#0a1420" opacity="0.75"/>'+
+      '<polygon points="350,150 550,68 750,150" fill="#0a1420" opacity="0.65"/>'+
+      '<circle class="glowdot" cx="120" cy="118" r="3" fill="#6fe8e8" opacity="0.8"/>'+
+      '<circle class="glowdot" cx="500" cy="98" r="2.4" fill="#8fe86f" opacity="0.7" style="animation-delay:-1s;"/>'+
+      '<circle class="glowdot" cx="270" cy="130" r="2" fill="#e8c96f" opacity="0.6" style="animation-delay:-2s;"/>'+
+      '<circle class="glowdot" cx="650" cy="120" r="2.6" fill="#6f9be8" opacity="0.7" style="animation-delay:-0.5s;"/>'+
+      '</svg>',
+  };
+  const PARTICLE_CFG = {
+    harbor: {emoji:['🦋','🍂'], count:6, anim:'moteFloat', dur:[4,7], top:8, size:12},
+    reef: {emoji:['🫧'], count:12, anim:'bubbleRise', dur:[6,11], top:55, size:9},
+    ice: {emoji:['❄️'], count:20, anim:'snowFall', dur:[7,13], top:0, size:9},
+    jungle: {emoji:['🍃'], count:12, anim:'leafFall', dur:[8,14], top:0, size:11},
+    abyss: {emoji:['✨','🔵'], count:18, anim:'moteFloat', dur:[3,6], top:15, size:7},
+  };
+  const sceneryBackEl = document.getElementById('scenery-back');
+  const sceneryPartEl = document.getElementById('scenery-particles');
+  function renderScenery(loc){
+    sceneryBackEl.innerHTML = SCENERY_SVG[loc.scenery] || '';
+    sceneryPartEl.innerHTML = '';
+    const cfg = PARTICLE_CFG[loc.scenery];
+    if(!cfg) return;
+    for(let i=0;i<cfg.count;i++){
+      const el = document.createElement('div');
+      el.className = 'fx-p';
+      el.textContent = cfg.emoji[Math.floor(Math.random()*cfg.emoji.length)];
+      el.style.left = (Math.random()*100)+'%';
+      el.style.top = (cfg.top + Math.random()*30)+'%';
+      el.style.fontSize = (cfg.size + Math.random()*6)+'px';
+      const dur = cfg.dur[0] + Math.random()*(cfg.dur[1]-cfg.dur[0]);
+      el.style.animation = `${cfg.anim} ${dur}s linear infinite`;
+      el.style.animationDelay = (-Math.random()*dur)+'s';
+      sceneryPartEl.appendChild(el);
+    }
+  }
+  function burstParticles(x, y, emojis, count){
+    for(let i=0;i<(count||5);i++){
+      const el = document.createElement('div');
+      el.className = 'burst-p';
+      el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+      el.style.left = x+'px'; el.style.top = y+'px';
+      const ang = Math.random()*Math.PI*2, dist = 16+Math.random()*28;
+      el.style.setProperty('--bx', (Math.cos(ang)*dist)+'px');
+      el.style.setProperty('--by', (Math.sin(ang)*dist - 22)+'px');
+      el.style.setProperty('--br', (Math.random()*140-70)+'deg');
+      document.body.appendChild(el);
+      setTimeout(()=>el.remove(), 800);
+    }
+  }
+
   function refreshTopUI(){
     coinsVal.textContent = formatNum(state.coins);
+    bumpIfChanged(coinsVal.closest('.pill'), 'coins', state.coins);
     catchVal.textContent = formatNum(state.totalCatches);
+    bumpIfChanged(catchVal.closest('.pill'), 'catches', state.totalCatches);
     lvlVal.textContent = 'Ур. ' + state.level;
+    bumpIfChanged(document.getElementById('levelbox'), 'level', state.level);
     xpText.textContent = formatNum(state.xp) + '/' + formatNum(xpNeeded(state.level));
     xpfill.style.width = Math.min(100, (state.xp/xpNeeded(state.level))*100) + '%';
     gearline.textContent = getRod(state.activeRod).name + ' · ' + getBait(state.activeBait).name;
     const activeBoosts = BOOST_ITEMS.filter(b=>isBoostActive(b.id)).map(b=>b.ico+boostRemaining(b.id)+'м');
     boostline.textContent = activeBoosts.join('  ');
-    document.documentElement.style.setProperty('--rod-color', getSkin(state.activeSkin).color);
+    applySkin(state.activeSkin);
     locTitle.textContent = currentLoc().name;
     stageEl.style.background = `linear-gradient(to bottom, ${currentLoc().top} 0%, ${currentLoc().bottom} 32%, ${currentLoc().bottom} 33%, var(--water-deep) 100%)`;
+    if(stageEl.dataset.loc !== currentLoc().id){
+      stageEl.dataset.loc = currentLoc().id;
+      renderScenery(currentLoc());
+    }
     renderLocRow();
     refreshBonusBanner();
   }
@@ -804,18 +1257,19 @@
       bonusbanner.classList.remove('show');
     }
   }
-  document.getElementById('bonusBtn').addEventListener('click', ()=>{
+  document.getElementById('bonusBtn').addEventListener('click', (ev)=>{
     const today = todayStr(), yest = yesterdayStr();
     state.dailyStreak = (state.lastBonusDate === yest) ? state.dailyStreak+1 : 1;
     const reward = 50 + Math.min(state.dailyStreak-1,10)*15;
     state.coins += reward; state.lastBonusDate = today;
-    haptic('success'); saveState(); refreshTopUI();
+    haptic('success'); confettiFromEl(ev.currentTarget, 16); saveState(); refreshTopUI();
   });
 
   function resetVisual(){
     bobber.classList.add('hidden'); btn.classList.remove('pull'); btn.disabled=false;
     timerbar.style.display='none'; status.textContent='Готов начать'; btn.textContent='Закинуть удочку';
     lineEl.style.transition='none'; lineEl.style.transform='scaleX(0)';
+    icehole.classList.remove('show');
   }
 
   const rodsvg = document.getElementById('rodsvg');
@@ -829,13 +1283,21 @@
 
   function cast(){
     if(gameState!=='idle') return;
-    gameState='casting'; btn.disabled=true; status.textContent='Закидываем...'; haptic('light');
+    const loc = currentLoc();
+    gameState='casting'; btn.disabled=true; status.textContent=loc.flavor.cast; haptic('light');
     const tip = getTipPoint();
     rodsvg.classList.remove('casting'); void rodsvg.offsetWidth; rodsvg.classList.add('casting');
 
     const cx = stageEl.clientWidth/2, cy = Math.min(window.innerHeight*0.62, window.innerHeight*0.30 + 50 + Math.random()*35);
     bobber.style.left=cx+'px'; bobber.style.top=cy+'px';
     bobber.classList.remove('hidden','idle-bob','bite-jitter');
+
+    if(loc.scenery === 'ice'){
+      icehole.style.left = cx+'px'; icehole.style.top = cy+'px';
+      icehole.classList.remove('show'); void icehole.offsetWidth; icehole.classList.add('show');
+    } else {
+      icehole.classList.remove('show');
+    }
 
     const dx = cx - tip.x, dy = cy - tip.y;
     const len = Math.hypot(dx,dy), angle = Math.atan2(dy,dx) * 180/Math.PI;
@@ -853,12 +1315,15 @@
     setTimeout(()=>{
       splash.style.left=cx+'px'; splash.style.top=cy+'px';
       splash.classList.remove('animate'); void splash.offsetWidth; splash.classList.add('animate');
+      const rect = splash.getBoundingClientRect();
+      burstParticles(rect.left+rect.width/2, rect.top+rect.height/2, loc.splashFx, 6);
       haptic('light');
     }, 460);
     setTimeout(()=>{
       bobber.classList.remove('landing'); bobber.classList.add('idle-bob');
-      gameState='waiting'; status.textContent='Тихо... жди клёва'; btn.disabled=true;
-      const delay = 1400 + Math.random()*2600;
+      gameState='waiting'; status.textContent=loc.flavor.wait; btn.disabled=true;
+      const baitNow = getBait(state.activeBait);
+      const delay = (1400 + Math.random()*2600) * baitStat(baitNow,'biteDelayMult',1);
       biteTimeout = setTimeout(triggerBite, delay);
     }, 560);
   }
@@ -870,10 +1335,11 @@
     const rect = bobber.getBoundingClientRect();
     splash.style.left=rect.left+rect.width/2+'px'; splash.style.top=rect.top+rect.height/2+'px';
     splash.classList.remove('animate'); void splash.offsetWidth; splash.classList.add('animate');
+    burstParticles(rect.left+rect.width/2, rect.top+rect.height/2, currentLoc().splashFx, 6);
     biteBang.style.left=rect.left+rect.width/2+'px'; biteBang.style.top=rect.top+'px';
     biteBang.classList.remove('show'); void biteBang.offsetWidth; biteBang.classList.add('show');
     status.textContent='КЛЮЁТ! Тяни!'; btn.textContent='Тяни!'; btn.classList.add('pull'); btn.disabled=false;
-    const winMs = Math.round(getRod(state.activeRod).window * RARITY_SPEED[currentFish.tier]);
+    const winMs = Math.round(getRod(state.activeRod).window * RARITY_SPEED[currentFish.tier] * baitStat(getBait(state.activeBait),'biteWindowMult',1));
     timerbar.style.display='block'; timerfill.style.transition='none'; timerfill.style.transform='scaleX(1)';
     requestAnimationFrame(()=>{ timerfill.style.transition=`transform ${winMs}ms linear`; timerfill.style.transform='scaleX(0)'; });
     windowTimeout = setTimeout(missedBite, winMs);
@@ -891,14 +1357,16 @@
 
   function startReeling(){
     gameState = 'reeling';
-    reelProgress = 0; reelTarget = REEL_TARGET[currentFish.tier];
+    const bait = getBait(state.activeBait);
+    reelProgress = 0; reelTarget = Math.max(2, REEL_TARGET[currentFish.tier] + baitStat(bait,'reelTargetDelta',0));
     status.textContent = 'Вываживай! Тапай быстро!';
     btn.classList.add('pull'); btn.disabled = false;
     btn.textContent = `Тяни! (0/${reelTarget})`;
     timerbar.style.display='block'; timerfill.style.transition='none'; timerfill.style.transform='scaleX(0)';
     clearInterval(reelDecayInterval);
+    const decayAmount = baitStat(bait,'reelDecayMult',1);
     reelDecayInterval = setInterval(()=>{
-      reelProgress = Math.max(0, reelProgress - 1);
+      reelProgress = Math.max(0, reelProgress - decayAmount);
       updateReelBar();
     }, 500);
     clearTimeout(reelTimeout);
@@ -909,7 +1377,7 @@
     const pct = Math.min(1, reelProgress/reelTarget);
     timerfill.style.transition = 'transform .12s ease-out';
     timerfill.style.transform = `scaleX(${pct})`;
-    btn.textContent = `Тяни! (${Math.min(reelProgress,reelTarget)}/${reelTarget})`;
+    btn.textContent = `Тяни! (${Math.min(Math.ceil(reelProgress),reelTarget)}/${reelTarget})`;
   }
 
   function reelTap(){
@@ -959,9 +1427,11 @@
   function landFish(){
     gameState='idle'; haptic('success');
     const fish = currentFish;
-    const weight = randomWeight(fish.tier);
+    const bait = getBait(state.activeBait);
+    const weight = Math.round(randomWeight(fish.tier) * baitStat(bait,'weightMult',1) * 100) / 100;
     flyFishToCounter(fish);
     state.totalCatches += 1;
+    const isNewSpecies = !(state.collectionTotal[fish.id] > 0);
     if(!Array.isArray(state.inventory[fish.id])) state.inventory[fish.id] = [];
     state.inventory[fish.id].push(weight);
     state.collectionTotal[fish.id] = (state.collectionTotal[fish.id]||0) + 1;
@@ -970,10 +1440,13 @@
     addXp(fish.xp * (xpBoosted?2:1));
     bumpQuest('catch_any', 1);
     if(fish.tier >= 2) bumpQuest('catch_rare', 1);
+    bumpQuest('catch_heavy', weight, 'max');
+    if(isNewSpecies) bumpQuest('catch_new_species', 1);
     bumpStoryQuest('catch_any', 1);
     if(fish.tier >= 2) bumpStoryQuest('catch_rare', 1);
     if(fish.tier >= 4) bumpStoryQuest('catch_legendary', 1);
     bumpStoryQuest('catch_heavy', weight, 'max');
+    bumpStoryQuest('catch_all_species', distinctSpeciesCaught(), 'max');
     saveState(); refreshTopUI();
 
     document.getElementById('cc-ico').innerHTML = fishIconSVG(fish);
@@ -982,7 +1455,15 @@
     rarityEl.textContent = RARITY_LABEL[fish.tier]; rarityEl.className = 'rarity r' + fish.tier;
     document.getElementById('cc-xp').textContent = '+' + (fish.xp * (xpBoosted?2:1)) + ' опыта' + (xpBoosted?' (x2 буст)':'');
     document.getElementById('cc-weight').textContent = 'Вес: ' + weight.toFixed(2) + ' кг · цена ~' + fishPrice(fish, weight) + ' 🪙';
+    const ccCard = document.querySelector('#catchcard .card');
+    ccCard.className = 'card r' + fish.tier;
     catchcard.style.display = 'flex';
+    if(fish.tier >= 2){
+      setTimeout(()=>{
+        const r = ccCard.getBoundingClientRect();
+        confettiBurst(r.left + r.width/2, r.top + 30, fish.tier >= 4 ? 28 : 16);
+      }, 120);
+    }
     resetVisual();
   }
 
@@ -1049,19 +1530,24 @@
     resetBtn.textContent = '🗑️ Сбросить весь прогресс';
     resetBtn.addEventListener('click', openResetModal);
     list.appendChild(resetBtn);
+    animateListIn(list);
   }
   function boostCard(item){
     const active = isBoostActive(item.id);
+    const price = boostPrice(item);
+    const durationMs = boostDuration(item);
+    const durationMin = Math.max(1, Math.round(durationMs/60000));
     const el = document.createElement('div'); el.className='card2' + (active?' done':'');
-    const disabled = state.coins < item.price;
-    const label = active ? ('Продлить · '+boostRemaining(item.id)+' мин') : (item.price + ' 🪙');
+    const disabled = state.coins < price;
+    const label = active ? ('Продлить · '+boostRemaining(item.id)+' мин') : (price + ' 🪙');
     el.innerHTML = `<div class="icobox">${item.ico}</div>
-      <div class="info"><div class="name">${item.name}${active?' · активен':''}</div><div class="desc">${item.desc}</div></div>
+      <div class="info"><div class="name">${item.name}${active?' · активен':''}</div><div class="desc">${item.desc} · ${durationMin} мин</div></div>
       <div class="action"><button class="${active?'btn-active':'btn-buy'}" ${disabled?'disabled':''}>${label}</button></div>`;
     el.querySelector('button').addEventListener('click', ()=>{
-      if(state.coins < item.price) return;
-      state.coins -= item.price;
-      activateBoost(item.id, item.duration);
+      const curPrice = boostPrice(item);
+      if(state.coins < curPrice) return;
+      state.coins -= curPrice;
+      activateBoost(item.id, boostDuration(item));
       renderShop();
     });
     return el;
@@ -1076,16 +1562,21 @@
     const owned = ownedList(kind).includes(item.id);
     const active = activeId(kind) === item.id;
     const el = document.createElement('div'); el.className='card2';
+    const reqLevel = item.unlockLevel || 1;
+    const levelLocked = !owned && state.level < reqLevel;
     const affordable = state.coins >= item.price;
     let label, cls, disabled=false;
     if(active){ label='Выбрано'; cls='btn-owned'; disabled=true; }
     else if(owned){ label='Выбрать'; cls='btn-active'; }
+    else if(levelLocked){ label = '🔒 ур. ' + reqLevel; cls='btn-buy'; disabled=true; }
     else { label = item.price===0 ? 'Выбрать' : (item.price + ' 🪙'); cls='btn-buy'; disabled = !affordable; }
-    el.innerHTML = `<div class="icobox">${item.ico}</div>
-      <div class="info"><div class="name">${item.name}</div><div class="desc">${item.desc || 'Косметика, не влияет на улов'}</div></div>
+    const icoHTML = kind==='skin' ? skinSwatchHTML(item) : item.ico;
+    el.className = 'card2' + (levelLocked?' locked':'');
+    el.innerHTML = `<div class="icobox">${icoHTML}</div>
+      <div class="info"><div class="name">${item.name}</div><div class="desc">${levelLocked ? ('Откроется на '+reqLevel+' уровне') : (item.desc || 'Косметика, не влияет на улов')}</div></div>
       <div class="action"><button class="${cls}" ${disabled?'disabled':''}>${label}</button></div>`;
     el.querySelector('button').addEventListener('click', ()=>{
-      if(active) return;
+      if(active || levelLocked) return;
       if(!owned){
         if(state.coins < item.price) return; state.coins -= item.price;
         if(kind==='rod') state.ownedRods.push(item.id); else if(kind==='bait') state.ownedBaits.push(item.id); else state.ownedSkins.push(item.id);
@@ -1128,6 +1619,7 @@
       list.appendChild(el);
     });
     if(!any){ const empty=document.createElement('div'); empty.className='lbnote'; empty.textContent='Пока нечего продавать — иди на рыбалку в разделе «Рыбалка».'; list.appendChild(empty); }
+    animateListIn(list);
   }
   document.getElementById('sellall').addEventListener('click', ()=>{
     const loc = currentLoc(); let total = 0;
@@ -1157,6 +1649,7 @@
       });
     });
     document.getElementById('collSummary').textContent = `Открыто ${discovered} из ${totalSpecies} видов`;
+    animateListIn(list);
   }
 
   // ---------- QUESTS ----------
@@ -1174,15 +1667,24 @@
           <div class="qreward">${Math.min(q.progress,q.target)}/${q.target} · +${q.rewardCoins} 🪙 +${q.rewardXp} XP</div>
           <button class="qclaim ${q.claimed?'claimed':''}" ${(!done||q.claimed)?'disabled':''}>${q.claimed?'Получено':'Забрать'}</button>
         </div>`;
-      el.querySelector('button').addEventListener('click', ()=>{
+      el.querySelector('button').addEventListener('click', (ev)=>{
         if(q.claimed || q.progress < q.target) return;
         state.coins += q.rewardCoins; addXp(q.rewardXp); q.claimed = true;
-        haptic('success'); saveState(); refreshTopUI(); renderDailyQuests();
+        haptic('success'); confettiFromEl(ev.currentTarget, 16); saveState(); refreshTopUI(); renderDailyQuests();
       });
       list.appendChild(el);
     });
     const doneCount = state.dailyQuests.filter(q=>q.claimed).length;
     document.getElementById('questSummary').textContent = `Выполнено ${doneCount} из ${state.dailyQuests.length} · обновление каждый день`;
+    animateListIn(list);
+  }
+
+  // Порядковый номер главы для бейджа: совпадает с числом в самом заголовке главы
+  // (индекс 0 — пролог без номера, последний индекс — финал без номера, остальные — "Глава N" = N).
+  function storyChapterBadge(idx){
+    if(idx === 0) return 'Пролог';
+    if(idx === STORY_QUESTS.length-1) return 'Финал';
+    return 'Глава ' + idx;
   }
 
   function renderStoryQuests(){
@@ -1197,11 +1699,11 @@
       list.appendChild(el);
       return;
     }
-    document.getElementById('questSummary').textContent = `Глава ${state.storyChapter+1} из ${STORY_QUESTS.length} · сюжет не сбрасывается`;
+    document.getElementById('questSummary').textContent = `${storyChapterBadge(state.storyChapter)} · ${state.storyChapter+1} из ${STORY_QUESTS.length} · сюжет не сбрасывается`;
     const done = state.storyProgress >= ch.target;
     const pct = Math.min(100, (state.storyProgress/ch.target)*100);
     const el = document.createElement('div'); el.className='storycard' + (done?' done':'');
-    el.innerHTML = `<div class="schapter">Глава ${state.storyChapter+1}</div>
+    el.innerHTML = `<div class="schapter">${storyChapterBadge(state.storyChapter)}</div>
       <div class="stitle">${ch.title}</div>
       <div class="stext">${ch.story}</div>
       <div class="qbar"><div class="qfill" style="width:${pct}%"></div></div>
@@ -1209,10 +1711,10 @@
         <div class="qreward">${Math.min(state.storyProgress,ch.target)}/${ch.target} · +${ch.rewardCoins} 🪙${ch.rewardXp?(' +'+ch.rewardXp+' XP'):''}${ch.rewardSkin?' · скин удочки':''}</div>
         <button class="qclaim" ${!done?'disabled':''}>Забрать и продолжить</button>
       </div>`;
-    el.querySelector('button').addEventListener('click', ()=>{
+    el.querySelector('button').addEventListener('click', (ev)=>{
       if(state.storyProgress < ch.target) return;
       claimStoryChapter();
-      haptic('success'); saveState(); refreshTopUI(); renderStoryQuests();
+      haptic('success'); confettiFromEl(ev.currentTarget, 24); saveState(); refreshTopUI(); renderStoryQuests();
     });
     list.appendChild(el);
     if(STORY_QUESTS[state.storyChapter+1]){
@@ -1220,6 +1722,7 @@
       next.textContent = '🔒 Следующая глава откроется после этой...';
       list.appendChild(next);
     }
+    animateListIn(list);
   }
 
   function renderQuests(){
@@ -1254,6 +1757,7 @@
         el.innerHTML = `<div class="lbrank">${i+1}</div><div class="lbname">${row.name} · ур.${row.level}</div><div class="lbscore">${formatNum(row.score)}</div>`;
         list.appendChild(el);
       });
+      animateListIn(list);
     }).catch(()=>{ list.innerHTML = '<div class="lbnote">Не удалось загрузить рейтинг. Проверь соединение.</div>'; });
   }
 
@@ -1271,6 +1775,7 @@
   }));
 
   // ---------- INIT ----------
+  buildSkinDefs();
   loadState(function(){ fixInventory(); ensureQuests(); ensureStory(); refreshTopUI(); syncLeaderboard(); });
 })();
 </script>
