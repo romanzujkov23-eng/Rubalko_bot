@@ -20,7 +20,7 @@
   #app{position:relative; width:100%; height:100vh; height:100dvh; overflow:hidden;}
 
   #screen-fish{position:absolute; inset:0; transition:background 0.6s ease;
-    background:linear-gradient(to bottom, #F5AD63 0%, #1F6478 30%, #14505E 33%, var(--water-deep) 100%);}
+    background:linear-gradient(to bottom, #F5AD63 0%, #1F6478 30%, #14505E 33%, var(--water-deep) 68%);}
   .sun{position:absolute; top:5%; left:50%; transform:translateX(-50%); width:56px; height:56px; border-radius:50%;
     background:radial-gradient(circle, #FFEBB8, var(--gold) 70%); box-shadow:0 0 44px 12px rgba(246,196,83,0.45);}
   .cloud{position:absolute; font-size:26px; opacity:.5; animation:cloudDrift linear infinite; will-change:transform;}
@@ -164,7 +164,7 @@
   #bitebang.show{animation:pop .55s ease-out;}
   @keyframes pop{0%{opacity:0; transform:translate(-50%,-100%) scale(.4);} 30%{opacity:1; transform:translate(-50%,-160%) scale(1.15);} 100%{opacity:0; transform:translate(-50%,-190%) scale(1);}}
 
-  #bottompanel{position:absolute; left:0; bottom:calc(76px + env(safe-area-inset-bottom)); width:100%; z-index:5; padding:10px 16px 8px;
+  #bottompanel{position:absolute; left:0; bottom:calc(92px + env(safe-area-inset-bottom)); width:100%; z-index:5; padding:10px 16px 8px;
     background:linear-gradient(to top, rgba(5,16,20,0.85), rgba(5,16,20,0)); display:flex; flex-direction:column; align-items:center; gap:9px;}
   #status{font-weight:800; font-size:12.5px; min-height:17px; text-align:center; color:var(--cream);
     text-shadow:0 2px 8px rgba(0,0,0,0.6); letter-spacing:.2px;}
@@ -201,9 +201,9 @@
 
   .r0{color:#C8DFD6;} .r1{color:#C8DFD6;} .r2{color:#7FE08F;} .r3{color:#63B7EE;} .r4{color:#F6C453;}
 
-  #navbar{position:absolute; left:10px; right:10px; bottom:calc(10px + env(safe-area-inset-bottom)); height:64px; z-index:20; display:flex;
+  #navbar{position:absolute; left:10px; right:10px; bottom:calc(10px + env(safe-area-inset-bottom)); height:78px; z-index:20; display:flex;
     background:rgba(9,26,32,0.78); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); border:1px solid var(--glass-border);
-    border-radius:22px; box-shadow:0 12px 30px rgba(0,0,0,0.4); padding:5px;
+    border-radius:24px; box-shadow:0 12px 30px rgba(0,0,0,0.4); padding:6px;
     /* Фикс мелькания заброшенной удочки сквозь/поверх навбара: удочка постоянно анимируется
        (will-change:transform) и из-за этого живёт на отдельном GPU-слое. Навбар был обычным
        слоем без явного композитинга, поэтому в некоторых мобильных WebView (в т.ч. в Telegram)
@@ -211,10 +211,10 @@
        на правильный z-index. Явно переводим навбар в собственный изолированный композитный слой —
        тогда порядок поверх удочки гарантирован на всех кадрах анимации. */
     isolation:isolate; transform:translate3d(0,0,0); will-change:transform; backface-visibility:hidden;}
-  .navbtn{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; border-radius:17px;
-    background:none; border:none; color:rgba(247,243,232,0.5); font-family:'Nunito',sans-serif; font-weight:800; font-size:9.5px; padding:5px 1px;
+  .navbtn{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; border-radius:18px;
+    background:none; border:none; color:rgba(247,243,232,0.5); font-family:'Nunito',sans-serif; font-weight:800; font-size:11.5px; padding:6px 2px;
     transition:background .18s ease, color .18s ease, transform .12s ease;}
-  .navbtn .navico{width:20px; height:20px; display:flex; align-items:center; justify-content:center; transition:transform .18s ease;}
+  .navbtn .navico{width:25px; height:25px; display:flex; align-items:center; justify-content:center; transition:transform .18s ease;}
   .navbtn .navico svg{display:block; width:100%; height:100%;}
   .navbtn:active{transform:scale(.94);}
   .navbtn.active{color:var(--gold); background:rgba(246,196,83,0.14);}
@@ -223,7 +223,7 @@
   /* Отступ снизу у подэкранов должен учитывать safe-area точно так же, как навбар,
      иначе на устройствах с индикатором свайпа (iPhone X+) последняя карточка
      списка частично уезжает под навигацию */
-  .subscreen{position:absolute; inset:0 0 calc(76px + env(safe-area-inset-bottom)) 0; z-index:8; background:var(--water-deep); display:none; flex-direction:column;}
+  .subscreen{position:absolute; inset:0 0 calc(92px + env(safe-area-inset-bottom)) 0; z-index:8; background:var(--water-deep); display:none; flex-direction:column;}
   .subscreen.show{display:flex;}
   .subhead{padding:calc(16px + env(safe-area-inset-top)) 18px 12px; flex-shrink:0; border-bottom:1px solid rgba(247,243,232,0.06);}
   .subhead h2{font-family:'Baloo 2',sans-serif; font-size:23px; margin:0 0 3px;}
@@ -1420,7 +1420,7 @@
     boostline.innerHTML = activeBoosts.join('&nbsp; ');
     applySkin(state.activeSkin);
     locTitle.textContent = currentLoc().name;
-    stageEl.style.background = `linear-gradient(to bottom, ${currentLoc().top} 0%, ${currentLoc().bottom} 32%, ${currentLoc().bottom} 33%, var(--water-deep) 100%)`;
+    stageEl.style.background = `linear-gradient(to bottom, ${currentLoc().top} 0%, ${currentLoc().bottom} 32%, ${currentLoc().bottom} 33%, var(--water-deep) 68%)`;
     if(stageEl.dataset.loc !== currentLoc().id){
       stageEl.dataset.loc = currentLoc().id;
       renderScenery(currentLoc());
