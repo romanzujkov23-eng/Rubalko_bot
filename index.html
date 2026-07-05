@@ -247,131 +247,11 @@
   .modal-btn-cancel{background:rgba(245,239,227,0.14); color:var(--cream);}
   .modal-btn-danger{background:#E85A4A; color:#fff;}
 
-  #levelupToast{position:absolute; top:14%; left:50%; transform:translateX(-50%) translateY(-14px) scale(.7); z-index:35;
-    background:linear-gradient(180deg, var(--gold), #D89A2E); color:var(--ink); border-radius:16px; padding:10px 18px; font-family:'Baloo 2',sans-serif;
-    font-weight:800; font-size:14px; box-shadow:0 10px 24px rgba(0,0,0,0.4), 0 0 0 3px rgba(255,255,255,0.25) inset; opacity:0; pointer-events:none;
-    transition:opacity .3s cubic-bezier(.34,1.56,.64,1), transform .4s cubic-bezier(.34,1.56,.64,1); text-align:center; white-space:nowrap;}
-  #levelupToast.show{opacity:1; transform:translateX(-50%) translateY(0) scale(1); animation:toastWiggle 2.2s ease-in-out .3s;}
-  @keyframes toastWiggle{0%,100%{transform:translateX(-50%) translateY(0) scale(1) rotate(0deg);} 20%{transform:translateX(-50%) translateY(0) scale(1) rotate(-2deg);} 35%{transform:translateX(-50%) translateY(0) scale(1) rotate(2deg);} 50%{transform:translateX(-50%) translateY(0) scale(1) rotate(-1deg);}}
-
-  /* ==================== ЖИВОЙ КАРТУННЫЙ СЛОЙ: анимации, полировка UI, переходы ==================== */
-  :root{ --bounce:cubic-bezier(.34,1.56,.64,1); --smooth:cubic-bezier(.22,.9,.32,1); }
-
-  /* Заголовки в мультяшном стиле — мягкая обводка + объёмная тень */
-  .title h1, .subhead h2, #catchcard h2, .modal-card h2{
-    -webkit-text-stroke:.6px rgba(8,34,42,0.55);
-    text-shadow:0 3px 0 rgba(8,34,42,0.35), 0 6px 10px rgba(0,0,0,0.25);
-  }
-  .title h1{ animation:titleFloat 4s ease-in-out infinite; }
-  @keyframes titleFloat{0%,100%{transform:translateY(0);} 50%{transform:translateY(-2px);}}
-
-  /* Солнце живее */
-  .sun{ animation:sunPulse 3.6s ease-in-out infinite; }
-  @keyframes sunPulse{0%,100%{box-shadow:0 0 40px 10px rgba(242,193,78,0.5); transform:translateX(-50%) scale(1);} 50%{box-shadow:0 0 54px 16px rgba(242,193,78,0.7); transform:translateX(-50%) scale(1.05);}}
-  .sun-ray{position:absolute; top:5%; left:50%; width:160px; height:160px; transform:translate(-50%,-50%);
-    background:radial-gradient(circle, rgba(255,231,176,0.35), transparent 70%); animation:sunRaySpin 14s linear infinite; pointer-events:none;}
-  @keyframes sunRaySpin{0%{transform:translate(-50%,-50%) rotate(0deg) scale(1);} 50%{transform:translate(-50%,-50%) rotate(180deg) scale(1.15);} 100%{transform:translate(-50%,-50%) rotate(360deg) scale(1);}}
-  #screen-fish[data-loc="abyss"] .sun-ray, #screen-fish[data-loc="ice"] .sun-ray{opacity:.4;}
-  .birds{position:absolute; font-size:13px; opacity:.6; animation:cloudDrift linear infinite; will-change:transform;}
-  #screen-fish[data-loc="abyss"] .birds{display:none;}
-  .sparkle{position:absolute; width:4px; height:4px; border-radius:50%; background:rgba(255,255,255,0.85);
-    box-shadow:0 0 6px 1px rgba(255,255,255,0.6); animation:sparkleTwinkle 2.4s ease-in-out infinite;}
-  @keyframes sparkleTwinkle{0%,100%{opacity:0; transform:scale(.5);} 50%{opacity:.95; transform:scale(1.3);}}
-
-  /* Плюшки верхней панели — приятный поп при изменении значения */
-  .pill, #levelbox{ transition:transform .12s var(--bounce); }
-  .pill.bump, #levelbox.bump{ animation:pillBump .38s var(--bounce); }
-  @keyframes pillBump{0%{transform:scale(1);} 40%{transform:scale(1.18);} 100%{transform:scale(1);}}
-  #levelbox .xpfill{ transition:width .5s var(--smooth); background:linear-gradient(90deg, var(--gold), #FFE39A); box-shadow:0 0 8px rgba(242,193,78,0.6); }
-
-  /* Кнопка заброса — дышит, пока ждёт тапа, и даёт объёмный отклик при нажатии */
-  #mainbtn{ animation:mainbtnBreathe 2.4s ease-in-out infinite; position:relative; overflow:hidden; }
-  #mainbtn:disabled{ animation:none; }
-  #mainbtn.pull{ animation:mainbtnUrge 0.5s ease-in-out infinite; }
-  @keyframes mainbtnBreathe{0%,100%{box-shadow:0 6px 0 #8A6318, 0 8px 16px rgba(0,0,0,0.35), 0 0 0 0 rgba(242,193,78,0.5);} 50%{box-shadow:0 6px 0 #8A6318, 0 10px 22px rgba(0,0,0,0.4), 0 0 0 8px rgba(242,193,78,0);}}
-  @keyframes mainbtnUrge{0%,100%{transform:scale(1);} 50%{transform:scale(1.035);}}
-  #mainbtn::after{content:''; position:absolute; top:0; left:-60%; width:40%; height:100%;
-    background:linear-gradient(120deg, transparent, rgba(255,255,255,0.55), transparent);
-    transform:skewX(-20deg); animation:btnShine 3.2s ease-in-out infinite;}
-  @keyframes btnShine{0%{left:-60%;} 35%{left:130%;} 100%{left:130%;}}
-  .ripple{position:absolute; border-radius:50%; background:rgba(255,255,255,0.55); transform:scale(0); opacity:.9;
-    animation:rippleGrow .55s ease-out forwards; pointer-events:none;}
-  @keyframes rippleGrow{to{transform:scale(2.6); opacity:0;}}
-
-  /* Карточки улова — влетают с упругим поклоном, рамка светится по редкости */
-  #catchcard .card{ animation:cardPop .5s var(--bounce); }
-  @keyframes cardPop{0%{transform:scale(.55) rotate(-4deg); opacity:0;} 60%{transform:scale(1.06) rotate(1deg); opacity:1;} 100%{transform:scale(1) rotate(0deg);}}
-  #catchcard .card.r2{ box-shadow:0 20px 40px rgba(0,0,0,0.5), 0 0 0 2px #7FD68A, 0 0 26px 4px rgba(127,214,138,0.45); }
-  #catchcard .card.r3{ box-shadow:0 20px 40px rgba(0,0,0,0.5), 0 0 0 2px #5AB0E8, 0 0 26px 4px rgba(90,176,232,0.5); }
-  #catchcard .card.r4{ box-shadow:0 20px 40px rgba(0,0,0,0.5), 0 0 0 3px #F2C14E, 0 0 34px 8px rgba(242,193,78,0.65); animation:cardPop .5s var(--bounce), legendCardGlow 1.6s ease-in-out infinite .5s; }
-  @keyframes legendCardGlow{0%,100%{box-shadow:0 20px 40px rgba(0,0,0,0.5), 0 0 0 3px #F2C14E, 0 0 34px 8px rgba(242,193,78,0.65);} 50%{box-shadow:0 20px 40px rgba(0,0,0,0.5), 0 0 0 3px #F2C14E, 0 0 48px 14px rgba(242,193,78,0.9);}}
-  #catchcard .fishico{ animation:fishicoWiggle 1.6s ease-in-out infinite; }
-  @keyframes fishicoWiggle{0%,100%{transform:rotate(-4deg);} 50%{transform:rotate(4deg);}}
-  #catchcard{ transition:background .25s ease; }
-
-  /* Всплывающие конфетти/звёздочки */
-  .confetti-p{position:fixed; z-index:45; pointer-events:none; will-change:transform,opacity;
-    animation:confettiFall var(--cdur,1.1s) ease-in forwards;}
-  @keyframes confettiFall{0%{transform:translate(-50%,-50%) translate(0,0) rotate(0deg) scale(1); opacity:1;}
-    100%{transform:translate(-50%,-50%) translate(var(--cx),var(--cy)) rotate(var(--cr)) scale(.6); opacity:0;}}
-
-  /* Навигация — активная иконка подпрыгивает, лёгкий отклик на тап */
-  .navbtn{ transition:color .15s ease, transform .12s var(--bounce); }
-  .navbtn:active{ transform:scale(.9); }
-  .navbtn.active .navico{ animation:navBounce .45s var(--bounce); }
-  @keyframes navBounce{0%{transform:translateY(0) scale(1);} 35%{transform:translateY(-5px) scale(1.2);} 100%{transform:translateY(0) scale(1);}}
-  .navbtn.active{ position:relative; }
-  .navbtn.active::before{content:''; position:absolute; top:2px; width:5px; height:5px; border-radius:50%; background:var(--gold);
-    animation:navDot .3s var(--bounce); box-shadow:0 0 6px var(--gold);}
-  @keyframes navDot{0%{transform:scale(0);} 100%{transform:scale(1);}}
-
-  /* Переходы между разделами меню — мягкое всплытие вместо резкого display:none */
-  .subscreen{ opacity:0; transform:translateY(16px) scale(.98); pointer-events:none; display:flex;
-    transition:opacity .32s var(--smooth), transform .32s var(--smooth); }
-  .subscreen.show{ opacity:1; transform:translateY(0) scale(1); pointer-events:auto; }
-
-  /* Списки карточек — упругое появление по очереди */
-  .pop-in{ animation:popIn .45s var(--bounce) backwards; }
-  @keyframes popIn{0%{opacity:0; transform:translateY(16px) scale(.92);} 100%{opacity:1; transform:translateY(0) scale(1);}}
-
-  /* Кнопки карточек и вкладок — живой тактильный отклик */
-  .card2, .questcard, .storycard, .lbrow{ transition:transform .15s var(--bounce), box-shadow .15s ease; }
-  button{ position:relative; overflow:hidden; }
-  .card2 button, .questcard .qclaim, .storycard .qclaim, #sellall, .qtab, .btn-reset-progress{
-    transition:transform .1s var(--bounce), filter .15s ease; position:relative; overflow:hidden;}
-  .card2 button:active:not(:disabled), .questcard .qclaim:active:not(:disabled), .storycard .qclaim:active:not(:disabled),
-  #sellall:active, .qtab:active, .btn-reset-progress:active{ transform:scale(.92); filter:brightness(.94); }
-  .qtab.active{ animation:tabPop .3s var(--bounce); }
-  @keyframes tabPop{0%{transform:scale(.9);} 100%{transform:scale(1);}}
-
-  /* Полоски прогресса квестов — переливаются, когда выполнены */
-  .qbar{ position:relative; }
-  .qfill{ transition:width .5s var(--smooth); position:relative; }
-  .questcard.done .qfill, .storycard.done .qfill{ background:linear-gradient(90deg, var(--gold), #FFE9B8, var(--gold)); background-size:200% 100%; animation:goldShimmer 1.8s linear infinite; }
-  @keyframes goldShimmer{0%{background-position:0% 0;} 100%{background-position:200% 0;}}
-  .questcard.done, .storycard.done{ animation:questDoneGlow 1.8s ease-in-out infinite; }
-  @keyframes questDoneGlow{0%,100%{box-shadow:0 0 0 0 rgba(242,193,78,0);} 50%{box-shadow:0 0 16px 2px rgba(242,193,78,0.35);}}
-
-  /* Плашка бонуса за вход — заметнее приглашает нажать */
-  #bonusbanner.show{ animation:bonusIn .45s var(--bounce), bonusPulse 1.8s ease-in-out .5s infinite; }
-  @keyframes bonusIn{0%{opacity:0; transform:translateX(-50%) translateY(-14px) scale(.7);} 100%{opacity:1; transform:translateX(-50%) translateY(0) scale(1);}}
-  @keyframes bonusPulse{0%,100%{box-shadow:0 6px 14px rgba(0,0,0,0.3);} 50%{box-shadow:0 6px 22px rgba(242,193,78,0.55);}}
-
-  /* Иконки/значки рыб в списках — лёгкое покачивание, как живые */
-  .card2:not(.locked) .icobox svg{ animation:iconSway 3.4s ease-in-out infinite; }
-  @keyframes iconSway{0%,100%{transform:rotate(-3deg);} 50%{transform:rotate(3deg);}}
-
-  /* Модалка сброса — влетает с упругостью */
-  .modal-card{ animation:cardPop .4s var(--bounce); }
-
-  /* Локационные пилюли — активная слегка увеличена и подсвечена */
-  .locpill{ transition:transform .18s var(--bounce), background .2s ease; }
-  .locpill.active{ transform:scale(1.06); box-shadow:0 0 0 2px rgba(242,193,78,0.4), 0 4px 10px rgba(0,0,0,0.25); }
-  .locpill:active:not(.locked){ transform:scale(.94); }
-
-  @media (prefers-reduced-motion: reduce){
-    *{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
-  }
+  #levelupToast{position:absolute; top:14%; left:50%; transform:translateX(-50%) translateY(-14px); z-index:35;
+    background:var(--gold); color:var(--ink); border-radius:16px; padding:10px 18px; font-family:'Baloo 2',sans-serif;
+    font-weight:800; font-size:14px; box-shadow:0 10px 24px rgba(0,0,0,0.4); opacity:0; pointer-events:none;
+    transition:opacity .25s ease, transform .25s ease; text-align:center; white-space:nowrap;}
+  #levelupToast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 </style>
 </head>
 <body>
@@ -381,18 +261,12 @@
     <div id="scenery-back"></div>
     <div id="scenery-particles"></div>
     <div class="sun"></div>
-    <div class="sun-ray"></div>
     <div class="cloud" style="top:6%; animation-duration:38s;">☁️</div>
     <div class="cloud" style="top:13%; animation-duration:52s; animation-delay:-20s; font-size:20px;">☁️</div>
-    <div class="cloud" style="top:2%; animation-duration:64s; animation-delay:-40s; font-size:16px;">☁️</div>
-    <div class="birds" style="top:9%; animation-duration:46s; animation-delay:-14s;">🐦</div>
     <div class="ripple-layer">
       <div class="wave" style="top:10%; height:40px; animation-duration:9s;"></div>
       <div class="wave" style="top:35%; height:60px; animation-duration:13s;"></div>
       <div class="wave" style="top:65%; height:50px; animation-duration:11s;"></div>
-      <div class="sparkle" style="top:18%; left:20%; animation-delay:-.4s;"></div>
-      <div class="sparkle" style="top:42%; left:66%; animation-delay:-1.6s;"></div>
-      <div class="sparkle" style="top:58%; left:38%; animation-delay:-.9s;"></div>
     </div>
     <div id="topbar">
       <div class="pill"><span>🪙</span><span id="coinsVal">0</span></div>
@@ -536,69 +410,6 @@
       else if(type==='error') tg.HapticFeedback.notificationOccurred('error');
       else tg.HapticFeedback.impactOccurred('light');
     }
-  }
-
-  // ---------- ЖИВОЙ UI: тактильный отклик на кнопках ----------
-  document.addEventListener('pointerdown', function(e){
-    const btn = e.target.closest('button');
-    if(!btn || btn.disabled) return;
-    const rect = btn.getBoundingClientRect();
-    const size = Math.max(rect.width, rect.height) * 1.3;
-    const rip = document.createElement('span');
-    rip.className = 'ripple';
-    rip.style.width = rip.style.height = size + 'px';
-    rip.style.left = (e.clientX - rect.left - size/2) + 'px';
-    rip.style.top = (e.clientY - rect.top - size/2) + 'px';
-    btn.appendChild(rip);
-    setTimeout(()=>rip.remove(), 600);
-  }, {passive:true});
-
-  // ---------- ЖИВОЙ UI: конфетти для приятных моментов (улов, уровень, награды) ----------
-  const CONFETTI_COLORS = ['#F2C14E','#E8734A','#7FD68A','#5AB0E8','#F5EFE3','#B14EF2'];
-  function confettiBurst(x, y, count){
-    const n = count || 18;
-    for(let i=0;i<n;i++){
-      const el = document.createElement('div');
-      el.className = 'confetti-p';
-      const isDot = Math.random() < 0.4;
-      const size = 5 + Math.random()*6;
-      el.style.width = size + 'px'; el.style.height = (isDot?size:size*1.6) + 'px';
-      el.style.background = CONFETTI_COLORS[Math.floor(Math.random()*CONFETTI_COLORS.length)];
-      el.style.borderRadius = isDot ? '50%' : '2px';
-      el.style.left = x + 'px'; el.style.top = y + 'px';
-      const ang = (-Math.PI/2) + (Math.random()-0.5)*Math.PI*1.4;
-      const dist = 40 + Math.random()*90;
-      el.style.setProperty('--cx', (Math.cos(ang)*dist) + 'px');
-      el.style.setProperty('--cy', (Math.sin(ang)*dist + 40) + 'px');
-      el.style.setProperty('--cr', (Math.random()*520-260) + 'deg');
-      el.style.setProperty('--cdur', (0.7 + Math.random()*0.6) + 's');
-      document.body.appendChild(el);
-      setTimeout(()=>el.remove(), 1400);
-    }
-  }
-  function confettiFromEl(el, count){
-    if(!el) return;
-    const r = el.getBoundingClientRect();
-    confettiBurst(r.left + r.width/2, r.top + r.height/2, count);
-  }
-
-  // ---------- ЖИВОЙ UI: карточки списков появляются по очереди ----------
-  function animateListIn(container){
-    if(!container) return;
-    Array.from(container.children).forEach((el, i)=>{
-      el.style.animationDelay = Math.min(i*35, 350) + 'ms';
-      el.classList.add('pop-in');
-    });
-  }
-
-  // ---------- ЖИВОЙ UI: плюшки шапки подпрыгивают при изменении значения ----------
-  const bumpTracker = {};
-  function bumpIfChanged(el, key, value){
-    if(!el) return;
-    if(bumpTracker[key] !== undefined && bumpTracker[key] !== value){
-      el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
-    }
-    bumpTracker[key] = value;
   }
 
   // ====== ЗАПОЛНИ ЭТУ СТРОКУ ПОСЛЕ НАСТРОЙКИ FIREBASE (см. инструкцию в чате) ======
@@ -1077,7 +888,6 @@
     clearTimeout(levelupToastTimer);
     el.classList.add('show');
     haptic('success');
-    setTimeout(()=>confettiFromEl(el, 22), 150);
     levelupToastTimer = setTimeout(()=>{ el.classList.remove('show'); }, 2400);
   }
 
@@ -1170,11 +980,11 @@
       '</svg>',
   };
   const PARTICLE_CFG = {
-    harbor: {emoji:['🦋','🍂'], count:6, anim:'moteFloat', dur:[4,7], top:8, size:12},
-    reef: {emoji:['🫧'], count:12, anim:'bubbleRise', dur:[6,11], top:55, size:9},
-    ice: {emoji:['❄️'], count:20, anim:'snowFall', dur:[7,13], top:0, size:9},
-    jungle: {emoji:['🍃'], count:12, anim:'leafFall', dur:[8,14], top:0, size:11},
-    abyss: {emoji:['✨','🔵'], count:18, anim:'moteFloat', dur:[3,6], top:15, size:7},
+    harbor: null,
+    reef: {emoji:['🫧'], count:9, anim:'bubbleRise', dur:[6,11], top:55, size:9},
+    ice: {emoji:['❄️'], count:16, anim:'snowFall', dur:[7,13], top:0, size:9},
+    jungle: {emoji:['🍃'], count:9, anim:'leafFall', dur:[8,14], top:0, size:11},
+    abyss: {emoji:['✨','🔵'], count:14, anim:'moteFloat', dur:[3,6], top:15, size:7},
   };
   const sceneryBackEl = document.getElementById('scenery-back');
   const sceneryPartEl = document.getElementById('scenery-particles');
@@ -1213,11 +1023,8 @@
 
   function refreshTopUI(){
     coinsVal.textContent = formatNum(state.coins);
-    bumpIfChanged(coinsVal.closest('.pill'), 'coins', state.coins);
     catchVal.textContent = formatNum(state.totalCatches);
-    bumpIfChanged(catchVal.closest('.pill'), 'catches', state.totalCatches);
     lvlVal.textContent = 'Ур. ' + state.level;
-    bumpIfChanged(document.getElementById('levelbox'), 'level', state.level);
     xpText.textContent = formatNum(state.xp) + '/' + formatNum(xpNeeded(state.level));
     xpfill.style.width = Math.min(100, (state.xp/xpNeeded(state.level))*100) + '%';
     gearline.textContent = getRod(state.activeRod).name + ' · ' + getBait(state.activeBait).name;
@@ -1257,12 +1064,12 @@
       bonusbanner.classList.remove('show');
     }
   }
-  document.getElementById('bonusBtn').addEventListener('click', (ev)=>{
+  document.getElementById('bonusBtn').addEventListener('click', ()=>{
     const today = todayStr(), yest = yesterdayStr();
     state.dailyStreak = (state.lastBonusDate === yest) ? state.dailyStreak+1 : 1;
     const reward = 50 + Math.min(state.dailyStreak-1,10)*15;
     state.coins += reward; state.lastBonusDate = today;
-    haptic('success'); confettiFromEl(ev.currentTarget, 16); saveState(); refreshTopUI();
+    haptic('success'); saveState(); refreshTopUI();
   });
 
   function resetVisual(){
@@ -1455,15 +1262,7 @@
     rarityEl.textContent = RARITY_LABEL[fish.tier]; rarityEl.className = 'rarity r' + fish.tier;
     document.getElementById('cc-xp').textContent = '+' + (fish.xp * (xpBoosted?2:1)) + ' опыта' + (xpBoosted?' (x2 буст)':'');
     document.getElementById('cc-weight').textContent = 'Вес: ' + weight.toFixed(2) + ' кг · цена ~' + fishPrice(fish, weight) + ' 🪙';
-    const ccCard = document.querySelector('#catchcard .card');
-    ccCard.className = 'card r' + fish.tier;
     catchcard.style.display = 'flex';
-    if(fish.tier >= 2){
-      setTimeout(()=>{
-        const r = ccCard.getBoundingClientRect();
-        confettiBurst(r.left + r.width/2, r.top + 30, fish.tier >= 4 ? 28 : 16);
-      }, 120);
-    }
     resetVisual();
   }
 
@@ -1530,7 +1329,6 @@
     resetBtn.textContent = '🗑️ Сбросить весь прогресс';
     resetBtn.addEventListener('click', openResetModal);
     list.appendChild(resetBtn);
-    animateListIn(list);
   }
   function boostCard(item){
     const active = isBoostActive(item.id);
@@ -1619,7 +1417,6 @@
       list.appendChild(el);
     });
     if(!any){ const empty=document.createElement('div'); empty.className='lbnote'; empty.textContent='Пока нечего продавать — иди на рыбалку в разделе «Рыбалка».'; list.appendChild(empty); }
-    animateListIn(list);
   }
   document.getElementById('sellall').addEventListener('click', ()=>{
     const loc = currentLoc(); let total = 0;
@@ -1649,7 +1446,6 @@
       });
     });
     document.getElementById('collSummary').textContent = `Открыто ${discovered} из ${totalSpecies} видов`;
-    animateListIn(list);
   }
 
   // ---------- QUESTS ----------
@@ -1667,16 +1463,15 @@
           <div class="qreward">${Math.min(q.progress,q.target)}/${q.target} · +${q.rewardCoins} 🪙 +${q.rewardXp} XP</div>
           <button class="qclaim ${q.claimed?'claimed':''}" ${(!done||q.claimed)?'disabled':''}>${q.claimed?'Получено':'Забрать'}</button>
         </div>`;
-      el.querySelector('button').addEventListener('click', (ev)=>{
+      el.querySelector('button').addEventListener('click', ()=>{
         if(q.claimed || q.progress < q.target) return;
         state.coins += q.rewardCoins; addXp(q.rewardXp); q.claimed = true;
-        haptic('success'); confettiFromEl(ev.currentTarget, 16); saveState(); refreshTopUI(); renderDailyQuests();
+        haptic('success'); saveState(); refreshTopUI(); renderDailyQuests();
       });
       list.appendChild(el);
     });
     const doneCount = state.dailyQuests.filter(q=>q.claimed).length;
     document.getElementById('questSummary').textContent = `Выполнено ${doneCount} из ${state.dailyQuests.length} · обновление каждый день`;
-    animateListIn(list);
   }
 
   // Порядковый номер главы для бейджа: совпадает с числом в самом заголовке главы
@@ -1711,10 +1506,10 @@
         <div class="qreward">${Math.min(state.storyProgress,ch.target)}/${ch.target} · +${ch.rewardCoins} 🪙${ch.rewardXp?(' +'+ch.rewardXp+' XP'):''}${ch.rewardSkin?' · скин удочки':''}</div>
         <button class="qclaim" ${!done?'disabled':''}>Забрать и продолжить</button>
       </div>`;
-    el.querySelector('button').addEventListener('click', (ev)=>{
+    el.querySelector('button').addEventListener('click', ()=>{
       if(state.storyProgress < ch.target) return;
       claimStoryChapter();
-      haptic('success'); confettiFromEl(ev.currentTarget, 24); saveState(); refreshTopUI(); renderStoryQuests();
+      haptic('success'); saveState(); refreshTopUI(); renderStoryQuests();
     });
     list.appendChild(el);
     if(STORY_QUESTS[state.storyChapter+1]){
@@ -1722,7 +1517,6 @@
       next.textContent = '🔒 Следующая глава откроется после этой...';
       list.appendChild(next);
     }
-    animateListIn(list);
   }
 
   function renderQuests(){
@@ -1757,7 +1551,6 @@
         el.innerHTML = `<div class="lbrank">${i+1}</div><div class="lbname">${row.name} · ур.${row.level}</div><div class="lbscore">${formatNum(row.score)}</div>`;
         list.appendChild(el);
       });
-      animateListIn(list);
     }).catch(()=>{ list.innerHTML = '<div class="lbnote">Не удалось загрузить рейтинг. Проверь соединение.</div>'; });
   }
 
