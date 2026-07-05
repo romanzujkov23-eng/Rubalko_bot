@@ -168,7 +168,10 @@
   @keyframes rodCast{0%{transform:rotate(2deg);} 25%{transform:rotate(-22deg);} 55%{transform:rotate(8deg);} 78%{transform:rotate(-4deg);} 100%{transform:rotate(0deg);}}
   #rodpath{fill:var(--rod-color, #6b4726); stroke:none; transition:filter .4s ease;}
   #reelpath{fill:var(--rod-color, #6b4726); opacity:.9;}
-  #cork ellipse{fill:#D8C39A;}
+  #cork ellipse{fill:url(#corkGrad);}
+  #reelhandle{transition:transform .2s ease;}
+  #rodsvg.reeling #reelhandle{animation:reelSpin .28s linear infinite;}
+  @keyframes reelSpin{0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);}}
   #rodsvg.glow-skin{filter:drop-shadow(0 0 7px var(--glow-color,#33f0ff)) drop-shadow(0 0 16px var(--glow-color,#33f0ff)); animation:rodGlowPulse 1.8s ease-in-out infinite, rodIdle 3.4s ease-in-out infinite;}
   #rodsvg.glow-skin.casting{animation:rodGlowPulse 1.8s ease-in-out infinite, rodCast .55s cubic-bezier(.3,.1,.3,1);}
   #rodsvg.glow-skin.reeling{animation:rodGlowPulse 1.8s ease-in-out infinite, rodReel .28s ease-in-out infinite;}
@@ -184,12 +187,23 @@
   @keyframes skinGlowPulse{0%,100%{filter:brightness(1) saturate(1);} 50%{filter:brightness(1.4) saturate(1.3);}}
   @keyframes skinLegendSwatch{0%{filter:hue-rotate(0deg);} 100%{filter:hue-rotate(360deg);}}
 
-  #line{position:fixed; left:0; top:0; height:2px; width:1px;
-    background:linear-gradient(to right, rgba(247,243,232,0.92), rgba(247,243,232,0.5));
-    transform-origin:0 50%; will-change:transform; z-index:3;}
-  #bobber{position:absolute; left:50%; width:24px; height:24px; transform:translate(-50%,-50%); z-index:3; will-change:transform;}
-  #bobber .body{width:100%; height:100%; border-radius:50%; background:linear-gradient(180deg, var(--coral) 50%, var(--cream) 50%);
-    border:2px solid var(--ink); box-shadow:0 3px 8px rgba(0,0,0,0.4);}
+  /* ---------- ЛЕСКА: реалистичная провисающая нить вместо прямой линии ----------
+     Раньше леска была CSS-прямоугольником, растянутым transform:scaleX - визуально
+     как натянутая струна без веса. Теперь это SVG-путь (квадратичная кривая),
+     который каждый кадр пересчитывается между кончиком удочки и поплавком с лёгким
+     провисанием (имитация гравитации и намокшей лески), выпрямляется при вываживании. */
+  #lineSvg{position:fixed; inset:0; width:100%; height:100%; z-index:3; pointer-events:none; overflow:visible;}
+  #linePath{fill:none; stroke-linecap:round; transition:filter .12s ease;}
+  #linePath.tense{animation:lineTense .12s ease-in-out infinite;}
+
+  /* ---------- ПОПЛАВОК: классический рыболовный поплавок вместо простого кружка ----------
+     Веретенообразное тело бело-красного цвета (как у настоящих "гусиных" поплавков),
+     тонкая антенна-сторожок сверху, глянцевые блики и контактное кольцо на воде. */
+  #bobber{position:absolute; left:50%; width:26px; height:52px; transform:translate(-50%,-50%); z-index:3; will-change:transform;
+    filter:drop-shadow(0 4px 7px rgba(0,0,0,0.4));}
+  #bobber svg{display:block; width:100%; height:100%; overflow:visible;}
+  #bobber .waterring{animation:bobberWaterRing 2.6s ease-in-out infinite;}
+  @keyframes bobberWaterRing{0%,100%{opacity:.3; transform:scaleX(1);} 50%{opacity:.55; transform:scaleX(1.15);}}
   #bobber.hidden{display:none;}
   #bobber.landing{animation:bobberLand .5s cubic-bezier(.34,1.56,.64,1);}
   @keyframes bobberLand{0%{transform:translate(-50%,-50%) translateY(-40px) scale(.6); opacity:0;}
@@ -272,9 +286,12 @@
      списка частично уезжает под навигацию */
   .subscreen{position:absolute; inset:0 0 calc(92px + env(safe-area-inset-bottom)) 0; z-index:8; background:var(--water-deep); display:none; flex-direction:column;}
   .subscreen.show{display:flex;}
-  .subhead{padding:calc(16px + env(safe-area-inset-top)) 18px 12px; flex-shrink:0; border-bottom:1px solid rgba(247,243,232,0.06);}
+  .subhead{padding:calc(16px + env(safe-area-inset-top)) 18px 12px; flex-shrink:0; border-bottom:1px solid rgba(247,243,232,0.06);
+    display:flex; align-items:flex-start; justify-content:space-between; gap:12px;}
+  .subhead .subhead-text{min-width:0;}
   .subhead h2{font-family:'Baloo 2',sans-serif; font-size:23px; margin:0 0 3px;}
   .subhead p{margin:0; font-size:11.5px; opacity:.6; font-weight:600;}
+  .subhead .pill{flex-shrink:0; margin-top:1px;}
   .sublist{flex:1; overflow-y:auto; padding:12px 16px 24px; display:flex; flex-direction:column; gap:10px; -webkit-overflow-scrolling:touch;}
 
   .card2{background:var(--card); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border:1px solid var(--glass-border); border-radius:var(--radius-md); padding:13px; display:flex; align-items:center; gap:11px; box-shadow:0 4px 14px rgba(0,0,0,0.18); transition:transform .12s ease;}
@@ -346,6 +363,21 @@
     background:rgba(255,122,89,0.1); color:#FF9C82; font-family:'Baloo 2',sans-serif; font-weight:800; font-size:13.5px;
     display:flex; align-items:center; justify-content:center; gap:7px;}
   .btn-reset-progress:active{background:rgba(255,122,89,0.2);}
+
+  /* ---------- Строка настроек (вкл/выкл вибрации) на экране Магазина ---------- */
+  .settingrow{width:100%; display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:13px 15px; margin-top:8px; border-radius:var(--radius-md); background:var(--card); border:1px solid var(--glass-border);}
+  .settingrow .settxt{display:flex; flex-direction:column; gap:2px; min-width:0;}
+  .settingrow .setname{font-weight:800; font-size:13px;}
+  .settingrow .setdesc{font-size:10.5px; opacity:.6; font-weight:600;}
+  .switch{position:relative; width:46px; height:27px; flex-shrink:0;}
+  .switch input{opacity:0; width:0; height:0;}
+  .switch .slider{position:absolute; inset:0; cursor:pointer; background:rgba(247,243,232,0.18); border-radius:999px; transition:background .2s ease;
+    border:1px solid var(--glass-border-strong);}
+  .switch .slider::before{content:''; position:absolute; width:21px; height:21px; left:2px; top:2px; border-radius:50%;
+    background:linear-gradient(180deg,#fff,#e8e4d6); box-shadow:0 2px 4px rgba(0,0,0,0.35); transition:transform .2s cubic-bezier(.34,1.56,.64,1);}
+  .switch input:checked + .slider{background:linear-gradient(180deg, var(--gold), var(--gold-deep)); border-color:transparent;}
+  .switch input:checked + .slider::before{transform:translateX(19px);}
 
   .modal-overlay{position:absolute; inset:0; z-index:40; display:none; align-items:center; justify-content:center;
     background:rgba(5,16,20,0.82); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); padding:0 20px;}
@@ -496,25 +528,50 @@
 
     <svg id="rodsvg" viewBox="0 0 300 500" preserveAspectRatio="xMaxYMax meet">
       <defs id="skinDefs"></defs>
-      <!-- бланк удочки -->
+      <defs>
+        <linearGradient id="corkGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#EAD6A6"/>
+          <stop offset="55%" stop-color="#CDAE79"/>
+          <stop offset="100%" stop-color="#96794A"/>
+        </linearGradient>
+        <linearGradient id="reelBodyGrad" x1="0.1" y1="0" x2="0.9" y2="1">
+          <stop offset="0%" stop-color="#4a3a2a"/>
+          <stop offset="55%" stop-color="#241a10"/>
+          <stop offset="100%" stop-color="#120c07"/>
+        </linearGradient>
+        <radialGradient id="reelSpoolGrad" cx="35%" cy="28%" r="75%">
+          <stop offset="0%" stop-color="#F6D488"/>
+          <stop offset="55%" stop-color="#C99332"/>
+          <stop offset="100%" stop-color="#7A5417"/>
+        </radialGradient>
+      </defs>
+      <!-- бланк удочки: лёгкий изгиб под собственным весом (тонкая, реалистичная кривая вместо прямой) -->
       <path id="rodpath" d="M 281 494 Q 145 260 148.5 24 L 151.5 24 Q 155 260 295 494 Z"/>
-      <path d="M 283 490 Q 147 260 149.5 26" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/>
-      <path d="M 279 492 Q 143 260 147.5 24" fill="none" stroke="rgba(0,0,0,0.18)" stroke-width="1.4" stroke-linecap="round"/>
-      <!-- пробковая рукоять -->
-      <g id="cork" opacity="0.92">
+      <path d="M 283 490 Q 147 260 149.5 26" fill="none" stroke="rgba(255,255,255,0.32)" stroke-width="2" stroke-linecap="round"/>
+      <path d="M 279 492 Q 143 260 147.5 24" fill="none" stroke="rgba(0,0,0,0.2)" stroke-width="1.4" stroke-linecap="round"/>
+      <path d="M 288 480 Q 150 258 150 30" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.8" stroke-linecap="round"/>
+      <!-- пробковая рукоять с текстурой колец -->
+      <g id="cork" opacity="0.95">
         <ellipse cx="288" cy="475" rx="10.5" ry="4.2" transform="rotate(-35 288 475)"/>
         <ellipse cx="281.5" cy="458" rx="10" ry="4" transform="rotate(-35 281.5 458)"/>
         <ellipse cx="275" cy="441" rx="9.4" ry="3.7" transform="rotate(-35 275 441)"/>
         <ellipse cx="268.5" cy="424" rx="8.8" ry="3.4" transform="rotate(-35 268.5 424)"/>
+        <path d="M 279 483 Q 288 479 296.5 470" fill="none" stroke="rgba(0,0,0,0.18)" stroke-width="0.8"/>
+        <path d="M 265 449 Q 274 445 282.5 436" fill="none" stroke="rgba(0,0,0,0.18)" stroke-width="0.8"/>
+        <path d="M 258 432 Q 266 428 274 419" fill="none" stroke="rgba(0,0,0,0.15)" stroke-width="0.7"/>
       </g>
-      <!-- кольца обмотки (тюльпаны) -->
+      <!-- кольца обмотки (тюльпаны) с нитяной обвязкой у основания -->
       <g id="rodguides">
+        <path d="M 213 359 Q219 353.5 225 359" fill="none" stroke="#8a5a16" stroke-width="1.6" opacity="0.75"/>
         <ellipse cx="219" cy="356" rx="7.5" ry="3" fill="none" stroke="#1c1108" stroke-width="1.3" opacity="0.8"/>
         <circle cx="219" cy="356" r="4.6" fill="none" stroke="#1c1108" stroke-width="2.5"/>
+        <path d="M 191 307 Q196 302 201 307" fill="none" stroke="#8a5a16" stroke-width="1.4" opacity="0.75"/>
         <ellipse cx="196" cy="304" rx="6.6" ry="2.7" fill="none" stroke="#1c1108" stroke-width="1.2" opacity="0.8"/>
         <circle cx="196" cy="304" r="4.1" fill="none" stroke="#1c1108" stroke-width="2.2"/>
+        <path d="M 173.4 239 Q177.9 234.5 182.4 239" fill="none" stroke="#8a5a16" stroke-width="1.2" opacity="0.75"/>
         <ellipse cx="177.9" cy="236" rx="5.8" ry="2.4" fill="none" stroke="#1c1108" stroke-width="1.1" opacity="0.8"/>
         <circle cx="177.9" cy="236" r="3.5" fill="none" stroke="#1c1108" stroke-width="2.1"/>
+        <path d="M 159.5 173 Q163.5 169 167.5 173" fill="none" stroke="#8a5a16" stroke-width="1" opacity="0.75"/>
         <ellipse cx="163.5" cy="170" rx="4.8" ry="2" fill="none" stroke="#1c1108" stroke-width="1" opacity="0.8"/>
         <circle cx="163.5" cy="170" r="3" fill="none" stroke="#1c1108" stroke-width="1.9"/>
         <circle cx="155.5" cy="118.3" r="2.7" fill="none" stroke="#1c1108" stroke-width="1.8"/>
@@ -522,20 +579,72 @@
       </g>
       <!-- катушкодержатель -->
       <rect x="266" y="450" width="30" height="58" rx="14" fill="#3b2a1c" transform="rotate(-35 281 479)"/>
-      <!-- катушка -->
+      <!-- катушка: корпус, шпуля с намотанной леской, вращающаяся ручка -->
       <ellipse id="reelpath" cx="270" cy="440" rx="17" ry="21"/>
-      <ellipse cx="270" cy="440" rx="17" ry="21" fill="none" stroke="rgba(0,0,0,0.25)" stroke-width="1.5"/>
-      <circle cx="270" cy="440" r="9" fill="none" stroke="#1c1108" stroke-width="1.4" opacity=".5"/>
-      <circle cx="270" cy="440" r="4.5" fill="#1c1108" opacity=".6"/>
-      <rect x="266" y="418" width="8" height="16" rx="3" fill="#1c1108" opacity=".75" transform="rotate(20 270 426)"/>
-      <circle cx="270" cy="416" r="2.6" fill="#1c1108" opacity=".85"/>
+      <ellipse cx="270" cy="440" rx="17" ry="21" fill="none" stroke="rgba(0,0,0,0.3)" stroke-width="1.5"/>
+      <ellipse cx="265.5" cy="432" rx="6.5" ry="8.5" fill="rgba(255,255,255,0.16)"/>
+      <g id="reelspool">
+        <ellipse cx="270" cy="440" rx="9.5" ry="11.5" fill="url(#reelSpoolGrad)" stroke="#1c1108" stroke-width="1"/>
+        <path d="M 261 435.5 Q270 432 279 435.5" fill="none" stroke="rgba(0,0,0,0.28)" stroke-width="0.7"/>
+        <path d="M 261 440 Q270 436.5 279 440" fill="none" stroke="rgba(0,0,0,0.28)" stroke-width="0.7"/>
+        <path d="M 261 444.5 Q270 441 279 444.5" fill="none" stroke="rgba(0,0,0,0.28)" stroke-width="0.7"/>
+        <circle cx="270" cy="440" r="4" fill="#1c1108" opacity=".75"/>
+      </g>
+      <g id="reelhandle" style="transform-origin:270px 440px;">
+        <rect x="266.6" y="416" width="6.8" height="17" rx="3" fill="#1c1108" opacity=".8" transform="rotate(20 270 424.5)"/>
+        <circle cx="271.6" cy="415.3" r="3.3" fill="#2a1f14" stroke="#000" stroke-width="0.6"/>
+        <circle cx="271.6" cy="415.3" r="1.3" fill="#8a6b3f"/>
+      </g>
       <!-- комель -->
       <ellipse cx="291" cy="498" rx="9.5" ry="5.2" fill="#1c1108" opacity="0.85" transform="rotate(-35 291 498)"/>
       <circle id="rodtip" cx="150" cy="24" r="3" fill="none" stroke="#1c1108" stroke-width="2"/>
     </svg>
     <div id="icehole"></div>
-    <div id="line"></div>
-    <div id="bobber" class="hidden"><div class="body"></div></div>
+    <svg id="lineSvg" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="rgba(247,243,232,0.95)"/>
+          <stop offset="100%" stop-color="rgba(247,243,232,0.4)"/>
+        </linearGradient>
+      </defs>
+      <path id="linePath" d="" stroke="url(#lineGrad)" stroke-width="1.3"/>
+    </svg>
+    <div id="bobber" class="hidden">
+      <svg viewBox="0 0 44 92" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <linearGradient id="bobberWhiteGrad" x1="0.15" y1="0" x2="0.9" y2="1">
+            <stop offset="0%" stop-color="#FFFFFF"/>
+            <stop offset="55%" stop-color="#EFEBDD"/>
+            <stop offset="100%" stop-color="#C7C0AA"/>
+          </linearGradient>
+          <linearGradient id="bobberRedGrad" x1="0.15" y1="0" x2="0.9" y2="1">
+            <stop offset="0%" stop-color="#FF9273"/>
+            <stop offset="40%" stop-color="#FF5A36"/>
+            <stop offset="100%" stop-color="#A82911"/>
+          </linearGradient>
+          <radialGradient id="bobberShine" cx="32%" cy="18%" r="55%">
+            <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.9"/>
+            <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <!-- контактное кольцо на воде -->
+        <ellipse class="waterring" cx="22" cy="84" rx="13" ry="3.2" fill="none" stroke="rgba(247,243,232,0.55)" stroke-width="1.2"/>
+        <ellipse cx="22" cy="84" rx="9" ry="2.2" fill="rgba(4,20,26,0.35)"/>
+        <!-- сторожок (антенна) -->
+        <line x1="22" y1="2" x2="22" y2="28" stroke="#4a3320" stroke-width="1.6" stroke-linecap="round"/>
+        <circle cx="22" cy="3.2" r="2.4" fill="#FF3B30"/>
+        <circle cx="22" cy="3.2" r="1" fill="#FFB3A8"/>
+        <!-- верхняя (белая) часть тела -->
+        <path d="M22 28 C 32.5 28 37.5 40 37.5 49 L 6.5 49 C 6.5 40 11.5 28 22 28 Z" fill="url(#bobberWhiteGrad)" stroke="#8a6b3f" stroke-width="1"/>
+        <!-- нижняя (красная) часть тела -->
+        <path d="M6.5 49 L 37.5 49 C 37.5 63.5 31 82 22 82 C 13 82 6.5 63.5 6.5 49 Z" fill="url(#bobberRedGrad)" stroke="#7a2510" stroke-width="1"/>
+        <!-- разделительный ободок -->
+        <rect x="6.5" y="47.8" width="31" height="2.6" rx="1.3" fill="#3B2A1C" opacity="0.55"/>
+        <!-- глянцевые блики -->
+        <ellipse cx="15" cy="40" rx="5.5" ry="13" fill="url(#bobberShine)"/>
+        <ellipse cx="15" cy="60" rx="4.5" ry="11" fill="url(#bobberShine)" opacity="0.65"/>
+      </svg>
+    </div>
     <div id="splash"></div>
     <div id="bitebang"></div>
     <div id="screen-flash"></div>
@@ -564,12 +673,18 @@
   </div>
 
   <div class="subscreen" id="screen-shop">
-    <div class="subhead"><h2>Магазин</h2><p>Снаряжение для рыбалки</p></div>
+    <div class="subhead">
+      <div class="subhead-text"><h2>Магазин</h2><p>Снаряжение для рыбалки</p></div>
+      <div class="pill subhead-coins"><span class="coin-ico"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><radialGradient id="coinShineShop" cx="35%" cy="28%" r="80%"><stop offset="0%" stop-color="#FFF6DC"/><stop offset="45%" stop-color="#F6C453"/><stop offset="100%" stop-color="#C6811F"/></radialGradient><circle cx="16" cy="16" r="14.5" fill="url(#coinShineShop)" stroke="#8A5A16" stroke-width="1.3"/><circle cx="16" cy="16" r="11" fill="none" stroke="#FFEDB8" stroke-width="1" opacity="0.55"/><path d="M9.5 20c-.6-3.2.6-6.7 3.6-8.6 2-1.3 4.5-1.5 6.6-.6-2.4-.3-4.8.4-6.5 2-1.9 1.7-2.7 4.3-2.2 6.8-1.1-.3-1.5.3-1.5.4z" fill="#A66A17" opacity="0.65"/><path d="M12 20.5c2.6.9 5.6.2 7.5-1.9 1.5-1.7 2-3.9 1.6-6 .6 2.2.2 4.6-1.3 6.5-1.7 2.1-4.5 3-7.1 2.2-.4-.1-.6-.5-.7-.8z" fill="#A66A17" opacity="0.5"/><ellipse cx="11.2" cy="10.8" rx="4" ry="2.2" fill="#FFFFFF" opacity="0.5" transform="rotate(-28 11.2 10.8)"/></svg></span><span class="coinsValMirror">0</span></div>
+    </div>
     <div class="sublist" id="shoplist"></div>
   </div>
 
   <div class="subscreen" id="screen-market">
-    <div class="subhead"><h2>Рынок</h2><p>Продай улов или обменяй на редкую рыбу</p></div>
+    <div class="subhead">
+      <div class="subhead-text"><h2>Рынок</h2><p>Продай улов или обменяй на редкую рыбу</p></div>
+      <div class="pill subhead-coins"><span class="coin-ico"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><radialGradient id="coinShineMarket" cx="35%" cy="28%" r="80%"><stop offset="0%" stop-color="#FFF6DC"/><stop offset="45%" stop-color="#F6C453"/><stop offset="100%" stop-color="#C6811F"/></radialGradient><circle cx="16" cy="16" r="14.5" fill="url(#coinShineMarket)" stroke="#8A5A16" stroke-width="1.3"/><circle cx="16" cy="16" r="11" fill="none" stroke="#FFEDB8" stroke-width="1" opacity="0.55"/><path d="M9.5 20c-.6-3.2.6-6.7 3.6-8.6 2-1.3 4.5-1.5 6.6-.6-2.4-.3-4.8.4-6.5 2-1.9 1.7-2.7 4.3-2.2 6.8-1.1-.3-1.5.3-1.5.4z" fill="#A66A17" opacity="0.65"/><path d="M12 20.5c2.6.9 5.6.2 7.5-1.9 1.5-1.7 2-3.9 1.6-6 .6 2.2.2 4.6-1.3 6.5-1.7 2.1-4.5 3-7.1 2.2-.4-.1-.6-.5-.7-.8z" fill="#A66A17" opacity="0.5"/><ellipse cx="11.2" cy="10.8" rx="4" ry="2.2" fill="#FFFFFF" opacity="0.5" transform="rotate(-28 11.2 10.8)"/></svg></span><span class="coinsValMirror">0</span></div>
+    </div>
     <button id="sellall">Продать весь улов</button>
     <div class="sublist" id="marketlist"></div>
   </div>
@@ -643,6 +758,7 @@
   const tg = window.Telegram && window.Telegram.WebApp;
   if(tg){ try{ tg.ready(); tg.expand(); tg.setHeaderColor && tg.setHeaderColor('#0B2F3A'); tg.setBackgroundColor && tg.setBackgroundColor('#0B2F3A'); }catch(e){} }
   function haptic(type){
+    if(state && state.vibrationOn === false) return;
     if(tg && tg.HapticFeedback){
       if(type==='success') tg.HapticFeedback.notificationOccurred('success');
       else if(type==='error') tg.HapticFeedback.notificationOccurred('error');
@@ -1013,7 +1129,8 @@
       questsDate:null, dailyQuests:[],
       storyChapter:0, storyProgress:0,
       boosts:{xp2:0, coins2:0, luck:0},
-      onboardingDone:false, referralClaimed:false, referredBy:null
+      onboardingDone:false, referralClaimed:false, referredBy:null,
+      vibrationOn:true
     };
   }
   let state = freshState();
@@ -1569,6 +1686,7 @@
 
   function refreshTopUI(){
     coinsVal.textContent = formatNum(state.coins);
+    document.querySelectorAll('.coinsValMirror').forEach(el=>{ el.textContent = formatNum(state.coins); });
     catchVal.textContent = formatNum(state.totalCatches);
     lvlVal.textContent = 'Ур. ' + state.level;
     xpText.textContent = formatNum(state.xp) + '/' + formatNum(xpNeeded(state.level));
@@ -1622,7 +1740,7 @@
     stopLineTracking();
     bobber.classList.add('hidden'); btn.classList.remove('pull'); btn.disabled=false;
     timerbar.style.display='none'; status.textContent='Готов начать'; btn.textContent='Закинуть удочку';
-    lineEl.style.transition='none'; lineEl.style.transform='scaleX(0)';
+    lineEl.style.transition='none'; lineEl.style.strokeDasharray='none'; lineEl.setAttribute('d','');
     icehole.classList.remove('show');
     clearInterval(rippleInterval);
     bobber.classList.remove('bite-jitter','bite-jitter-2','bite-jitter-3','reel-struggle');
@@ -1630,7 +1748,7 @@
   }
 
   const rodsvg = document.getElementById('rodsvg');
-  const lineEl = document.getElementById('line');
+  const lineEl = document.getElementById('linePath');
   const rodtipEl = document.getElementById('rodtip');
 
   function getTipPoint(){
@@ -1638,24 +1756,39 @@
     return { x: r.left + r.width/2, y: r.top + r.height/2 };
   }
 
+  // Провисание лески: чем длиннее леска, тем заметнее она провисает под своим
+  // весом (реалистичный эффект), а при вываживании (tense) натягивается почти
+  // в прямую. Лёгкое синусоидальное покачивание имитирует течение/ветер.
+  function lineSagFor(len, tense){
+    if(tense) return len*0.015;
+    return Math.min(46, len*0.16);
+  }
+  function buildLinePath(tip, end, sag){
+    const midx = (tip.x+end.x)/2, midy = (tip.y+end.y)/2;
+    const sway = (lineEl.classList.contains('tense')) ? 0 : Math.sin(performance.now()/850)*3.5;
+    const cpx = midx + sway, cpy = midy + sag;
+    return `M ${tip.x.toFixed(1)} ${tip.y.toFixed(1)} Q ${cpx.toFixed(1)} ${cpy.toFixed(1)} ${end.x.toFixed(1)} ${end.y.toFixed(1)}`;
+  }
+
   // Удочка и поплавок постоянно двигаются своими CSS-анимациями (покачивание,
   // поклёвка, борьба при подсечке), поэтому леску нельзя нарисовать один раз при
   // забросе — иначе она отделяется от кончика удочки и вылазит за поплавок.
-  // Вместо этого на каждом кадре пересчитываем реальные координаты обоих концов.
+  // Вместо этого на каждом кадре пересчитываем реальные координаты обоих концов
+  // и перерисовываем изогнутый (провисающий) путь лески.
   let lineTrackRAF = null;
   function updateLinePosition(){
     if(bobber.classList.contains('hidden')) return;
     const tip = getTipPoint();
     const rect = bobber.getBoundingClientRect();
-    const cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
-    const dx = cx - tip.x, dy = cy - tip.y;
-    const len = Math.hypot(dx,dy), angle = Math.atan2(dy,dx) * 180/Math.PI;
-    lineEl.style.left = tip.x+'px'; lineEl.style.top = tip.y+'px';
-    lineEl.style.transform = `rotate(${angle}deg) scaleX(${len})`;
+    const end = { x: rect.left + rect.width/2, y: rect.top + rect.height*0.32 };
+    const len = Math.hypot(end.x - tip.x, end.y - tip.y);
+    const tense = lineEl.classList.contains('tense');
+    const sag = lineSagFor(len, tense);
+    lineEl.setAttribute('d', buildLinePath(tip, end, sag));
   }
   function startLineTracking(){
     if(lineTrackRAF) return;
-    lineEl.style.transition = 'none';
+    lineEl.style.transition = 'none'; lineEl.style.strokeDasharray = 'none';
     (function loop(){
       updateLinePosition();
       lineTrackRAF = requestAnimationFrame(loop);
@@ -1683,15 +1816,23 @@
       icehole.classList.remove('show');
     }
 
-    const dx = cx - tip.x, dy = cy - tip.y;
-    const len = Math.hypot(dx,dy), angle = Math.atan2(dy,dx) * 180/Math.PI;
-    lineEl.style.left = tip.x+'px'; lineEl.style.top = tip.y+'px';
-    lineEl.style.transition='none'; lineEl.style.transform = `rotate(${angle}deg) scaleX(0)`;
+    // Леска "вылетает" из катушки: рисуем финальную провисающую кривую целиком,
+    // но скрываем её через stroke-dasharray/dashoffset и раскрываем анимацией
+    // dashoffset — как будто леска разматывается и летит к поплавку.
+    const BOBBER_H = 52;
+    const end = { x: cx, y: cy - BOBBER_H/2 + BOBBER_H*0.32 }; // якорь совпадает с формулой в updateLinePosition
+    const len = Math.hypot(end.x - tip.x, end.y - tip.y);
+    const castPath = buildLinePath(tip, end, lineSagFor(len,false)*0.35);
+    lineEl.style.transition='none'; lineEl.classList.remove('tense');
+    lineEl.setAttribute('d', castPath);
+    const totalLen = lineEl.getTotalLength ? lineEl.getTotalLength() : len;
+    lineEl.style.strokeDasharray = totalLen;
+    lineEl.style.strokeDashoffset = totalLen;
 
     setTimeout(()=>{
       requestAnimationFrame(()=>{
-        lineEl.style.transition = 'transform .35s ease-out';
-        lineEl.style.transform = `rotate(${angle}deg) scaleX(${len})`;
+        lineEl.style.transition = 'stroke-dashoffset .35s ease-out';
+        lineEl.style.strokeDashoffset = 0;
       });
       bobber.classList.add('landing');
     }, 120);
@@ -1989,12 +2130,29 @@
     const h3 = document.createElement('div'); h3.className='sectiontitle'; h3.textContent='Внешний вид удочки'; list.appendChild(h3);
     ROD_SKINS.filter(s=>!s.storyOnly || state.ownedSkins.includes(s.id)).forEach(s=>list.appendChild(gearCard(s,'skin')));
 
+    const hS = document.createElement('div'); hS.className='sectiontitle'; hS.textContent='Настройки'; list.appendChild(hS);
+    list.appendChild(vibrationSettingRow());
+
     const h4 = document.createElement('div'); h4.className='sectiontitle'; h4.textContent='Опасная зона'; list.appendChild(h4);
     const resetBtn = document.createElement('button');
     resetBtn.className = 'btn-reset-progress';
     resetBtn.innerHTML = TRASH_SVG + ' Сбросить весь прогресс';
     resetBtn.addEventListener('click', openResetModal);
     list.appendChild(resetBtn);
+  }
+  // Переключатель вибрации: реагирует на тактильную отдачу игры (haptic()).
+  // По умолчанию включена; состояние сохраняется в state.vibrationOn.
+  function vibrationSettingRow(){
+    const row = document.createElement('div'); row.className = 'settingrow';
+    const checked = state.vibrationOn !== false;
+    row.innerHTML = `<div class="settxt"><span class="setname">Вибрация</span><span class="setdesc">Тактильный отклик при забросе, поклёве и улове</span></div>
+      <label class="switch"><input type="checkbox" id="vibrationToggle" ${checked?'checked':''}><span class="slider"></span></label>`;
+    row.querySelector('#vibrationToggle').addEventListener('change', (e)=>{
+      state.vibrationOn = e.target.checked;
+      saveState();
+      if(state.vibrationOn) haptic('light');
+    });
+    return row;
   }
   function boostCard(item){
     const active = isBoostActive(item.id);
