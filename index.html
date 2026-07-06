@@ -173,12 +173,33 @@
   #app.on-other-screen #rodsvg, #app.on-other-screen #bobber, #app.on-other-screen #lineSvg,
   #app.on-other-screen #bitebang, #app.on-other-screen #splash, #app.on-other-screen #icehole{
     opacity:0 !important; pointer-events:none !important;}
-  @keyframes rodIdle{0%,100%{transform:rotate(0deg);} 50%{transform:rotate(-1.6deg);}}
-  @keyframes rodCast{0%{transform:rotate(2deg);} 25%{transform:rotate(-22deg);} 55%{transform:rotate(8deg);} 78%{transform:rotate(-4deg);} 100%{transform:rotate(0deg);}}
-  #rodpath{fill:var(--rod-color, #6b4726); stroke:none; transition:filter .4s ease;}
-  #reelpath{fill:var(--rod-color, #6b4726); opacity:.9;}
-  #cork ellipse{fill:url(#corkGrad);}
-  #reelhandle{transition:transform .2s ease;}
+  @keyframes rodIdle{0%,100%{transform:rotate(-13deg);} 50%{transform:rotate(-16deg);}}
+  @keyframes rodCast{0%{transform:rotate(-11deg);} 25%{transform:rotate(-32deg);} 55%{transform:rotate(-4deg);} 78%{transform:rotate(-18deg);} 100%{transform:rotate(-13deg);}}
+  /* ---------- ДИЗАЙН УДОЧКИ: единый связный силуэт ----------
+     #rodpath - ОДИН замкнутый path (не набор кусков), поэтому обводка и
+     заливка идеально совпадают по краю - никаких швов и "мешанины".
+     Заливка красится активным скином через --rod-color. */
+  #rodpath{fill:var(--rod-color, #CBA06A); stroke:#2A160C; stroke-width:3; stroke-linejoin:round; transition:filter .4s ease;}
+  #rodGloss{fill:none; stroke:rgba(255,255,255,0.5); stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; pointer-events:none;}
+  #rodtip{fill:#FFF8EA; stroke:#2A160C; stroke-width:2.2;}
+  /* пробковая рукоять - всегда тёплого кремового цвета, не зависит от скина */
+  #cork rect{fill:url(#corkGrad); stroke:#8A6A45; stroke-width:1.6;}
+  #corkRings path{fill:none; stroke:rgba(0,0,0,0.25); stroke-width:1.6; stroke-linecap:round;}
+  /* катушка - окрашивается тем же скином, что и бланк, для целостного вида */
+  #reelpath{fill:var(--rod-color, #CBA06A); stroke:#2A160C; stroke-width:2.4; opacity:.98;}
+  #reelspool{fill:url(#reelSpoolGrad); stroke:#2A160C; stroke-width:1.3;}
+  #reelbutton{fill:#2A160C;}
+  #reelbail{fill:none; stroke:var(--gold); stroke-width:2.3; stroke-linecap:round;}
+  #reelbail circle{fill:var(--gold);}
+  #reelhandle{transition:transform .2s ease; transform-box:fill-box;}
+  #reelhandle rect{fill:#2A160C;}
+  #reelhandle circle{fill:url(#reelSpoolGrad); stroke:#2A160C; stroke-width:1.2;}
+  /* кольца-тюльпаны на бланке - тёплое золото, единое для всех скинов */
+  #rodguides ellipse{fill:none; stroke:var(--gold); stroke-width:2;}
+  #rodguides circle{fill:none; stroke:#5C3A12; stroke-width:1.5;}
+  /* милый бантик у катушки - фирменная деталь на любом скине */
+  #rodbow path{fill:var(--coral); stroke:#8A2F1C; stroke-width:1.2; stroke-linejoin:round;}
+  #rodbow circle{fill:var(--gold); stroke:#8A5A16; stroke-width:1;}
   #rodsvg.reeling #reelhandle{animation:reelSpin .28s linear infinite;}
   @keyframes reelSpin{0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);}}
   #rodsvg.glow-skin{filter:drop-shadow(0 0 7px var(--glow-color,#33f0ff)) drop-shadow(0 0 16px var(--glow-color,#33f0ff)); animation:rodGlowPulse 1.8s ease-in-out infinite, rodIdle 3.4s ease-in-out infinite;}
@@ -470,7 +491,7 @@
     50%{transform:translate(-50%,-50%) translateX(5px) translateY(-4px) rotate(5deg);}
     75%{transform:translate(-50%,-50%) translateX(-4px) translateY(2px) rotate(-3deg);}}
   #rodsvg.reeling{animation:rodReel .28s ease-in-out infinite;}
-  @keyframes rodReel{0%,100%{transform:rotate(-1.8deg);} 50%{transform:rotate(2deg);}}
+  @keyframes rodReel{0%,100%{transform:rotate(-15deg);} 50%{transform:rotate(-9deg);}}
   #line.tense{animation:lineTense .12s ease-in-out infinite;}
   @keyframes lineTense{0%,100%{filter:none;} 50%{filter:brightness(1.35);}}
 
@@ -540,152 +561,79 @@
       <defs id="skinDefs"></defs>
       <defs>
         <linearGradient id="corkGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#EFDCB0"/>
-          <stop offset="45%" stop-color="#D3B583"/>
-          <stop offset="78%" stop-color="#A9835194"/>
-          <stop offset="100%" stop-color="#8A6A3E"/>
+          <stop offset="0%" stop-color="#FBEFD8"/>
+          <stop offset="50%" stop-color="#E7CFA0"/>
+          <stop offset="100%" stop-color="#B9955F"/>
         </linearGradient>
-        <linearGradient id="reelBodyGrad" x1="0.1" y1="0" x2="0.9" y2="1">
-          <stop offset="0%" stop-color="#5a4634"/>
-          <stop offset="45%" stop-color="#2c2015"/>
-          <stop offset="80%" stop-color="#160f09"/>
-          <stop offset="100%" stop-color="#0a0603"/>
-        </linearGradient>
-        <radialGradient id="reelSpoolGrad" cx="32%" cy="24%" r="80%">
-          <stop offset="0%" stop-color="#FCE0A0"/>
-          <stop offset="50%" stop-color="#D19A34"/>
-          <stop offset="100%" stop-color="#734F14"/>
+        <radialGradient id="reelSpoolGrad" cx="35%" cy="28%" r="75%">
+          <stop offset="0%" stop-color="#FFF3C9"/>
+          <stop offset="55%" stop-color="#F0BE55"/>
+          <stop offset="100%" stop-color="#9A6E1E"/>
         </radialGradient>
-        <linearGradient id="blankGloss" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stop-color="#ffffff" stop-opacity="0.5"/>
-          <stop offset="45%" stop-color="#ffffff" stop-opacity="0"/>
-          <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
-        </linearGradient>
-        <radialGradient id="chromeRing" cx="35%" cy="30%" r="75%">
-          <stop offset="0%" stop-color="#f4f8fa"/>
-          <stop offset="45%" stop-color="#aebcc2"/>
-          <stop offset="100%" stop-color="#5c6a70"/>
-        </radialGradient>
-        <linearGradient id="threadWrap" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#8f1c22"/>
-          <stop offset="100%" stop-color="#4a0d10"/>
-        </linearGradient>
-        <linearGradient id="foamGrip" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#3c3c3c"/>
-          <stop offset="50%" stop-color="#242424"/>
-          <stop offset="100%" stop-color="#141414"/>
-        </linearGradient>
-        <radialGradient id="rubberButt" cx="35%" cy="30%" r="75%">
-          <stop offset="0%" stop-color="#3a3a3a"/>
-          <stop offset="100%" stop-color="#0a0a0a"/>
-        </radialGradient>
-        <clipPath id="rodClip">
-          <path d="M 281 494 C 266 481 152 302 148.5 24 L 151.5 24 C 155 300 232 448 268 468 C 279 474 289 484 295 494 Z"/>
-        </clipPath>
       </defs>
-      <!-- бланк удочки: составной изгиб (толще у комля, плавно тоньше к вершине) под собственным весом -->
-      <path id="rodpath" d="M 281 494 C 266 481 152 302 148.5 24 L 151.5 24 C 155 300 232 448 268 468 C 279 474 289 484 295 494 Z"/>
-      <!-- текстура бланка: карбоновое плетение, блик и тень для объёма, всё обрезано по форме бланка -->
-      <g clip-path="url(#rodClip)">
-        <rect x="140" y="20" width="20" height="480" fill="url(#blankGloss)"/>
-        <path d="M 283 490 Q 154 300 149.5 26" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.6" stroke-linecap="round"/>
-        <path d="M 278 493 Q 149 302 147.5 24" fill="none" stroke="rgba(0,0,0,0.28)" stroke-width="1.3" stroke-linecap="round"/>
-        <g stroke="rgba(255,255,255,0.16)" stroke-width="0.6">
-          <path d="M 150 60 l 8 -3 M 150 100 l 8 -3 M 150 140 l 8 -3 M 151 180 l 8 -3 M 152 220 l 9 -3 M 154 260 l 9 -3 M 158 300 l 9 -4 M 165 340 l 10 -4 M 178 380 l 11 -5 M 200 415 l 12 -6 M 230 445 l 12 -7"/>
-        </g>
-        <g stroke="rgba(0,0,0,0.18)" stroke-width="0.6">
-          <path d="M 146 66 l 8 3 M 146 106 l 8 3 M 147 146 l 8 3 M 147 186 l 8 3 M 148 226 l 8 3 M 150 266 l 8 4 M 153 306 l 9 4 M 160 345 l 10 4 M 172 385 l 11 5 M 194 420 l 12 6 M 224 450 l 12 6"/>
-        </g>
+
+      <!-- ===== БЛАНК УДОЧКИ =====
+           Простая прямая "леденцовая" палочка: одна прямая ось от вершины к
+           рукояти, толще внизу, тоньше сверху, с круглыми колпачками на концах.
+           Прямая линия вместо сложного изгиба - чтобы всё было ровно и не криво. -->
+      <path id="rodpath" d="M153.9,39.0 L270.5,430.9
+        Q259.6,452.4 239.5,439.1 L146.1,41.0
+        Q148.7,35.2 153.9,39.0 Z"/>
+      <!-- лёгкий глянцевый блик вдоль той же оси -->
+      <path id="rodGloss" d="M162,79 L238,355"/>
+
+      <!-- ===== КАТУШКА =====
+           Круглая, надета прямо на ось удочки у рукояти - гарантированно
+           на бланке, а не сбоку "в воздухе". Красится тем же скином. -->
+      <circle id="reelpath" cx="246.6" cy="403.4" r="27"/>
+      <g id="reelbail">
+        <path d="M234 384 C 226 376 226 368 233 361"/>
+        <path d="M259 384 C 267 376 267 368 260 361"/>
+        <circle cx="233" cy="361" r="2.2"/>
+        <circle cx="260" cy="361" r="2.2"/>
       </g>
-      <!-- пробковая рукоять с текстурой колец -->
-      <g id="cork" opacity="0.97">
-        <ellipse cx="291.5" cy="486" rx="11" ry="4.4" transform="rotate(-35 291.5 486)"/>
-        <ellipse cx="285.5" cy="470" rx="10.6" ry="4.2" transform="rotate(-35 285.5 470)"/>
-        <ellipse cx="279.5" cy="454" rx="10.1" ry="4" transform="rotate(-35 279.5 454)"/>
-        <ellipse cx="273.5" cy="438" rx="9.6" ry="3.7" transform="rotate(-35 273.5 438)"/>
-        <ellipse cx="267.5" cy="422" rx="9" ry="3.4" transform="rotate(-35 267.5 422)"/>
-        <ellipse cx="261.7" cy="407" rx="8.4" ry="3.1" transform="rotate(-35 261.7 407)"/>
-        <path d="M 282 493 Q 291 489 299 481" fill="none" stroke="rgba(0,0,0,0.18)" stroke-width="0.8"/>
-        <path d="M 276 477 Q 285 473 293 465" fill="none" stroke="rgba(0,0,0,0.18)" stroke-width="0.8"/>
-        <path d="M 270 461 Q 278 457 286 449" fill="none" stroke="rgba(0,0,0,0.16)" stroke-width="0.7"/>
-        <path d="M 264 445 Q 271 441 279 433" fill="none" stroke="rgba(0,0,0,0.15)" stroke-width="0.7"/>
-        <path d="M 258 429 Q 265 425 272 417" fill="none" stroke="rgba(0,0,0,0.14)" stroke-width="0.6"/>
+      <circle id="reelspool" cx="246.6" cy="403.4" r="13.5"/>
+      <circle id="reelbutton" cx="246.6" cy="403.4" r="4"/>
+      <g id="reelhandle" style="transform-origin:246.6px 403.4px;">
+        <rect x="242.6" y="372.4" width="8" height="27" rx="4"/>
+        <circle cx="246.6" cy="372.4" r="5.8"/>
       </g>
-      <!-- вспененный форгрип перед катушкодержателем -->
-      <g id="foregrip" opacity="0.95">
-        <ellipse cx="253" cy="393" rx="7.6" ry="3" fill="url(#foamGrip)" transform="rotate(-35 253 393)"/>
-        <ellipse cx="248" cy="382" rx="7" ry="2.7" fill="url(#foamGrip)" transform="rotate(-35 248 382)"/>
-        <path d="M 246 396 Q 253 392 260 385" fill="none" stroke="rgba(0,0,0,0.3)" stroke-width="0.6"/>
-        <path d="M 241 386 Q 247 382 254 375" fill="none" stroke="rgba(0,0,0,0.28)" stroke-width="0.55"/>
+
+      <!-- ===== ПРОБКОВАЯ РУКОЯТЬ =====
+           Продолжает ось бланка ровно в том же направлении - не под случайным
+           углом, а прямое продолжение одной и той же прямой. -->
+      <g id="cork" transform="rotate(14.9 263.35 466.41)">
+        <rect x="246.35" y="433.91" width="34" height="65" rx="17"/>
       </g>
-      <!-- кольца обмотки (тюльпаны) с нитяной обвязкой у основания, размер убывает к вершине -->
+      <g id="corkRings" transform="rotate(14.9 263.35 466.41)">
+        <path d="M249 448 Q263.35 453 277.7 448"/>
+        <path d="M249 464 Q263.35 469 277.7 464"/>
+        <path d="M249 480 Q263.35 485 277.7 480"/>
+      </g>
+
+      <!-- ===== МИЛЫЙ БАНТИК ===== -->
+      <g id="rodbow" transform="translate(232,414) rotate(15)">
+        <path d="M 0 3 C -13 -8 -16 5 0 8 C -16 15 -13 27 0 16 Z"/>
+        <path d="M 0 3 C 13 -8 16 5 0 8 C 16 15 13 27 0 16 Z"/>
+        <circle cx="0" cy="9" r="4"/>
+      </g>
+
+      <!-- ===== КОЛЬЦА-ТЮЛЬПАНЫ =====
+           Все стоят прямо на оси бланка и повёрнуты на один и тот же угол
+           наклона удочки - надеты ровно, без разнобоя. -->
       <g id="rodguides">
-        <path d="M 236 401 Q243 394.5 250 401" fill="none" stroke="url(#threadWrap)" stroke-width="2" opacity="0.9"/>
-        <path d="M 236 404 Q243 397.5 250 404" fill="none" stroke="url(#threadWrap)" stroke-width="1" opacity="0.7"/>
-        <ellipse cx="243" cy="397" rx="8.4" ry="3.3" fill="none" stroke="url(#chromeRing)" stroke-width="1.6"/>
-        <circle cx="243" cy="397" r="5.1" fill="none" stroke="#1c1108" stroke-width="2.6"/>
-        <path d="M 213 359 Q219 353.5 225 359" fill="none" stroke="url(#threadWrap)" stroke-width="1.8" opacity="0.9"/>
-        <ellipse cx="219" cy="356" rx="7.5" ry="3" fill="none" stroke="url(#chromeRing)" stroke-width="1.3"/>
-        <circle cx="219" cy="356" r="4.6" fill="none" stroke="#1c1108" stroke-width="2.5"/>
-        <path d="M 191 307 Q196 302 201 307" fill="none" stroke="url(#threadWrap)" stroke-width="1.5" opacity="0.9"/>
-        <ellipse cx="196" cy="304" rx="6.6" ry="2.7" fill="none" stroke="url(#chromeRing)" stroke-width="1.2"/>
-        <circle cx="196" cy="304" r="4.1" fill="none" stroke="#1c1108" stroke-width="2.2"/>
-        <path d="M 173.4 239 Q177.9 234.5 182.4 239" fill="none" stroke="url(#threadWrap)" stroke-width="1.3" opacity="0.9"/>
-        <ellipse cx="177.9" cy="236" rx="5.8" ry="2.4" fill="none" stroke="url(#chromeRing)" stroke-width="1.1"/>
-        <circle cx="177.9" cy="236" r="3.5" fill="none" stroke="#1c1108" stroke-width="2.1"/>
-        <path d="M 159.5 173 Q163.5 169 167.5 173" fill="none" stroke="url(#threadWrap)" stroke-width="1" opacity="0.9"/>
-        <ellipse cx="163.5" cy="170" rx="4.8" ry="2" fill="none" stroke="url(#chromeRing)" stroke-width="1"/>
-        <circle cx="163.5" cy="170" r="3" fill="none" stroke="#1c1108" stroke-width="1.9"/>
-        <path d="M 154.4 135 Q157 132 159.6 135" fill="none" stroke="url(#threadWrap)" stroke-width="0.8" opacity="0.85"/>
-        <circle cx="155.5" cy="118.3" r="2.7" fill="none" stroke="#1c1108" stroke-width="1.8"/>
-        <!-- тюльпан (тип-топ) на самой вершине -->
-        <circle cx="150.8" cy="60" r="2.1" fill="none" stroke="url(#chromeRing)" stroke-width="1.4"/>
-        <circle cx="150.3" cy="30" r="1.5" fill="none" stroke="#1c1108" stroke-width="1.2"/>
+        <ellipse cx="239.25" cy="375.75" rx="9" ry="3.8" transform="rotate(-15 239.25 375.75)"/>
+        <circle cx="239.25" cy="375.75" r="4.4" transform="rotate(-15 239.25 375.75)"/>
+        <ellipse cx="218.25" cy="296.75" rx="8" ry="3.4" transform="rotate(-15 218.25 296.75)"/>
+        <circle cx="218.25" cy="296.75" r="4" transform="rotate(-15 218.25 296.75)"/>
+        <ellipse cx="197.25" cy="217.75" rx="7" ry="3" transform="rotate(-15 197.25 217.75)"/>
+        <circle cx="197.25" cy="217.75" r="3.5" transform="rotate(-15 197.25 217.75)"/>
+        <ellipse cx="176.25" cy="138.75" rx="6.3" ry="2.6" transform="rotate(-15 176.25 138.75)"/>
+        <circle cx="176.25" cy="138.75" r="3" transform="rotate(-15 176.25 138.75)"/>
       </g>
-      <!-- катушкодержатель: труба + два гайки-хомута с накаткой -->
-      <g id="reelseat">
-        <rect x="264" y="447" width="32" height="60" rx="15" fill="#2a1c10" transform="rotate(-35 280 477)"/>
-        <rect x="264" y="447" width="32" height="60" rx="15" fill="none" stroke="rgba(0,0,0,0.35)" stroke-width="1" transform="rotate(-35 280 477)"/>
-        <ellipse cx="292" cy="493" rx="10.5" ry="4.6" fill="#1a120a" transform="rotate(-35 292 493)"/>
-        <ellipse cx="292" cy="493" rx="10.5" ry="4.6" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.7" transform="rotate(-35 292 493)"/>
-        <ellipse cx="265" cy="452" rx="9.6" ry="4.2" fill="#1a120a" transform="rotate(-35 265 452)"/>
-        <ellipse cx="265" cy="452" rx="9.6" ry="4.2" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.7" transform="rotate(-35 265 452)"/>
-        <g stroke="rgba(0,0,0,0.4)" stroke-width="0.6" opacity="0.8">
-          <path d="M 285 500 l 3 3 M 289 496 l 3 3 M 293 492 l 3 3 M 297 488 l 3 3"/>
-        </g>
-      </g>
-      <!-- катушка: корпус (каплевидный), шпуля с намотанной леской, дужка-лескоукладыватель, ручка -->
-      <g id="reelfoot">
-        <rect x="264" y="418" width="7" height="26" rx="2.4" fill="url(#reelBodyGrad)" transform="rotate(-35 267.5 431)"/>
-      </g>
-      <path id="reelpath" d="M 270 413 C 282.5 413.5 291.5 424.5 291 439.5 C 290.5 454.5 280.5 464.5 269 463.8 C 257.7 463.1 250.4 452.4 251 439 C 251.6 425.8 258.6 412.6 270 413 Z"/>
-      <path d="M 270 413 C 282.5 413.5 291.5 424.5 291 439.5 C 290.5 454.5 280.5 464.5 269 463.8 C 257.7 463.1 250.4 452.4 251 439 C 251.6 425.8 258.6 412.6 270 413 Z" fill="none" stroke="rgba(0,0,0,0.35)" stroke-width="1.3"/>
-      <ellipse cx="264.5" cy="429" rx="6.6" ry="9" fill="rgba(255,255,255,0.14)"/>
-      <!-- дужка лескоукладывателя (bail) с роликом, отходит от корпуса катушки -->
-      <path d="M 256 424 C 248 418 246 412 250.5 405.5" fill="none" stroke="url(#chromeRing)" stroke-width="1.6" stroke-linecap="round"/>
-      <path d="M 283 424 C 291 418 293 412 288.5 405.5" fill="none" stroke="url(#chromeRing)" stroke-width="1.6" stroke-linecap="round"/>
-      <circle cx="250.5" cy="405.5" r="2.1" fill="url(#chromeRing)"/>
-      <circle cx="288.5" cy="405.5" r="2.1" fill="url(#chromeRing)"/>
-      <g id="reelspool">
-        <ellipse cx="270" cy="439" rx="10" ry="12" fill="url(#reelSpoolGrad)" stroke="#1c1108" stroke-width="1"/>
-        <path d="M 260 434 Q270 430 280 434" fill="none" stroke="rgba(0,0,0,0.3)" stroke-width="0.7"/>
-        <path d="M 260 439 Q270 435 280 439" fill="none" stroke="rgba(0,0,0,0.3)" stroke-width="0.7"/>
-        <path d="M 260 444 Q270 440 280 444" fill="none" stroke="rgba(0,0,0,0.3)" stroke-width="0.7"/>
-        <path d="M 261.5 448.5 Q270 445 278.5 448.5" fill="none" stroke="rgba(0,0,0,0.24)" stroke-width="0.6"/>
-        <!-- регулятор фрикциона поверх шпули -->
-        <ellipse cx="270" cy="429.5" rx="4.4" ry="3" fill="#241a10" stroke="#000" stroke-width="0.5"/>
-        <ellipse cx="270" cy="428.3" rx="3" ry="1.7" fill="#6b543a"/>
-        <circle cx="270" cy="439" r="4.2" fill="#1c1108" opacity=".78"/>
-      </g>
-      <g id="reelhandle" style="transform-origin:270px 439px;">
-        <rect x="266.4" y="414" width="6.6" height="18" rx="3" fill="url(#reelBodyGrad)" transform="rotate(24 269.7 423)"/>
-        <circle cx="271" cy="413" r="3.4" fill="#2a1f14" stroke="#000" stroke-width="0.6"/>
-        <circle cx="271" cy="413" r="1.4" fill="#8a6b3f"/>
-      </g>
-      <!-- резиновый комель с гимбалом -->
-      <ellipse cx="294.5" cy="502" rx="10" ry="5.4" fill="url(#rubberButt)" transform="rotate(-35 294.5 502)"/>
-      <ellipse cx="294.5" cy="502" rx="10" ry="5.4" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.6" transform="rotate(-35 294.5 502)"/>
-      <circle id="rodtip" cx="150" cy="24" r="3" fill="none" stroke="#1c1108" stroke-width="2"/>
+
+      <!-- вершина удочки: сюда крепится леска -->
+      <circle id="rodtip" cx="150" cy="40" r="3.3"/>
     </svg>
     <div id="icehole"></div>
     <svg id="lineSvg" xmlns="http://www.w3.org/2000/svg">
@@ -795,7 +743,7 @@
     <div class="subhead"><h2>Топ рыбаков</h2><p>Рейтинг по общему опыту</p></div>
     <button id="inviteBtn" class="invite-btn">
       <span class="ico-inline"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M4 16 27 5 20 27l-5-9-9-2z" fill="#F6C453" stroke="#8A5A16" stroke-width="1.3" stroke-linejoin="round"/><path d="M15 18 27 5" fill="none" stroke="#8A5A16" stroke-width="1.1"/></svg></span>
-      Пригласить друга · бонус монеты обоим
+      Пригласить друга · +100 монет
     </button>
     <div class="sublist" id="toplist"></div>
   </div>
@@ -1218,7 +1166,7 @@
       questsDate:null, dailyQuests:[],
       storyChapter:0, storyProgress:0,
       boosts:{xp2:0, coins2:0, luck:0},
-      onboardingDone:false, referralClaimed:false, referredBy:null,
+      onboardingDone:false, inviteBonusClaimed:false,
       vibrationOn:true, cachedName:null
     };
   }
@@ -1425,12 +1373,12 @@
     }).catch(()=>{});
   }
 
-  // ---------- ПРИГЛАШЕНИЯ ДРУЗЕЙ (виральность) ----------
-  // Ссылка вида .../play?startapp=ref_u123 — Telegram передаёт "ref_u123" в
-  // tg.initDataUnsafe.start_param, когда приглашённый открывает Mini App по ней.
+  // ---------- ПРИГЛАШЕНИЕ ДРУГА (без реферальной системы) ----------
+  // Никакого отслеживания того, кто по чьей ссылке пришёл: просто делимся
+  // ссылкой на игру и сразу выдаём бонус монет самому пригласившему, один раз.
+  const INVITE_BONUS_COINS = 100;
   function inviteLink(){
-    const uid = getUserId();
-    return (inviteReady() ? BOT_LINK : 'https://t.me') + '?startapp=ref_' + encodeURIComponent(uid);
+    return inviteReady() ? BOT_LINK : 'https://t.me';
   }
   function shareInvite(){
     if(!inviteReady()){
@@ -1440,55 +1388,21 @@
     }
     const link = inviteLink();
     const text = 'Я уже поймал ' + formatNum(state.totalCatches) + ' рыб и дошёл до ' + state.level + ' уровня в Тихой Гавани 🎣 '
-      + 'Присоединяйся - мы оба получим бонус!';
+      + 'Присоединяйся!';
     const shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent(text);
     if(tg && tg.openTelegramLink) tg.openTelegramLink(shareUrl);
     else window.open(shareUrl, '_blank');
     haptic();
+    grantInviteBonus();
   }
-  // Новый игрок пришёл по приглашению — даём бонус ему, а другу-пригласившему
-  // ставим "отложенную" награду в Firebase (заберёт при следующем открытии игры).
-  // ВАЖНО: у только что пришедшего по ссылке игрока onboardingDone ещё false,
-  // поэтому сразу после этой функции откроется модалка онбординга (z-index:40),
-  // которая полностью перекрывает toast-уведомление (z-index:35) — игрок просто
-  // не успевает увидеть "+100 монет". Поэтому в этом случае откладываем показ
-  // тоста до момента закрытия онбординга (см. closeOnboarding).
-  let pendingReferralToast = null;
-  function processReferral(){
-    if(state.referralClaimed) return;
-    const sp = tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param;
-    const m = /^ref_(.+)$/.exec(sp || '');
-    if(!m){ return; }
-    const refCode = m[1];
-    state.referralClaimed = true;
-    if(refCode === getUserId() || state.totalCatches > 0 || state.level > 1){ saveState(); return; }
-    state.referredBy = refCode;
-    state.coins += 100;
+  // Бонус выдаётся один раз за первое нажатие "Пригласить друга" — без проверки,
+  // действительно ли кто-то перешёл по ссылке и начал играть.
+  function grantInviteBonus(){
+    if(state.inviteBonusClaimed) return;
+    state.inviteBonusClaimed = true;
+    state.coins += INVITE_BONUS_COINS;
     saveState(); refreshTopUI();
-    const referralToastMsg = GIFT_SVG + ' Бонус за приглашение! +100 ' + COIN_SVG;
-    if(state.onboardingDone){ showToast(referralToastMsg); }
-    else { pendingReferralToast = referralToastMsg; }
-    if(fbReady()){
-      fetch(FIREBASE_URL + '/inviteRewards/' + refCode + '.json', {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ amount:150, ts:Date.now(), from:getUserId() })
-      }).catch(()=>{});
-    }
-  }
-  // Забираем награды за друзей, которые присоединились по нашей ссылке с прошлого визита.
-  function claimInviteRewards(){
-    if(!fbReady()) return;
-    const myId = getUserId();
-    fetch(FIREBASE_URL + '/inviteRewards/' + myId + '.json').then(r=>r.json()).then(data=>{
-      if(!data) return;
-      let total = 0, count = 0;
-      Object.keys(data).forEach(k=>{ total += (data[k].amount||0); count++; });
-      if(total > 0){
-        state.coins += total; saveState(); refreshTopUI();
-        showToast(GIFT_SVG + ' Друзья присоединились! +' + formatNum(total) + ' ' + COIN_SVG);
-        fetch(FIREBASE_URL + '/inviteRewards/' + myId + '.json', { method:'DELETE' }).catch(()=>{});
-      }
-    }).catch(()=>{});
+    showToast(GIFT_SVG + ' Бонус за приглашение! +' + INVITE_BONUS_COINS + ' ' + COIN_SVG);
   }
 
   // ---------- UI REFS ----------
@@ -2239,7 +2153,7 @@
     { icon:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 8h3l2.6 13.5a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 2-1.6L27 12H10.4" fill="none" stroke="#F7F3E8" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="13.5" cy="27" r="1.9" fill="#F7F3E8"/><circle cx="21.5" cy="27" r="1.9" fill="#F7F3E8"/></svg>',
       title:'Прокачивай снаряжение', text:'В «Магазине» покупай удочки, наживку и бусты, чтобы ловить рыбу крупнее и реже, плюс выполняй задания за награды.' },
     { icon:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M4 16 27 5 20 27l-5-9-9-2z" fill="#F6C453" stroke="#8A5A16" stroke-width="1.3" stroke-linejoin="round"/><path d="M15 18 27 5" fill="none" stroke="#8A5A16" stroke-width="1.1"/></svg>',
-      title:'Позови друга на рыбалку', text:'Отправь другу свою ссылку - вы оба получите бонус монет, как только он начнёт играть.', share:true },
+      title:'Позови друга на рыбалку', text:'Поделись игрой с другом и сразу получи бонус монет.', share:true },
   ];
   let onboardIndex = 0;
   const onboardModal = document.getElementById('onboardModal'),
@@ -2270,11 +2184,6 @@
   function closeOnboarding(){
     onboardModal.classList.remove('show');
     if(!state.onboardingDone){ state.onboardingDone = true; saveState(); }
-    if(pendingReferralToast){
-      const msg = pendingReferralToast;
-      pendingReferralToast = null;
-      setTimeout(()=>showToast(msg), 350);
-    }
   }
   onboardNextBtn.addEventListener('click', ()=>{
     haptic('light');
@@ -2568,8 +2477,6 @@
   buildSkinDefs();
   loadState(function(){
     fixInventory(); ensureQuests(); ensureStory(); refreshTopUI(); syncLeaderboard();
-    processReferral();
-    claimInviteRewards();
     if(!state.onboardingDone) openOnboarding();
   });
 })();
