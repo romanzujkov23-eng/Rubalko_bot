@@ -1127,6 +1127,33 @@
   }
   const LUCK_WEIGHTS = [14,14,28,26,18];
 
+  // ---------- МАСТЕРСКАЯ: постоянные улучшения за монеты ----------
+  // Раньше в игре монеты некуда было девать после того, как всё снаряжение
+  // куплено — бусты быстро дорожают, а больше целей для трат не было.
+  // Мастерская даёт долгосрочный "sink": 3 постоянных прокачки с 10
+  // уровнями каждая, цена растёт экспоненциально, эффект не пропадает.
+  const WORKSHOP_ITEMS = [
+    { id:'luck', name:'Чутьё рыбака', icon:'🍀', desc:'Стабильно смещает шансы клёва в пользу редкой и ценной рыбы', maxLevel:10, baseCost:900, growth:1.42, step:1.2 },
+    { id:'income', name:'Деловая хватка', icon:'💰', desc:'Каждый уровень поднимает цену продажи всего улова на рынке', maxLevel:10, baseCost:1100, growth:1.42, step:0.02 },
+    { id:'comfort', name:'Твёрдая рука', icon:'🎯', desc:'Расширяет окно подсечки при поклёве — легче не прозевать рыбу', maxLevel:10, baseCost:700, growth:1.35, step:0.035 },
+  ];
+  function ensureUpgrades(){
+    if(!state.upgrades) state.upgrades = { luck:0, income:0, comfort:0 };
+    WORKSHOP_ITEMS.forEach(w=>{ if(typeof state.upgrades[w.id] !== 'number') state.upgrades[w.id] = 0; });
+  }
+  function upgradeLevel(id){ return (state.upgrades && state.upgrades[id]) || 0; }
+  // Смещает часть веса самой частой рыбы (tier 0) в пользу редких уровней (2-4).
+  // Ограничено 60% исходного веса tier0, поэтому базовый улов никогда не обнуляется.
+  function applyLuckUpgrade(weights){
+    const lvl = upgradeLevel('luck');
+    if(!lvl) return weights;
+    const w = weights.slice();
+    const shift = Math.min(w[0]*0.6, lvl*WORKSHOP_ITEMS[0].step);
+    w[0] -= shift;
+    w[2] += shift*0.45; w[3] += shift*0.35; w[4] += shift*0.2;
+    return w;
+  }
+
   function formatNum(n){
     n = Math.floor(n);
     if(n>=1000000) return (n/1000000).toFixed(1).replace(/\.0$/,'') + 'M';
@@ -1382,7 +1409,8 @@
   function isLocUnlocked(loc){ return state.level >= loc.unlockLevel; }
 
   function pickFish(){
-    const weights = isBoostActive('luck') ? LUCK_WEIGHTS : getBait(state.activeBait).weights;
+    const baseWeights = isBoostActive('luck') ? LUCK_WEIGHTS : getBait(state.activeBait).weights;
+    const weights = applyLuckUpgrade(baseWeights);
     const total = weights.reduce((a,b)=>a+b,0);
     let r = Math.random()*total, tierIdx=0;
     for(let i=0;i<weights.length;i++){ if(r<weights[i]){ tierIdx=i; break; } r-=weights[i]; }
@@ -2084,7 +2112,8 @@
     biteBang.style.left=rect.left+rect.width/2+'px'; biteBang.style.top=rect.top+'px';
     biteBang.classList.remove('show'); void biteBang.offsetWidth; biteBang.classList.add('show');
     status.textContent='КЛЮЁТ! Тяни!'; btn.textContent='Тяни!'; btn.classList.add('pull'); btn.disabled=false;
-    const winMs = Math.round(getRod(state.activeRod).window * RARITY_SPEED[currentFish.tier] * baitStat(getBait(state.activeBait),'biteWindowMult',1));
+    const comfortMult = 1 + upgradeLevel('comfort') * WORKSHOP_ITEMS.find(w=>w.id==='comfort').step;
+    const winMs = Math.round(getRod(state.activeRod).window * RARITY_SPEED[currentFish.tier] * baitStat(getBait(state.activeBait),'biteWindowMult',1) * comfortMult);
     timerbar.style.display='block'; timerfill.style.transition='none'; timerfill.style.transform='scaleX(1)';
     requestAnimationFrame(()=>{ timerfill.style.transition=`transform ${winMs}ms linear`; timerfill.style.transform='scaleX(0)'; });
     windowTimeout = setTimeout(missedBite, winMs);
@@ -2351,7 +2380,14 @@
 
   // ---------- SHOP (gear) ----------
   function renderShop(){
-    const list = document.getElementById('shoplist'); list.innerHTML = '';
+    const list = document.getElementById('shoplist');
+    // Баг: при покупке предмета список магазина полностью перерисовывается
+    // (innerHTML = ''), из-за чего браузер сбрасывает scrollTop и экран
+    // "прыгает" наверх после каждой покупки. Запоминаем текущую прокрутку
+    // перед перерисовкой и восстанавливаем её после — так покупка предмета
+    // в середине/конце списка больше не дёргает экран вверх.
+    const prevScroll = list.scrollTop;
+    list.innerHTML = '';
     const h0 = document.createElement('div'); h0.className='sectiontitle'; h0.textContent='Временные бусты'; list.appendChild(h0);
     BOOST_ITEMS.forEach(b=>list.appendChild(boostCard(b)));
     const h1 = document.createElement('div'); h1.className='sectiontitle'; h1.textContent='Удочки'; list.appendChild(h1);
@@ -2360,6 +2396,12 @@
     BAITS.forEach(b=>list.appendChild(gearCard(b,'bait')));
     const h3 = document.createElement('div'); h3.className='sectiontitle'; h3.textContent='Внешний вид удочки'; list.appendChild(h3);
     ROD_SKINS.filter(s=>!s.storyOnly || state.ownedSkins.includes(s.id)).forEach(s=>list.appendChild(gearCard(s,'skin')));
+
+    const hW = document.createElement('div'); hW.className='sectiontitle'; hW.textContent='Мастерская'; list.appendChild(hW);
+    const wNote = document.createElement('div'); wNote.className='lbnote'; wNote.style.margin='-2px 0 4px';
+    wNote.textContent = 'Постоянные улучшения за монеты — растут вместе с тобой и не пропадают со временем.';
+    list.appendChild(wNote);
+    WORKSHOP_ITEMS.forEach(w=>list.appendChild(workshopCard(w)));
 
     const hS = document.createElement('div'); hS.className='sectiontitle'; hS.textContent='Настройки'; list.appendChild(hS);
     list.appendChild(vibrationSettingRow());
@@ -2370,6 +2412,7 @@
     resetBtn.innerHTML = TRASH_SVG + ' Сбросить весь прогресс';
     resetBtn.addEventListener('click', openResetModal);
     list.appendChild(resetBtn);
+    list.scrollTop = prevScroll;
   }
   // Переключатель вибрации: реагирует на тактильную отдачу игры (haptic()).
   // По умолчанию включена; состояние сохраняется в state.vibrationOn.
@@ -2402,6 +2445,38 @@
       state.coins -= curPrice;
       activateBoost(item.id, boostDuration(item));
       renderShop();
+    });
+    return el;
+  }
+  function workshopCost(item, level){
+    return Math.round(item.baseCost * Math.pow(item.growth, level) / 10) * 10;
+  }
+  function workshopEffectLabel(item, level){
+    // Человекочитаемое описание суммарного эффекта уже купленных уровней.
+    if(item.id==='income') return `+${Math.round(level*item.step*100)}% к цене продажи улова`;
+    if(item.id==='comfort') return `+${Math.round(level*item.step*100)}% к окну подсечки`;
+    if(item.id==='luck') return `+${(level*item.step).toFixed(1)} к смещению шансов в пользу редкой рыбы`;
+    return '';
+  }
+  function workshopCard(item){
+    const lvl = (state.upgrades && state.upgrades[item.id]) || 0;
+    const maxed = lvl >= item.maxLevel;
+    const cost = maxed ? null : workshopCost(item, lvl);
+    const affordable = !maxed && state.coins >= cost;
+    const el = document.createElement('div'); el.className='card2';
+    const label = maxed ? 'Макс. уровень' : (cost + ' ' + COIN_SVG);
+    const effectText = lvl>0 ? workshopEffectLabel(item, lvl) : 'Пока не куплено';
+    el.innerHTML = `<div class="icobox">${item.icon}</div>
+      <div class="info"><div class="name">${item.name} · ур.${lvl}/${item.maxLevel}</div><div class="desc">${item.desc} · ${effectText}</div></div>
+      <div class="action"><button class="${maxed?'btn-owned':'btn-buy'}" ${(maxed||!affordable)?'disabled':''}>${label}</button></div>`;
+    el.querySelector('button').addEventListener('click', ()=>{
+      if(maxed) return;
+      const curLvl = (state.upgrades && state.upgrades[item.id]) || 0;
+      const curCost = workshopCost(item, curLvl);
+      if(state.coins < curCost) return;
+      state.coins -= curCost;
+      state.upgrades[item.id] = curLvl + 1;
+      haptic('success'); saveState(); refreshTopUI(); renderShop();
     });
     return el;
   }
@@ -2444,7 +2519,9 @@
   // ---------- MARKET (sell / trade) ----------
   function stackValue(f){
     const weights = state.inventory[f.id] || [];
-    const boost = isBoostActive('coins2') ? 2 : 1;
+    const tempBoost = isBoostActive('coins2') ? 2 : 1;
+    const permBoost = 1 + upgradeLevel('income') * WORKSHOP_ITEMS.find(w=>w.id==='income').step;
+    const boost = tempBoost * permBoost;
     const total = weights.reduce((sum,w)=>sum + fishPrice(f, w)*boost, 0);
     const avgWeight = weights.length ? weights.reduce((s,w)=>s+w,0)/weights.length : 0;
     return { count: weights.length, total, avgWeight };
