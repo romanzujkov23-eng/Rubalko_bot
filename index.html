@@ -28,14 +28,20 @@
      окно) он центрируется и не растягивается на всю ширину/высоту, иначе сцена
      рыбалки и HUD теряются на просторе, а свайп-кнопки становятся неудобно
      далеко друг от друга. */
-  #app{position:relative; width:100%; max-width:560px; height:100%; max-height:960px; margin:auto; overflow:hidden; background:var(--water-deep);}
+  /* #app — «телефонный» холст игры. container-type:size превращает его в
+     опорную область для единиц cqw/cqh: все внутренние элементы, которые
+     раньше считались в vw/vh (то есть от ширины/высоты ОКНА БРАУЗЕРА), теперь
+     считаются от реального размера этого холста. Раньше на широких экранах
+     (Telegram Desktop, развёрнутый режим на планшетах) #app оставался узким
+     (max-width:560px), а vw/vh всё равно брали ширину/высоту всего окна —
+     из-за этого удочка и связанные с ней элементы (поплавок, леса, крючок,
+     которые в JS считаются от bounding rect удочки) улетали за пределы экрана
+     или "сбивались в кучу" в неправильном месте. */
+  #app{position:relative; width:100%; max-width:560px; height:100%; max-height:960px; min-width:280px; margin:auto; overflow:hidden;
+    background:var(--water-deep); container-type:size; container-name:app;}
   @media (min-width:561px){
     body{background:linear-gradient(160deg, #0c2530, #061217);}
     #app{box-shadow:0 0 60px rgba(0,0,0,0.55); border-left:1px solid rgba(247,243,232,0.06); border-right:1px solid rgba(247,243,232,0.06);}
-    /* #rodsvg ниже задан в vw — это верно, пока #app==ширина окна (телефоны).
-       На широких экранах #app уже не растянут во всё окно, поэтому пересчитываем
-       смещение/ширину в px, ориентируясь на предельную ширину #app (560px). */
-    #rodsvg{right:-90px; width:340px;}
   }
 
   #screen-fish{position:absolute; inset:0; transition:background 0.6s ease; --cloud-color:#fff;
@@ -50,7 +56,7 @@
     filter:drop-shadow(0 4px 10px rgba(0,0,0,0.15));}
   .cloud svg{display:block; width:100%; height:auto;}
   .cloud svg ellipse{fill:var(--cloud-color);}
-  @keyframes cloudDrift{0%{transform:translateX(-20vw);} 100%{transform:translateX(120vw);}}
+  @keyframes cloudDrift{0%{transform:translateX(-20cqw);} 100%{transform:translateX(120cqw);}}
   .ripple-layer{position:absolute; top:33%; left:0; width:100%; height:50%; overflow:hidden;}
   .wave{position:absolute; width:220%; left:-60%; background:rgba(247,243,232,0.05); border-radius:50%; animation:drift linear infinite;}
   @keyframes drift{0%{transform:translateX(0);} 100%{transform:translateX(30%);}}
@@ -96,11 +102,11 @@
   #scenery-particles{position:absolute; inset:0; overflow:hidden; z-index:1; pointer-events:none;}
   .fx-p{position:absolute; will-change:transform, opacity;}
   .fx-p svg{display:block; width:100%; height:100%;}
-  @keyframes snowFall{0%{transform:translateY(-10vh) translateX(0); opacity:0;} 8%{opacity:.9;} 100%{transform:translateY(70vh) translateX(18px); opacity:.2;}}
-  @keyframes leafFall{0%{transform:translateY(-8vh) translateX(0) rotate(0deg); opacity:0;} 10%{opacity:.95;} 100%{transform:translateY(65vh) translateX(-26px) rotate(200deg); opacity:.15;}}
+  @keyframes snowFall{0%{transform:translateY(-10cqh) translateX(0); opacity:0;} 8%{opacity:.9;} 100%{transform:translateY(70cqh) translateX(18px); opacity:.2;}}
+  @keyframes leafFall{0%{transform:translateY(-8cqh) translateX(0) rotate(0deg); opacity:0;} 10%{opacity:.95;} 100%{transform:translateY(65cqh) translateX(-26px) rotate(200deg); opacity:.15;}}
   @keyframes moteFloat{0%{transform:translateY(0) translateX(0); opacity:.15;} 50%{transform:translateY(-16px) translateX(8px); opacity:.9;} 100%{transform:translateY(0) translateX(0); opacity:.15;}}
   @keyframes fireflyFloat{0%{transform:translateY(0) translateX(0); opacity:0;} 20%{opacity:.95;} 50%{transform:translateY(-20px) translateX(14px); opacity:.4;} 80%{opacity:.9;} 100%{transform:translateY(-6px) translateX(-10px); opacity:0;}}
-  @keyframes bubbleRise{0%{transform:translateY(0) scale(.6); opacity:0;} 15%{opacity:.85;} 100%{transform:translateY(-60vh) scale(1.1); opacity:0;}}
+  @keyframes bubbleRise{0%{transform:translateY(0) scale(.6); opacity:0;} 15%{opacity:.85;} 100%{transform:translateY(-60cqh) scale(1.1); opacity:0;}}
   @keyframes auroraShift{0%{transform:translateX(-6%) scaleY(1);} 50%{transform:translateX(6%) scaleY(1.08);} 100%{transform:translateX(-6%) scaleY(1);}}
   @keyframes swayTree{0%,100%{transform:rotate(-1.2deg);} 50%{transform:rotate(1.2deg);}}
   @keyframes glowPulseFar{0%,100%{opacity:.35;} 50%{opacity:.9;}}
@@ -182,7 +188,7 @@
   #bonusbanner span{display:flex; align-items:center; gap:6px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   #bonusbanner button{border:none; background:var(--ink); color:var(--cream); border-radius:10px; padding:7px 13px; font-weight:800; font-size:11.5px; flex-shrink:0;}
 
-  #rodsvg{position:absolute; right:-16vw; bottom:-6vh; bottom:-6dvh; width:72vw; height:62vh; height:62dvh; max-width:340px; max-height:420px;
+  #rodsvg{position:absolute; right:-14cqw; bottom:calc(96px + env(safe-area-inset-bottom)); width:62cqw; height:52cqh; max-width:300px; max-height:360px;
     z-index:2; pointer-events:none; transform-origin:94% 94%; animation:rodIdle 3.4s ease-in-out infinite; will-change:transform;
     transition:opacity .2s ease;}
   #rodsvg.casting{animation:rodCast .55s cubic-bezier(.3,.1,.3,1);}
@@ -313,16 +319,6 @@
 
   .r0{color:#C8DFD6;} .r1{color:#C8DFD6;} .r2{color:#7FE08F;} .r3{color:#63B7EE;} .r4{color:#F6C453;}
 
-  /* #navmask — узкая подложка на всю ширину экрана прямо под навбаром.
-     У навбара намеренно оставлены зазоры по 10px слева/справа (плавающая
-     "стеклянная" панель), и сквозь них было видно кусок удочки/лески сцены
-     рыбалки — выглядело как обрезанная деталь в углу. Подложка того же тона,
-     что и низ сцены (var(--water-deep)), полностью перекрывает эти зазоры,
-     оставаясь незаметной, и сама по себе не перехватывает тапы. */
-  #navmask{position:absolute; left:0; right:0; bottom:0; z-index:15; pointer-events:none;
-    height:calc(118px + env(safe-area-inset-bottom));
-    background:linear-gradient(to top, var(--water-deep) 62%, rgba(8,26,32,0) 100%);}
-  #app.on-other-screen #navmask{display:none;}
   #navbar{position:absolute; left:10px; right:10px; bottom:calc(10px + env(safe-area-inset-bottom)); height:78px; z-index:20; display:flex;
     background:rgba(9,26,32,0.78); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); border:1px solid var(--glass-border);
     border-radius:24px; box-shadow:0 12px 30px rgba(0,0,0,0.4); padding:6px;
@@ -779,7 +775,6 @@
     <div class="sublist" id="toplist"></div>
   </div>
 
-  <div id="navmask"></div>
   <div id="navbar">
     <button class="navbtn active" data-screen="fish"><span class="navico"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 27 L24 6" stroke="#B98550" stroke-width="2.6" stroke-linecap="round"/><path d="M24 6 Q28 16 22.5 25" fill="none" stroke="#F7F3E8" stroke-width="1.3" stroke-dasharray="2 2.4"/><path d="M22.5 25q-2.4 2-1.2 4.4" fill="none" stroke="#D9962C" stroke-width="1.8" stroke-linecap="round"/></svg></span>Рыбалка</button>
     <button class="navbtn" data-screen="shop"><span class="navico"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 8h3l2.6 13.5a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 2-1.6L27 12H10.4" fill="none" stroke="#F7F3E8" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="13.5" cy="27" r="1.9" fill="#F7F3E8"/><circle cx="21.5" cy="27" r="1.9" fill="#F7F3E8"/></svg></span>Магазин</button>
