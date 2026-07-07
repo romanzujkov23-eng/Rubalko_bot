@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Тихая Гавань - Рыбалка</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,8 +16,27 @@
     --radius-lg:20px; --radius-md:16px; --radius-sm:12px;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action:manipulation;}
-  html,body{margin:0; padding:0; height:100vh; height:100dvh; overflow:hidden; font-family:'Nunito',sans-serif; background:var(--water-deep); color:var(--cream); -webkit-font-smoothing:antialiased;}
-  #app{position:relative; width:100%; height:100vh; height:100dvh; overflow:hidden;}
+  /* --tg-vh обновляется из JS реальной высотой вьюпорта Telegram
+     (viewportStableHeight / window.innerHeight), потому что 100dvh неровно
+     ведёт себя в WebView некоторых клиентов Telegram (Android, Desktop) при
+     смене размера окна, появлении клавиатуры или разворачивании во весь
+     экран. 100dvh остаётся как мгновенный фолбэк до первого JS-события. */
+  html,body{margin:0; padding:0; width:100%; height:100vh; height:100dvh; height:calc(var(--tg-vh, 1vh) * 100);
+    overflow:hidden; overscroll-behavior:none; font-family:'Nunito',sans-serif; background:var(--water-deep); color:var(--cream); -webkit-font-smoothing:antialiased;
+    display:flex; justify-content:center; align-items:stretch;}
+  /* #app — «телефонный» холст игры. На планшетах и в Telegram Desktop (широкое
+     окно) он центрируется и не растягивается на всю ширину/высоту, иначе сцена
+     рыбалки и HUD теряются на просторе, а свайп-кнопки становятся неудобно
+     далеко друг от друга. */
+  #app{position:relative; width:100%; max-width:560px; height:100%; max-height:960px; margin:auto; overflow:hidden; background:var(--water-deep);}
+  @media (min-width:561px){
+    body{background:linear-gradient(160deg, #0c2530, #061217);}
+    #app{box-shadow:0 0 60px rgba(0,0,0,0.55); border-left:1px solid rgba(247,243,232,0.06); border-right:1px solid rgba(247,243,232,0.06);}
+    /* #rodsvg ниже задан в vw — это верно, пока #app==ширина окна (телефоны).
+       На широких экранах #app уже не растянут во всё окно, поэтому пересчитываем
+       смещение/ширину в px, ориентируясь на предельную ширину #app (560px). */
+    #rodsvg{right:-90px; width:340px;}
+  }
 
   #screen-fish{position:absolute; inset:0; transition:background 0.6s ease; --cloud-color:#fff;
     background:linear-gradient(to bottom, #FFC27A 0%, #1F6478 30%, #14505E 33%, var(--water-deep) 68%);}
@@ -60,7 +79,8 @@
     background:linear-gradient(to right, transparent, rgba(224,242,222,0.3), transparent);
     animation:mistDrift 22s linear infinite; transition:opacity .6s ease;}
   @keyframes mistDrift{0%{transform:translateX(-10%);} 100%{transform:translateX(14%);}}
-  #screen-fish[data-loc="jungle"] #mist{opacity:1;}
+  #screen-fish[data-loc="jungle"] #mist, #screen-fish[data-loc="volcano"] #mist{opacity:1;}
+  #screen-fish[data-loc="volcano"] #godrays{opacity:.35;}
 
   #stars{position:absolute; inset:0; height:45%; z-index:0; pointer-events:none; opacity:0; transition:opacity .7s ease;}
   #screen-fish[data-loc="ice"] #stars, #screen-fish[data-loc="abyss"] #stars{opacity:1;}
@@ -89,10 +109,11 @@
   #screen-fish[data-loc="abyss"] .sun, #screen-fish[data-loc="abyss"] .cloud{display:none;}
   #screen-fish[data-loc="ice"]{--cloud-color:#eaf6fb;}
   #screen-fish[data-loc="ice"] .sun{background:radial-gradient(circle, #EFFAFF, #C6E7F2 70%); box-shadow:0 0 32px 9px rgba(198,231,242,0.5);}
-  #screen-fish[data-loc="ice"] .cloud, #screen-fish[data-loc="jungle"] .cloud{opacity:.4;}
+  #screen-fish[data-loc="ice"] .cloud, #screen-fish[data-loc="jungle"] .cloud, #screen-fish[data-loc="volcano"] .cloud{opacity:.4;}
   #screen-fish[data-loc="harbor"]{--cloud-color:#fff3dc;}
   #screen-fish[data-loc="reef"]{--cloud-color:#f2fdff;}
   #screen-fish[data-loc="jungle"]{--cloud-color:#eef7ea;}
+  #screen-fish[data-loc="volcano"]{--cloud-color:#8a746a;}
 
   /* ---------- ЛУНКА ВО ЛЬДУ (ледяная локация) ---------- */
   #icehole{position:absolute; width:78px; height:44px; transform:translate(-50%,-50%) scale(0); z-index:2; opacity:0; pointer-events:none; transition:opacity .3s ease, transform .35s cubic-bezier(.34,1.56,.64,1);}
@@ -144,7 +165,7 @@
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 
   #locrow{width:100%; max-width:460px; display:flex; justify-content:flex-start;
-    gap:7px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none;
+    gap:7px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; overscroll-behavior-x:contain;
     -webkit-mask-image:linear-gradient(to right, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
     mask-image:linear-gradient(to right, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);}
   #locrow::-webkit-scrollbar{display:none;}
@@ -292,6 +313,16 @@
 
   .r0{color:#C8DFD6;} .r1{color:#C8DFD6;} .r2{color:#7FE08F;} .r3{color:#63B7EE;} .r4{color:#F6C453;}
 
+  /* #navmask — узкая подложка на всю ширину экрана прямо под навбаром.
+     У навбара намеренно оставлены зазоры по 10px слева/справа (плавающая
+     "стеклянная" панель), и сквозь них было видно кусок удочки/лески сцены
+     рыбалки — выглядело как обрезанная деталь в углу. Подложка того же тона,
+     что и низ сцены (var(--water-deep)), полностью перекрывает эти зазоры,
+     оставаясь незаметной, и сама по себе не перехватывает тапы. */
+  #navmask{position:absolute; left:0; right:0; bottom:0; z-index:15; pointer-events:none;
+    height:calc(118px + env(safe-area-inset-bottom));
+    background:linear-gradient(to top, var(--water-deep) 62%, rgba(8,26,32,0) 100%);}
+  #app.on-other-screen #navmask{display:none;}
   #navbar{position:absolute; left:10px; right:10px; bottom:calc(10px + env(safe-area-inset-bottom)); height:78px; z-index:20; display:flex;
     background:rgba(9,26,32,0.78); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); border:1px solid var(--glass-border);
     border-radius:24px; box-shadow:0 12px 30px rgba(0,0,0,0.4); padding:6px;
@@ -322,7 +353,7 @@
   .subhead h2{font-family:'Baloo 2',sans-serif; font-size:23px; margin:0 0 3px;}
   .subhead p{margin:0; font-size:11.5px; opacity:.6; font-weight:600;}
   .subhead .pill{flex-shrink:0; margin-top:1px;}
-  .sublist{flex:1; overflow-y:auto; padding:12px 16px 24px; display:flex; flex-direction:column; gap:10px; -webkit-overflow-scrolling:touch;}
+  .sublist{flex:1; overflow-y:auto; padding:12px 16px 24px; display:flex; flex-direction:column; gap:10px; -webkit-overflow-scrolling:touch; overscroll-behavior-y:contain;}
 
   .card2{background:var(--card); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border:1px solid var(--glass-border); border-radius:var(--radius-md); padding:13px; display:flex; align-items:center; gap:11px; box-shadow:0 4px 14px rgba(0,0,0,0.18); transition:transform .12s ease;}
   .card2:active{transform:scale(.985);}
@@ -748,6 +779,7 @@
     <div class="sublist" id="toplist"></div>
   </div>
 
+  <div id="navmask"></div>
   <div id="navbar">
     <button class="navbtn active" data-screen="fish"><span class="navico"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 27 L24 6" stroke="#B98550" stroke-width="2.6" stroke-linecap="round"/><path d="M24 6 Q28 16 22.5 25" fill="none" stroke="#F7F3E8" stroke-width="1.3" stroke-dasharray="2 2.4"/><path d="M22.5 25q-2.4 2-1.2 4.4" fill="none" stroke="#D9962C" stroke-width="1.8" stroke-linecap="round"/></svg></span>Рыбалка</button>
     <button class="navbtn" data-screen="shop"><span class="navico"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 8h3l2.6 13.5a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 2-1.6L27 12H10.4" fill="none" stroke="#F7F3E8" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="13.5" cy="27" r="1.9" fill="#F7F3E8"/><circle cx="21.5" cy="27" r="1.9" fill="#F7F3E8"/></svg></span>Магазин</button>
@@ -792,7 +824,42 @@
 <script>
 (function(){
   const tg = window.Telegram && window.Telegram.WebApp;
-  if(tg){ try{ tg.ready(); tg.expand(); tg.setHeaderColor && tg.setHeaderColor('#0B2F3A'); tg.setBackgroundColor && tg.setBackgroundColor('#0B2F3A'); }catch(e){} }
+  if(tg){
+    try{
+      tg.ready(); tg.expand();
+      tg.setHeaderColor && tg.setHeaderColor('#0B2F3A');
+      tg.setBackgroundColor && tg.setBackgroundColor('#0B2F3A');
+      tg.setBottomBarColor && tg.setBottomBarColor('#0B2F3A');
+      // Запрещаем Телеграму сворачивать/закрывать мини-апп вертикальным свайпом —
+      // без этого быстрые тапы у верхнего/нижнего края на некоторых клиентах
+      // (особенно iOS) иногда распознаются как жест закрытия.
+      tg.disableVerticalSwipes && tg.disableVerticalSwipes();
+      // На части Android/Desktop клиентов подтверждение закрытия недоступно,
+      // но там, где доступно — не даём случайно смахнуть прогресс во время игры.
+      tg.enableClosingConfirmation && tg.enableClosingConfirmation();
+    }catch(e){}
+  }
+
+  // ---------- РЕАЛЬНАЯ ВЫСОТА ВЬЮПОРТА ----------
+  // 100dvh — хорошая база, но в WebView некоторых клиентов Телеграма (Android,
+  // Desktop, старые версии iOS) он не совпадает с фактически видимой областью:
+  // может включать зону под системными жестами или, наоборот, не учитывать
+  // компактный режим до вызова tg.expand(). Поэтому держим свою переменную
+  // --tg-vh и пересчитываем её из tg.viewportStableHeight (самый надёжный
+  // источник в Mini Apps) с фолбэком на window.visualViewport/innerHeight —
+  // и обновляем при любом изменении вьюпорта (поворот экрана, клавиатура,
+  // смена размера окна десктоп-клиента, разворачивание мини-аппа).
+  function applyViewportHeight(){
+    const h = (tg && tg.viewportStableHeight) ||
+      (window.visualViewport && window.visualViewport.height) ||
+      window.innerHeight;
+    document.documentElement.style.setProperty('--tg-vh', (h * 0.01) + 'px');
+  }
+  applyViewportHeight();
+  if(tg && tg.onEvent){ try{ tg.onEvent('viewportChanged', applyViewportHeight); }catch(e){} }
+  window.addEventListener('resize', applyViewportHeight);
+  window.addEventListener('orientationchange', ()=>setTimeout(applyViewportHeight, 60));
+  if(window.visualViewport) window.visualViewport.addEventListener('resize', applyViewportHeight);
   function haptic(type){
     if(state && state.vibrationOn === false) return;
     if(tg && tg.HapticFeedback){
@@ -997,6 +1064,19 @@
         {id:'gulperEel', name:'Рыба-пеликан', ico:'🐍', tier:3, coins:[145,225], xp:82, design:{type:'fish', body:'#2A1F1A', belly:'#4A382E', fin:'#1A130F', tail:'pointed', elong:1.9, depth:0.5, gulp:true}},
         {id:'kraken', name:'Легендарный Кракен', ico:'🐙', tier:4, coins:[400,600], xp:220, design:{type:'cephalopod', body:'#16323A', arms:8, eye:'#E8434E'}},
       ]},
+    { id:'volcano', name:'Вулканические Источники', unlockLevel:25, top:'#5A2A1E', bottom:'#170604', scenery:'volcano',
+      splashFx:['ember','bubble'], flavor:{cast:'Забрасываем леску в кипящий источник...', wait:'Пар клубится над лавой... жди клёва'},
+      fish:[
+        {id:'thermaltilapia', name:'Термальная тиляпия', ico:'🐟', tier:0, coins:[45,70], xp:30, design:{type:'fish', body:'#D97B4A', belly:'#F2C9A0', fin:'#A6522E', tail:'fan'}},
+        {id:'sulfurgoby', name:'Серный бычок', ico:'🐠', tier:0, coins:[42,65], xp:28, design:{type:'fish', body:'#D9C23E', belly:'#F2E8A0', fin:'#A68B2E', tail:'round', pattern:'spots', patternColor:'#A68B2E'}},
+        {id:'emberperch', name:'Огненный окунь', ico:'🐠', tier:1, coins:[85,125], xp:55, design:{type:'fish', body:'#E85A2E', belly:'#FFCB8F', fin:'#B33E1A', tail:'fork', finStyle:'spiky', pattern:'stripes', patternColor:'#B33E1A'}},
+        {id:'ashcatfish', name:'Пепельный сом', ico:'🐡', tier:1, coins:[80,120], xp:52, design:{type:'fish', body:'#4A4038', belly:'#8A7C6C', fin:'#2E271F', tail:'round', elong:1.2, whiskers:true}},
+        {id:'lavacrab', name:'Лавовый краб', ico:'🦀', tier:2, coins:[160,240], xp:95, design:{type:'crab', body:'#E8451F', claw:'#B32E0E'}},
+        {id:'obsidianeel', name:'Обсидиановый угорь', ico:'🐍', tier:2, coins:[165,245], xp:98, design:{type:'fish', body:'#181414', belly:'#3A322E', fin:'#0E0B0A', tail:'pointed', elong:2.0, depth:0.5}},
+        {id:'magmasalamander', name:'Магматическая саламандра', ico:'🦎', tier:3, coins:[320,460], xp:175, design:{type:'reptile', body:'#8A2A12', spike:'#FF7A2E', horns:true}},
+        {id:'emberray', name:'Раскалённый скат', ico:'🐟', tier:3, coins:[310,450], xp:172, design:{type:'fish', body:'#B33A1A', belly:'#F2934A', fin:'#7A2610', tail:'fan', depth:1.5, elong:0.9, pattern:'spots', patternColor:'#F2934A'}},
+        {id:'phoenixfish', name:'Феникс-рыба', ico:'🔥', tier:4, coins:[650,950], xp:360, design:{type:'fish', body:'#F2C14E', belly:'#FFF0C2', fin:'#E8451F', tail:'fan', pattern:'scale', patternColor:'#E8451F'}},
+      ]},
   ];
 
   const RODS = [
@@ -1116,7 +1196,13 @@
     { title:'Глава 16: Золото реки', story:'Местные торговцы скупают улов джунглей по особой цене - если знаешь, как его продать. Заработай 4000 монет на рынке.', type:'sell_coins', target:4000, rewardCoins:1200, rewardXp:600 },
     { title:'Глава 17: Бездна зовёт', story:'Дальше только тьма - Глубокий Океан, куда пускают лишь легенд этих вод. Достигни 20 уровня.', type:'reach_level', target:20, rewardCoins:1000, rewardXp:0 },
     { title:'Глава 18: Чудовище из тьмы', story:'Говорят, где-то в темных водах живёт существо весом больше пятнадцати килограмм, о котором слагают легенды. Поймай его.', type:'catch_heavy', target:15, rewardCoins:1500, rewardXp:800 },
-    { title:'Финал: Легенда Тихой Гавани', story:'Смотритель гавани смотрит на тебя с гордостью: «Ты прошёл путь от новичка до легенды. Осталось последнее - докажи, что нет ни одной рыбы в этих водах, что ускользнула бы от тебя». Поймай хотя бы по одному экземпляру каждого вида рыбы во всех локациях.', type:'catch_all_species', target:45, rewardCoins:3000, rewardXp:1500, rewardSkin:'legend' },
+    { title:'Глава 19: Тени бездны', story:'Смотритель качает головой при свете фонаря: «Чем глубже, тем чаще светящиеся твари. Собери их достаточно, чтобы я поверил - ты знаешь эти воды». Поймай 12 легендарных рыб.', type:'catch_legendary', target:12, rewardCoins:1800, rewardXp:900 },
+    { title:'Глава 20: Пламя на горизонте', story:'Старый смотритель указывает на дрожащее зарево за краем воды: «Дальше Бездны есть место, куда я сам не хожу - Вулканические Источники. Там кипит сама вода. Чтобы выжить там, нужна ещё большая сила». Достигни 25 уровня.', type:'reach_level', target:25, rewardCoins:1300, rewardXp:0 },
+    { title:'Глава 21: Кипящие воды', story:'Пар обжигает лицо, а вода у берега похожа на суп. Местный проводник усмехается: «Здесь либо привыкаешь быстро, либо не задерживаешься вовсе». Поймай 20 любых рыб в этих водах.', type:'catch_any', target:20, rewardCoins:1600, rewardXp:800 },
+    { title:'Глава 22: Танец с лавовым крабом', story:'Между раскалёнными камнями снуют существа, которых боятся даже бывалые рыбаки источников. Докажи, что тебе они не страшны: поймай 10 редких или ценных рыб.', type:'catch_rare', target:10, rewardCoins:2000, rewardXp:1000 },
+    { title:'Глава 23: Кровь вулкана', story:'На самом дне источника, у трещины в скале, живёт нечто огромное и раскалённое почти докрасна. Поймай рыбу весом от 16 кг.', type:'catch_heavy', target:16, rewardCoins:2600, rewardXp:1300 },
+    { title:'Глава 24: Сокровища кратера', story:'Торговцы у подножия вулкана готовы платить втрое больше за улов из кипящих вод - если у тебя хватит смелости наловить достаточно. Заработай 8000 монет на рынке.', type:'sell_coins', target:8000, rewardCoins:3200, rewardXp:1600 },
+    { title:'Финал: Легенда Тихой Гавани', story:'Старый смотритель смотрит на тебя у кромки кипящего источника, и в его глазах - гордость: «Ты прошёл путь от новичка на пристани до тех, о ком слагают легенды - от тихой гавани до самого сердца огня. Осталось последнее: докажи, что ни одна рыба в этих водах - от мелкой плотвички до Феникс-рыбы - не ускользнула бы от тебя». Поймай хотя бы по одному экземпляру каждого вида рыбы во всех локациях.', type:'catch_all_species', target:45, rewardCoins:5000, rewardXp:2500, rewardSkin:'legend' },
   ];
   // Финальная цель "поймать всех рыб" считается по фактическому числу видов во всех локациях.
   (function syncCatchAllTarget(){
@@ -1420,6 +1506,27 @@
 
   let gameState='idle', biteTimeout, windowTimeout, currentFish=null, rippleInterval=null;
 
+  // ---------- ЗАЩИТА ОТ БЕСКОНЕЧНОГО СПАМА ПО КНОПКЕ ----------
+  // Раньше кнопка одинаково реагировала на любой тап независимо от того, ждал ли
+  // игрок реального сигнала или просто зажимал/спамил её без остановки — это
+  // сводило на нет и реакцию на поклёвку, и вываживание. Ниже — три независимых
+  // барьера, которые вместе закрывают это:
+  //  1) MIN_REACTION_MS — подсечка раньше этого времени после поклёвки не считается
+  //     настоящей реакцией (человек физически не успевает увидеть сигнал и нажать
+  //     быстрее), рыба срывается со штрафом.
+  //  2) MAX_TAPS_PER_WINDOW/TAP_WINDOW_MS — сколько тапов в секунду вообще
+  //     засчитывается; всё, что сверху (автокликер/зажатый спам), просто игнорируется.
+  //  3) nextCastAllowedAt — короткий гарантированный кулдаун между забросами, чтобы
+  //     нельзя было мгновенно перезакинуть удочку сразу после провала/улова.
+  const MIN_REACTION_MS = 160;
+  const CAST_COOLDOWN_MS = 550;
+  const EARLY_STRIKE_PENALTY_MS = 700;
+  const MAX_TAPS_PER_WINDOW = 9;
+  const TAP_WINDOW_MS = 1000;
+  let biteStartedAt = 0;
+  let nextCastAllowedAt = 0;
+  let recentTaps = [];
+
   // Якорная точка поплавка (cx,cy), которую мы позиционируем в cast(), — это
   // геометрический ЦЕНТР его 26×52px контейнера (из-за transform:translate(-50%,-50%)).
   // Но сам буёк (внутри viewBox 44×92) визуально касается воды намного ниже центра —
@@ -1560,6 +1667,30 @@
       <circle class="glowdot" cx="270" cy="130" r="2" fill="#e8c96f" opacity="0.6" style="animation-delay:-2s;"/>
       <circle class="glowdot" cx="650" cy="120" r="2.6" fill="#6f9be8" opacity="0.7" style="animation-delay:-0.5s;"/>
       </svg>`,
+    volcano: `<svg viewBox="0 0 800 200" preserveAspectRatio="xMidYMax slice">
+      <defs>
+        <linearGradient id="vRockFar" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4a2a20"/><stop offset="100%" stop-color="#1f0f0a"/></linearGradient>
+        <linearGradient id="vRockNear" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6a3520"/><stop offset="100%" stop-color="#2a1208"/></linearGradient>
+        <linearGradient id="vLava" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#FF7A2E"/><stop offset="100%" stop-color="#FFD98F"/></linearGradient>
+        <linearGradient id="vSteam" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#F2E8DC" stop-opacity="0.85"/><stop offset="100%" stop-color="#F2E8DC" stop-opacity="0.05"/></linearGradient>
+      </defs>
+      <ellipse cx="400" cy="10" rx="260" ry="30" fill="#FF7A2E" opacity="0.18"/>
+      <polygon points="0,150 150,30 300,150" fill="url(#vRockFar)" opacity="0.72"/>
+      <polygon points="220,150 380,10 540,150" fill="url(#vRockNear)" opacity="0.8"/>
+      <polygon points="480,150 630,45 800,150" fill="url(#vRockFar)" opacity="0.7"/>
+      <path d="M380,10 Q372,26 380,40 Q388,26 380,10 Z" fill="url(#vLava)" opacity="0.9"/>
+      <path d="M370,42 Q378,70 362,100 Q392,86 386,42 Z" fill="url(#vLava)" opacity="0.55"/>
+      <path d="M150,30 Q144,44 150,56" stroke="#FF9A4E" stroke-width="2" fill="none" opacity="0.6"/>
+      <path d="M630,45 Q624,58 630,70" stroke="#FF9A4E" stroke-width="2" fill="none" opacity="0.55"/>
+      <path d="M470,90 Q478,50 470,10" stroke="url(#vSteam)" stroke-width="14" fill="none" opacity="0.7"/>
+      <path d="M120,110 Q128,74 120,40" stroke="url(#vSteam)" stroke-width="10" fill="none" opacity="0.55"/>
+      <path d="M690,100 Q696,66 690,34" stroke="url(#vSteam)" stroke-width="10" fill="none" opacity="0.55"/>
+      <ellipse cx="400" cy="150" rx="420" ry="16" fill="#0e0402" opacity="0.5"/>
+      <ellipse cx="230" cy="168" rx="70" ry="14" fill="#FF7A2E" opacity="0.28"/>
+      <ellipse cx="560" cy="170" rx="60" ry="12" fill="#FF9A4E" opacity="0.24"/>
+      <circle class="glowdot" cx="150" cy="42" r="2.6" fill="#FFD98F" opacity="0.85"/>
+      <circle class="glowdot" cx="630" cy="56" r="2.2" fill="#FF9A4E" opacity="0.7" style="animation-delay:-1.2s;"/>
+      </svg>`,
   };
   // ---------- УНИКАЛЬНЫЕ SVG-ИКОНКИ ДЛЯ ЭФФЕКТОВ (вместо системных эмодзи) ----------
   // Заменяют эмодзи во всплесках заброса/поклёва и в летающих частицах фона локаций —
@@ -1578,6 +1709,7 @@
     sparkle: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2l1.9 6.1L20 10l-6.1 1.9L12 18l-1.9-6.1L4 10l6.1-1.9Z" fill="#FFF3C4"/></svg>',
     star: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="12,2 15,9 22,9 16.5,13.5 18.5,21 12,16.8 5.5,21 7.5,13.5 2,9 9,9" fill="#F6C453"/></svg>',
     glowBlue: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" fill="#6fe8e8" opacity="0.22"/><circle cx="12" cy="12" r="5.5" fill="#6fe8e8" opacity="0.85"/></svg>',
+    ember: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" fill="#FF7A2E" opacity="0.22"/><circle cx="12" cy="12" r="4.2" fill="#FFD98F"/></svg>',
     burst: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="12,1 14.3,8.2 21.5,6.3 16.6,12 21.5,17.7 14.3,15.8 12,23 9.7,15.8 2.5,17.7 7.4,12 2.5,6.3 9.7,8.2" fill="#FF7A59"/><polygon points="12,5 13.3,10 18,9 14.7,12 18,15 13.3,14 12,19 10.7,14 6,15 9.3,12 6,9 10.7,10" fill="#FFD98F"/></svg>',
     exclaim: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="9.5" y="2" width="5" height="13" rx="2.4" fill="#FF7A59"/><circle cx="12" cy="20" r="2.6" fill="#FF7A59"/></svg>',
     target: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9.5" fill="none" stroke="#F6C453" stroke-width="2"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="#F6C453" stroke-width="2"/><circle cx="12" cy="12" r="2" fill="#F6C453"/></svg>',
@@ -1588,6 +1720,7 @@
     ice: {icons:['snowflake'], count:16, anim:'snowFall', dur:[7,13], top:0, size:12},
     jungle: {icons:['leaf'], count:9, anim:'leafFall', dur:[8,14], top:0, size:15},
     abyss: {icons:['sparkle','glowBlue'], count:14, anim:'moteFloat', dur:[3,6], top:15, size:10},
+    volcano: {icons:['ember','sparkle'], count:12, anim:'moteFloat', dur:[3,6], top:20, size:9},
   };
   // Отдельный слой светлячков только для джунглей — своя анимация (плавное парение),
   // не смешивается с падающими листьями из PARTICLE_CFG.
@@ -1877,6 +2010,7 @@
 
   function cast(){
     if(gameState!=='idle') return;
+    if(Date.now() < nextCastAllowedAt) return;
     const loc = currentLoc();
     gameState='casting'; btn.disabled=true; status.textContent=loc.flavor.cast; haptic('light');
     const tip = getTipPoint();
@@ -1940,6 +2074,7 @@
     if(gameState!=='waiting') return;
     clearInterval(rippleInterval);
     gameState='biting'; currentFish=pickFish(); haptic('light');
+    biteStartedAt = Date.now();
     const variant = BITE_VARIANTS[Math.floor(Math.random()*BITE_VARIANTS.length)];
     bobber.classList.remove('idle-bob'); bobber.classList.add(variant);
     const rect = bobber.getBoundingClientRect();
@@ -1965,9 +2100,24 @@
 
   function pull(){
     if(gameState!=='biting') return;
+    if(Date.now() - biteStartedAt < MIN_REACTION_MS){ earlyStrike(); return; }
     clearTimeout(windowTimeout); haptic('success');
     bobber.classList.remove('bite-jitter','bite-jitter-2','bite-jitter-3');
     startReeling();
+  }
+
+  // Тап пришёл раньше физически возможной реакции человека — это либо спам по
+  // кнопке "на всякий случай", либо автокликер. Засчитываем как срыв рыбы,
+  // но с более длинным штрафным кулдауном, чем обычный промах — иначе спамить
+  // было бы выгоднее, чем ждать честной поклёвки.
+  function earlyStrike(){
+    clearTimeout(windowTimeout);
+    gameState='idle'; haptic('error');
+    bobber.classList.remove('bite-jitter','bite-jitter-2','bite-jitter-3');
+    timerbar.style.display='none';
+    status.textContent='Слишком рано! Дождись настоящей поклёвки';
+    nextCastAllowedAt = Date.now() + CAST_COOLDOWN_MS + EARLY_STRIKE_PENALTY_MS;
+    setTimeout(resetVisual, 900);
   }
 
   function startReeling(){
@@ -2015,6 +2165,7 @@
     gameState='idle'; haptic('error');
     bobber.classList.remove('reel-struggle'); rodsvg.classList.remove('reeling'); lineEl.classList.remove('tense');
     status.textContent='Рыба сорвалась с крючка... Попробуй снова';
+    nextCastAllowedAt = Date.now() + CAST_COOLDOWN_MS;
     setTimeout(resetVisual, 900);
   }
 
@@ -2022,6 +2173,7 @@
     if(gameState!=='biting') return;
     gameState='idle'; haptic('error'); bobber.classList.remove('bite-jitter','bite-jitter-2','bite-jitter-3');
     status.textContent='Рыба сорвалась... Попробуй снова';
+    nextCastAllowedAt = Date.now() + CAST_COOLDOWN_MS;
     setTimeout(resetVisual, 900);
   }
 
@@ -2055,6 +2207,7 @@
 
   function landFish(){
     gameState='idle'; haptic('success');
+    nextCastAllowedAt = Date.now() + CAST_COOLDOWN_MS;
     bobber.classList.remove('reel-struggle'); rodsvg.classList.remove('reeling'); lineEl.classList.remove('tense');
     const fish = currentFish;
     const bait = getBait(state.activeBait);
@@ -2101,6 +2254,12 @@
   btn.addEventListener('pointerdown', (e)=>{
     e.preventDefault();
     const now = Date.now(); if(now - lastTapTime < 90) return; lastTapTime = now;
+    // Анти-автокликер: считаем тапы за последнюю секунду. Живой человек не
+    // тапает быстрее ~9 раз в секунду постоянно — всё, что сверху, отбрасываем
+    // молча, не давая ни забросу, ни подсечке, ни вываживанию засчитаться.
+    recentTaps.push(now);
+    while(recentTaps.length && now - recentTaps[0] > TAP_WINDOW_MS) recentTaps.shift();
+    if(recentTaps.length > MAX_TAPS_PER_WINDOW) return;
     if(gameState==='idle') cast();
     else if(gameState==='biting') pull();
     else if(gameState==='reeling') reelTap();
