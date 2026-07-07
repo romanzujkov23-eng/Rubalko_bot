@@ -113,6 +113,7 @@
   @keyframes jellyDrift{0%,100%{transform:translateY(0) scaleY(1);} 50%{transform:translateY(-10px) scaleY(1.06);}}
   .sway{transform-origin:bottom center; animation:swayTree 4.5s ease-in-out infinite;}
   #screen-fish[data-loc="abyss"] .sun, #screen-fish[data-loc="abyss"] .cloud{display:none;}
+  #screen-fish[data-loc="volcano"] .sun{display:none;}
   #screen-fish[data-loc="ice"]{--cloud-color:#eaf6fb;}
   #screen-fish[data-loc="ice"] .sun{background:radial-gradient(circle, #EFFAFF, #C6E7F2 70%); box-shadow:0 0 32px 9px rgba(198,231,242,0.5);}
   #screen-fish[data-loc="ice"] .cloud, #screen-fish[data-loc="jungle"] .cloud, #screen-fish[data-loc="volcano"] .cloud{opacity:.4;}
@@ -329,19 +330,31 @@
        на правильный z-index. Явно переводим навбар в собственный изолированный композитный слой —
        тогда порядок поверх удочки гарантирован на всех кадрах анимации. */
     isolation:isolate; transform:translate3d(0,0,0); will-change:transform; backface-visibility:hidden;}
-  .navbtn{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; border-radius:18px;
-    background:none; border:none; color:rgba(247,243,232,0.5); font-family:'Nunito',sans-serif; font-weight:800; font-size:11.5px; padding:6px 2px;
-    transition:background .18s ease, color .18s ease, transform .12s ease;}
+  .navbtn{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; border-radius:16px;
+    background:none; border:1px solid transparent; color:rgba(247,243,232,0.5); font-family:'Nunito',sans-serif; font-weight:800; font-size:11.5px; padding:6px 2px;
+    margin:3px 1px;
+    transition:background .18s ease, color .18s ease, transform .12s ease, border-color .18s ease, box-shadow .18s ease;}
   .navbtn .navico{width:25px; height:25px; display:flex; align-items:center; justify-content:center; transition:transform .18s ease;}
   .navbtn .navico svg{display:block; width:100%; height:100%;}
   .navbtn:active{transform:scale(.94);}
-  .navbtn.active{color:var(--gold); background:rgba(246,196,83,0.14);}
+  /* Раньше активная вкладка была сплошным прямоугольником на всю высоту
+     панели — вплотную к краям навбара, из-за чего на фоне размытого стекла
+     смотрелась мутным грязным пятном. Теперь это отдельная "плавающая" золотая
+     плашка: собственные отступы (margin у .navbtn) открывают зазор сверху/снизу,
+     мягкий градиент+обводка+свечение вместо плоской заливки — тот же язык,
+     что и у активных вкладок магазина/заданий/локаций (.shoptab.active,
+     .qtab.active, .locpill.active), только светлее, чтобы не спорить с
+     разноцветными иконками навигации. */
+  .navbtn.active{color:var(--gold);
+    background:linear-gradient(180deg, rgba(246,196,83,0.24), rgba(217,150,44,0.09));
+    border-color:rgba(246,196,83,0.3);
+    box-shadow:0 4px 12px rgba(246,196,83,0.16), inset 0 1px 0 rgba(255,255,255,0.07);}
   .navbtn.active .navico{transform:translateY(-1px) scale(1.1);}
 
   /* Отступ снизу у подэкранов должен учитывать safe-area точно так же, как навбар,
      иначе на устройствах с индикатором свайпа (iPhone X+) последняя карточка
      списка частично уезжает под навигацию */
-  .subscreen{position:absolute; inset:0 0 calc(92px + env(safe-area-inset-bottom)) 0; z-index:8; background:var(--water-deep); display:none; flex-direction:column;}
+  .subscreen{position:absolute; inset:0; z-index:8; background:var(--water-deep); display:none; flex-direction:column;}
   .subscreen.show{display:flex;}
   .subhead{padding:calc(16px + env(safe-area-inset-top)) 18px 12px; flex-shrink:0; border-bottom:1px solid rgba(247,243,232,0.06);
     display:flex; align-items:flex-start; justify-content:space-between; gap:12px;}
@@ -349,7 +362,7 @@
   .subhead h2{font-family:'Baloo 2',sans-serif; font-size:23px; margin:0 0 3px;}
   .subhead p{margin:0; font-size:11.5px; opacity:.6; font-weight:600;}
   .subhead .pill{flex-shrink:0; margin-top:1px;}
-  .sublist{flex:1; overflow-y:auto; padding:12px 16px 24px; display:flex; flex-direction:column; gap:10px; -webkit-overflow-scrolling:touch; overscroll-behavior-y:contain;}
+  .sublist{flex:1; overflow-y:auto; padding:12px 16px calc(24px + 92px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; gap:10px; -webkit-overflow-scrolling:touch; overscroll-behavior-y:contain;}
 
   .card2{background:var(--card); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border:1px solid var(--glass-border); border-radius:var(--radius-md); padding:13px; display:flex; align-items:center; gap:11px; box-shadow:0 4px 14px rgba(0,0,0,0.18); transition:transform .12s ease;}
   .card2:active{transform:scale(.985);}
@@ -385,6 +398,14 @@
   .lbcatches{display:flex; align-items:center; gap:4px; font-weight:700; font-size:12.5px; opacity:.85; flex-shrink:0; font-variant-numeric:tabular-nums;}
   .lbscore{font-weight:800; font-size:13px; color:var(--gold); flex-shrink:0;}
   .lbnote{font-size:11.5px; opacity:.6; padding:0 4px 10px; font-weight:600; line-height:1.55;}
+  .invite-sub{margin:2px 16px 10px; font-size:11px; opacity:.6; font-weight:600; line-height:1.5;}
+  .refsection{margin:0 16px 12px;}
+  .refsection h3{font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.6px; opacity:.6; margin:0 0 8px;}
+  .refrow{display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--glass-border); border-radius:var(--radius-md); padding:9px 12px; margin-bottom:7px;}
+  .refname{flex:1; font-weight:700; font-size:12.5px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .refstatus{font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.3px; padding:4px 9px; border-radius:20px; flex-shrink:0;}
+  .refstatus.pending{background:rgba(247,243,232,0.12); color:rgba(247,243,232,0.65);}
+  .refstatus.completed{background:linear-gradient(180deg, var(--gold), var(--gold-deep)); color:var(--ink);}
 
   .questcard{background:var(--card); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border:1px solid var(--glass-border); border-radius:var(--radius-md); padding:14px; box-shadow:0 4px 14px rgba(0,0,0,0.18);}
   .questcard.done{border-color:var(--gold); box-shadow:0 0 0 1px rgba(246,196,83,0.2), 0 4px 14px rgba(0,0,0,0.18);}
@@ -402,6 +423,31 @@
   .qtab{flex:1; border:1px solid var(--glass-border); background:rgba(10,31,38,0.45); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); color:rgba(247,243,232,0.65);
     border-radius:13px; padding:10px 6px; font-weight:800; font-size:12px; font-family:'Baloo 2',sans-serif; transition:background .15s ease, color .15s ease;}
   .qtab.active{background:linear-gradient(180deg, var(--gold), var(--gold-deep)); color:var(--ink); border-color:transparent; box-shadow:0 4px 12px rgba(246,196,83,0.3);}
+
+  /* ---------- Вкладки внутри "Магазина" (Бусты/Удочки/Наживка/Скины/Мастерская) ----------
+     Раньше весь магазин был одной длинной лентой карточек — приходилось долго
+     листать, чтобы найти нужный раздел. Теперь это горизонтальный ряд вкладок
+     (с прокруткой вбок, если не помещаются), и в списке показывается только
+     содержимое активной вкладки — списки стали короткими и предсказуемыми. */
+  .shop-tabs{display:flex; gap:7px; padding:10px 16px 2px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; flex-shrink:0;}
+  .shop-tabs::-webkit-scrollbar{display:none;}
+  .shoptab{flex:0 0 auto; border:1px solid var(--glass-border); background:rgba(10,31,38,0.45); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); color:rgba(247,243,232,0.65);
+    border-radius:13px; padding:9px 14px; font-weight:800; font-size:12px; font-family:'Baloo 2',sans-serif; white-space:nowrap; transition:background .15s ease, color .15s ease;}
+  .shoptab.active{background:linear-gradient(180deg, var(--gold), var(--gold-deep)); color:var(--ink); border-color:transparent; box-shadow:0 4px 12px rgba(246,196,83,0.3);}
+
+  /* ---------- Кнопка настроек в шапке экрана (шестерёнка) ----------
+     Вибрация и сброс прогресса раньше висели в самом низу ленты магазина и
+     маячили перед глазами при каждой покупке. Теперь они спрятаны за
+     иконкой-шестерёнкой в шапке и открываются отдельным модальным окном. */
+  .subhead-right{display:flex; align-items:center; gap:8px; flex-shrink:0;}
+  .icon-btn{width:38px; height:38px; border-radius:12px; background:rgba(247,243,232,0.08); border:1px solid var(--glass-border);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; color:var(--cream); transition:background .12s ease, transform .1s ease;}
+  .icon-btn svg{width:19px; height:19px; display:block;}
+  .icon-btn:active{background:rgba(247,243,232,0.16); transform:scale(.94);}
+  #settingsModal .modal-card{text-align:left;}
+  #settingsModal .modal-card h2{text-align:center;}
+  #settingsModal .settingrow{margin-top:0;}
+  #settingsModal .btn-reset-progress{margin-top:14px;}
 
   .storycard{background:var(--card); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border:1px solid var(--glass-border); border-radius:var(--radius-lg); padding:16px; box-shadow:0 4px 14px rgba(0,0,0,0.18);}
   .storycard .schapter{font-size:10.5px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:var(--gold); margin-bottom:5px;}
@@ -738,7 +784,17 @@
   <div class="subscreen" id="screen-shop">
     <div class="subhead">
       <div class="subhead-text"><h2>Магазин</h2><p>Снаряжение для рыбалки</p></div>
-      <div class="pill subhead-coins"><span class="coin-ico"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><radialGradient id="coinShineShop" cx="35%" cy="28%" r="80%"><stop offset="0%" stop-color="#FFF6DC"/><stop offset="45%" stop-color="#F6C453"/><stop offset="100%" stop-color="#C6811F"/></radialGradient><circle cx="16" cy="16" r="14.5" fill="url(#coinShineShop)" stroke="#8A5A16" stroke-width="1.3"/><circle cx="16" cy="16" r="11" fill="none" stroke="#FFEDB8" stroke-width="1" opacity="0.55"/><path d="M9.5 20c-.6-3.2.6-6.7 3.6-8.6 2-1.3 4.5-1.5 6.6-.6-2.4-.3-4.8.4-6.5 2-1.9 1.7-2.7 4.3-2.2 6.8-1.1-.3-1.5.3-1.5.4z" fill="#A66A17" opacity="0.65"/><path d="M12 20.5c2.6.9 5.6.2 7.5-1.9 1.5-1.7 2-3.9 1.6-6 .6 2.2.2 4.6-1.3 6.5-1.7 2.1-4.5 3-7.1 2.2-.4-.1-.6-.5-.7-.8z" fill="#A66A17" opacity="0.5"/><ellipse cx="11.2" cy="10.8" rx="4" ry="2.2" fill="#FFFFFF" opacity="0.5" transform="rotate(-28 11.2 10.8)"/></svg></span><span class="coinsValMirror">0</span></div>
+      <div class="subhead-right">
+        <div class="pill subhead-coins"><span class="coin-ico"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><radialGradient id="coinShineShop" cx="35%" cy="28%" r="80%"><stop offset="0%" stop-color="#FFF6DC"/><stop offset="45%" stop-color="#F6C453"/><stop offset="100%" stop-color="#C6811F"/></radialGradient><circle cx="16" cy="16" r="14.5" fill="url(#coinShineShop)" stroke="#8A5A16" stroke-width="1.3"/><circle cx="16" cy="16" r="11" fill="none" stroke="#FFEDB8" stroke-width="1" opacity="0.55"/><path d="M9.5 20c-.6-3.2.6-6.7 3.6-8.6 2-1.3 4.5-1.5 6.6-.6-2.4-.3-4.8.4-6.5 2-1.9 1.7-2.7 4.3-2.2 6.8-1.1-.3-1.5.3-1.5.4z" fill="#A66A17" opacity="0.65"/><path d="M12 20.5c2.6.9 5.6.2 7.5-1.9 1.5-1.7 2-3.9 1.6-6 .6 2.2.2 4.6-1.3 6.5-1.7 2.1-4.5 3-7.1 2.2-.4-.1-.6-.5-.7-.8z" fill="#A66A17" opacity="0.5"/><ellipse cx="11.2" cy="10.8" rx="4" ry="2.2" fill="#FFFFFF" opacity="0.5" transform="rotate(-28 11.2 10.8)"/></svg></span><span class="coinsValMirror">0</span></div>
+        <button id="shopSettingsBtn" class="icon-btn" aria-label="Настройки"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 10.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 3.5v3M16 25.5v3M28.5 16h-3M6.5 16h-3M24.4 7.6l-2.1 2.1M9.7 22.3l-2.1 2.1M24.4 24.4l-2.1-2.1M9.7 9.7 7.6 7.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+      </div>
+    </div>
+    <div class="shop-tabs" id="shoptabs">
+      <button class="shoptab active" data-shoptab="boosts">Бусты</button>
+      <button class="shoptab" data-shoptab="rods">Удочки</button>
+      <button class="shoptab" data-shoptab="baits">Наживка</button>
+      <button class="shoptab" data-shoptab="skins">Скины</button>
+      <button class="shoptab" data-shoptab="workshop">Мастерская</button>
     </div>
     <div class="sublist" id="shoplist"></div>
   </div>
@@ -754,6 +810,7 @@
 
   <div class="subscreen" id="screen-collection">
     <div class="subhead"><h2>Коллекция</h2><p id="collSummary">Открыто 0 из 0 видов</p></div>
+    <div class="shop-tabs" id="colltabs"></div>
     <div class="sublist" id="colllist"></div>
   </div>
 
@@ -770,8 +827,10 @@
     <div class="subhead"><h2>Топ рыбаков</h2><p>Рейтинг по общему опыту</p></div>
     <button id="inviteBtn" class="invite-btn">
       <span class="ico-inline"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M4 16 27 5 20 27l-5-9-9-2z" fill="#F6C453" stroke="#8A5A16" stroke-width="1.3" stroke-linejoin="round"/><path d="M15 18 27 5" fill="none" stroke="#8A5A16" stroke-width="1.1"/></svg></span>
-      Пригласить друга · +100 монет
+      Пригласи друга - бонус получите оба
     </button>
+    <p class="invite-sub">Ты получишь монеты сразу. Когда друг поймает 10-ю рыбу — вы оба получите крупный бонус.</p>
+    <div id="refBlock"></div>
     <div class="sublist" id="toplist"></div>
   </div>
 
@@ -805,12 +864,22 @@
       <div class="onboard-share-wrap" id="onboardShareWrap" style="display:none;">
         <button id="onboardShareBtn" class="onboard-share-btn">
           <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M4 16 27 5 20 27l-5-9-9-2z" fill="currentColor" opacity=".9"/></svg>
-          Пригласить друга
+          Поделиться игрой
         </button>
       </div>
       <div class="modal-actions">
         <button id="onboardSkipBtn" class="modal-btn-cancel">Пропустить</button>
         <button id="onboardNextBtn" class="modal-btn-primary">Далее</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-card">
+      <h2>Настройки</h2>
+      <div id="settingsBody"></div>
+      <div class="modal-actions" style="margin-top:16px;">
+        <button id="settingsCloseBtn" class="modal-btn-primary">Готово</button>
       </div>
     </div>
   </div>
@@ -864,6 +933,85 @@
     }
   }
 
+  // ---------- ЗВУК ----------
+  // Раньше в игре был только вибро-отклик — звуковых эффектов не было вообще.
+  // Короткие SFX синтезируются на лету через Web Audio API (осцилляторы + шум),
+  // без внешних аудиофайлов — это надёжнее в мини-аппе и не требует загрузки
+  // ассетов. Звук включается тем же жестом, что и первое действие игрока
+  // (см. ensureAudioCtx() в обработчике тапа), как того требуют браузеры.
+  let audioCtx = null;
+  function ensureAudioCtx(){
+    if(!audioCtx){
+      try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){ audioCtx = null; }
+    }
+    if(audioCtx && audioCtx.state === 'suspended'){ audioCtx.resume().catch(()=>{}); }
+    return audioCtx;
+  }
+  function playTone(freq, start, dur, type, peak, freqEnd){
+    const ctx = ensureAudioCtx(); if(!ctx) return;
+    const t0 = ctx.currentTime + start;
+    const osc = ctx.createOscillator(), gain = ctx.createGain();
+    osc.type = type || 'sine';
+    osc.frequency.setValueAtTime(freq, t0);
+    if(freqEnd) osc.frequency.exponentialRampToValueAtTime(freqEnd, t0 + dur);
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.linearRampToValueAtTime(peak != null ? peak : 0.15, t0 + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(t0); osc.stop(t0 + dur + 0.03);
+  }
+  function playNoise(start, dur, peak, filterFreq){
+    const ctx = ensureAudioCtx(); if(!ctx) return;
+    const t0 = ctx.currentTime + start;
+    const bufSize = Math.max(1, Math.floor(ctx.sampleRate * dur));
+    const buffer = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for(let i=0;i<bufSize;i++){ data[i] = (Math.random()*2-1) * (1 - i/bufSize); }
+    const noise = ctx.createBufferSource(); noise.buffer = buffer;
+    const filter = ctx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = filterFreq || 1200;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.linearRampToValueAtTime(peak != null ? peak : 0.12, t0 + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    noise.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+    noise.start(t0); noise.stop(t0 + dur + 0.03);
+  }
+  // sfx(type) — короткие звуковые отклики на ключевые события: заброс/всплеск,
+  // поклёвка, удачный улов, получение монет, левелап. Отключается тумблером
+  // "Звук" в настройках (рядом с вибрацией), по умолчанию включён.
+  function sfx(type){
+    if(state && state.soundOn === false) return;
+    if(!ensureAudioCtx()) return;
+    switch(type){
+      case 'splash':
+        playNoise(0, 0.26, 0.14, 1000);
+        playTone(170, 0, 0.16, 'sine', 0.05, 90);
+        break;
+      case 'bite':
+        playTone(540, 0, 0.08, 'triangle', 0.15, 640);
+        playTone(780, 0.07, 0.09, 'triangle', 0.13, 920);
+        break;
+      case 'catch':
+        playTone(660, 0, 0.1, 'triangle', 0.14);
+        playTone(880, 0.09, 0.1, 'triangle', 0.15);
+        playTone(1100, 0.18, 0.16, 'triangle', 0.13);
+        break;
+      case 'coin':
+        playTone(1046, 0, 0.07, 'square', 0.08);
+        playTone(1568, 0.06, 0.12, 'square', 0.08);
+        break;
+      case 'levelup':
+        playTone(523, 0, 0.11, 'triangle', 0.13);
+        playTone(659, 0.11, 0.11, 'triangle', 0.13);
+        playTone(784, 0.22, 0.11, 'triangle', 0.13);
+        playTone(1046, 0.33, 0.22, 'triangle', 0.15);
+        break;
+      case 'miss':
+        playTone(220, 0, 0.18, 'sawtooth', 0.08, 120);
+        break;
+    }
+  }
+
   // ====== ЗАПОЛНИ ЭТУ СТРОКУ ПОСЛЕ НАСТРОЙКИ FIREBASE (см. инструкцию в чате) ======
   const FIREBASE_URL = "https://guhgg-83fab-default-rtdb.europe-west1.firebasedatabase.app";
   // Пример: "https://tihaya-gavan-default-rtdb.europe-west1.firebasedatabase.app"
@@ -875,6 +1023,13 @@
   // Пример: "https://t.me/tihaya_gavan_bot/play"
   // ===============================================================================
   function inviteReady(){ return BOT_LINK && BOT_LINK.indexOf('ВСТАВЬ') === -1; }
+
+  // ====== ЗАПОЛНИ ПОСЛЕ ДЕПЛОЯ CLOUD FUNCTION registerReferral (см. functions/index.js) ======
+  // Формат: URL, который печатает `firebase deploy --only functions` для функции registerReferral.
+  const REFERRAL_FN_URL = "ВСТАВЬ-URL-CLOUD-FUNCTION";
+  // Пример: "https://europe-west1-tihaya-gavan.cloudfunctions.net/registerReferral"
+  // ============================================================================================
+  function referralFnReady(){ return REFERRAL_FN_URL && REFERRAL_FN_URL.indexOf('ВСТАВЬ') === -1; }
 
   // Собственная SVG-иконка монеты (используется вместо эмодзи 🪙, которое на части
   // устройств/шрифтов отображается плоским серым кружком вместо золотого)
@@ -1079,6 +1234,7 @@
     {id:'carbon', name:'Карбоновая удочка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 5v14a5 5 0 1 0 5-5" fill="none" stroke="#9AA7AD" stroke-width="2.6" stroke-linecap="round"/><circle cx="16" cy="5" r="2" fill="none" stroke="#9AA7AD" stroke-width="2"/></svg>', desc:'Окно поклёва 950 мс', window:950, price:900, unlockLevel:5},
     {id:'titan', name:'Титановая удочка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 8v-3M16 27v-3M8 16H5M27 16h-3M10.3 10.3l-2-2M23.7 23.7l-2-2M10.3 21.7l-2 2M23.7 8.3l-2 2" stroke="#C9D6DA" stroke-width="2.4" stroke-linecap="round"/><circle cx="16" cy="16" r="7" fill="#9AA7AD" stroke="#5c6a70" stroke-width="1.2"/><circle cx="16" cy="16" r="3" fill="#0A1F26" opacity=".4"/></svg>', desc:'Окно поклёва 1300 мс', window:1300, price:5200, unlockLevel:13},
     {id:'abyssal', name:'Абиссальная удочка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 10v18M9 6l7 8 7-8M9 6v6M23 6v6" fill="none" stroke="#6FE8E8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>', desc:'Окно поклёва 1700 мс', window:1700, price:9500, unlockLevel:19},
+    {id:'magma', name:'Магматическая удочка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 6c5 7 8 11 8 15a8 8 0 1 1-16 0c0-4 3-8 8-15z" fill="none" stroke="#FF7A2E" stroke-width="2.4" stroke-linejoin="round"/><circle cx="16" cy="21" r="3" fill="#FF7A2E"/></svg>', desc:'Окно поклёва 2200 мс', window:2200, price:15000, unlockLevel:22},
   ];
   const BAITS = [
     {id:'plain', name:'Обычная наживка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 22c2-6 4 4 8-2s2-10 8-8 4 8 2 12" fill="none" stroke="#E8938A" stroke-width="4" stroke-linecap="round"/></svg>', desc:'Стандартные шансы улова · без особенностей', weights:[40,30,18,9,3], price:0, unlockLevel:1},
@@ -1089,6 +1245,8 @@
     {id:'heavy', name:'Кровяная наживка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 6c5 7 8 11 8 15a8 8 0 1 1-16 0c0-4 3-8 8-15z" fill="#D9502E" stroke="#8a1f10" stroke-width="1"/><ellipse cx="13" cy="20" rx="2" ry="3" fill="#F2A897" opacity=".6"/></svg>', desc:'Рыба крупнее и тяжелее обычного · клюёт реже', weights:[25,28,24,16,7], price:1800, unlockLevel:11, weightMult:1.4, biteDelayMult:1.25},
     {id:'magic', name:'Магическая наживка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="15" r="9" fill="#B98CF2" opacity=".85" stroke="#7A4BC9" stroke-width="1"/><ellipse cx="12.5" cy="11.5" rx="3" ry="1.8" fill="#FFFFFF" opacity=".5" transform="rotate(-25 12.5 11.5)"/><rect x="9" y="25" width="14" height="3" rx="1.5" fill="#7A4BC9"/></svg>', desc:'Сильно больше шанс легендарной', weights:[20,20,25,20,15], price:3200, unlockLevel:15},
     {id:'royal', name:'Королевская наживка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 24 4 12l7 5 5-9 5 9 7-5-2 12z" fill="#F6C453" stroke="#8A5A16" stroke-width="1.2" stroke-linejoin="round"/><rect x="5" y="24" width="22" height="3" rx="1.2" fill="#D9962C"/></svg>', desc:'Лучший баланс: редкая рыба крупнее обычного', weights:[18,22,26,22,12], price:5200, unlockLevel:19, weightMult:1.15},
+    {id:'sulfur', name:'Серная наживка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="9" fill="#D9C23E" opacity=".9" stroke="#A68B2E" stroke-width="1"/><circle cx="16" cy="16" r="4" fill="#E8451F" opacity=".7"/></svg>', desc:'Заметно больше редкой и ценной рыбы в кипящих источниках', weights:[16,20,26,24,14], price:6800, unlockLevel:21},
+    {id:'phoenix', name:'Феникс-наживка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 4c4 6 8 9 8 15a8 8 0 1 1-16 0c0-6 4-9 8-15z" fill="#F2C14E" stroke="#B33E1A" stroke-width="1.2"/><path d="M16 4c2 5 1 8-1 10" stroke="#E8451F" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>', desc:'Максимальный шанс легендарной рыбы · рыба заметно крупнее', weights:[12,18,24,26,20], price:9200, unlockLevel:24, weightMult:1.2},
   ];
   // Доп. свойства наживки со значениями по умолчанию (если не указаны в самой наживке)
   function baitStat(bait, key, def){ return (bait && typeof bait[key]==='number') ? bait[key] : def; }
@@ -1105,6 +1263,8 @@
     {id:'cyber', name:'Кибер-неон', desc:'Светящиеся неоновые полосы', colors:['#33f0ff','#0a2a33'], glow:'#33f0ff', price:3000, unlockLevel:13},
     {id:'volcanic', name:'Вулканическая', desc:'Пылающие трещины лавы', colors:['#ff7a30','#2a0a05'], glow:'#ff5522', price:3400, unlockLevel:16},
     {id:'galaxy', name:'Галактика', desc:'Звёздная пыль и туманности', colors:['#8a4bf2','#0a0620'], glow:'#a86bff', price:4200, unlockLevel:18},
+    {id:'magmaskin', name:'Магма', desc:'Раскалённая корка и текущая лава', colors:['#ff5522','#2a0a05'], glow:'#ff5522', price:5400, unlockLevel:21},
+    {id:'phoenixskin', name:'Пламя Феникса', desc:'Огонь, что никогда не гаснет', colors:['#ffd27a','#e8451f'], glow:'#ffb347', price:7000, unlockLevel:24},
     {id:'legend', name:'Легенда Тихой Гавани', desc:'Награда за сюжет · переливается всеми цветами', colors:['#F2C14E','#B14EF2'], glow:'#F2C14E', legend:true, price:null, storyOnly:true},
   ];
   const BOOST_ITEMS = [
@@ -1128,27 +1288,50 @@
   const LUCK_WEIGHTS = [14,14,28,26,18];
 
   // ---------- МАСТЕРСКАЯ: постоянные улучшения за монеты ----------
-  // Раньше в игре монеты некуда было девать после того, как всё снаряжение
-  // куплено — бусты быстро дорожают, а больше целей для трат не было.
-  // Мастерская даёт долгосрочный "sink": 3 постоянных прокачки с 10
-  // уровнями каждая, цена растёт экспоненциально, эффект не пропадает.
+  // Раньше в игре монеты было некуда девать после того, как всё снаряжение
+  // куплено и прокачки в мастерской упирались в потолок 10 уровней —
+  // дальше весь доход от рыбалки становился чистым избытком без всякой цели.
+  // Теперь у прокачки НЕТ верхнего уровня: покупать можно бесконечно, поэтому
+  // деньгам всегда есть куда деться, сколько бы игрок ни наиграл. Чтобы это
+  // не сломало баланс, сделаны две независимые кривые:
+  //  - ЦЕНА растёт по степенному закону (n+1)^growthPow — медленнее, чем
+  //    экспонента, поэтому даже на очень высоких уровнях остаётся в разумных
+  //    пределах (сотни тысяч - единицы миллионов), а не улетает в абсурд;
+  //  - ЭФФЕКТ растёт с насыщением к capEffect (чем выше уровень, тем меньше
+  //    прирост), поэтому сама механика ловли не переламывается бесконечной
+  //    прокачкой - после условного 15-20 уровня выгода уже почти незаметна,
+  //    и дальнейшие покупки — осознанный "избыточный" sink для тех, у кого
+  //    просто накопилось много монет.
   const WORKSHOP_ITEMS = [
-    { id:'luck', name:'Чутьё рыбака', icon:'🍀', desc:'Стабильно смещает шансы клёва в пользу редкой и ценной рыбы', maxLevel:10, baseCost:900, growth:1.42, step:1.2 },
-    { id:'income', name:'Деловая хватка', icon:'💰', desc:'Каждый уровень поднимает цену продажи всего улова на рынке', maxLevel:10, baseCost:1100, growth:1.42, step:0.02 },
-    { id:'comfort', name:'Твёрдая рука', icon:'🎯', desc:'Расширяет окно подсечки при поклёве — легче не прозевать рыбу', maxLevel:10, baseCost:700, growth:1.35, step:0.035 },
+    { id:'luck', name:'Чутьё рыбака', icon:'🍀', desc:'Стабильно смещает шансы клёва в пользу редкой и ценной рыбы', baseCost:900, growthPow:1.47, capEffect:18, satK:0.15 },
+    { id:'income', name:'Деловая хватка', icon:'💰', desc:'Поднимает цену продажи всего улова на рынке', baseCost:1100, growthPow:1.52, capEffect:0.5, satK:0.12 },
+    { id:'comfort', name:'Твёрдая рука', icon:'🎯', desc:'Расширяет окно подсечки при поклёве - легче не прозевать рыбу', baseCost:700, growthPow:1.4, capEffect:0.6, satK:0.13 },
   ];
   function ensureUpgrades(){
     if(!state.upgrades) state.upgrades = { luck:0, income:0, comfort:0 };
     WORKSHOP_ITEMS.forEach(w=>{ if(typeof state.upgrades[w.id] !== 'number') state.upgrades[w.id] = 0; });
   }
   function upgradeLevel(id){ return (state.upgrades && state.upgrades[id]) || 0; }
+  function findWorkshopItem(id){ return WORKSHOP_ITEMS.find(w=>w.id===id); }
+  // Цена покупки уровня n->n+1: растёт всегда, без верхнего предела.
+  function workshopCost(item, level){
+    return Math.round(item.baseCost * Math.pow(1+level, item.growthPow) / 10) * 10;
+  }
+  // Суммарный эффект на текущем уровне: асимптотически стремится к capEffect,
+  // никогда не достигая его - поэтому покупка следующего уровня всегда имеет
+  // смысл предложить, но отдача от неё на высоких уровнях исчезающе мала.
+  function workshopEffect(item, level){
+    if(!level) return 0;
+    return item.capEffect * (1 - 1/(1 + level*item.satK));
+  }
+  function workshopEffectValue(id){ return workshopEffect(findWorkshopItem(id), upgradeLevel(id)); }
   // Смещает часть веса самой частой рыбы (tier 0) в пользу редких уровней (2-4).
   // Ограничено 60% исходного веса tier0, поэтому базовый улов никогда не обнуляется.
   function applyLuckUpgrade(weights){
-    const lvl = upgradeLevel('luck');
-    if(!lvl) return weights;
+    const shiftCap = workshopEffectValue('luck');
+    if(!shiftCap) return weights;
     const w = weights.slice();
-    const shift = Math.min(w[0]*0.6, lvl*WORKSHOP_ITEMS[0].step);
+    const shift = Math.min(w[0]*0.6, shiftCap);
     w[0] -= shift;
     w[2] += shift*0.45; w[3] += shift*0.35; w[4] += shift*0.2;
     return w;
@@ -1274,8 +1457,9 @@
       questsDate:null, dailyQuests:[],
       storyChapter:0, storyProgress:0,
       boosts:{xp2:0, coins2:0, luck:0},
-      onboardingDone:false, inviteBonusClaimed:false,
-      vibrationOn:true, cachedName:null
+      upgrades:{luck:0, income:0, comfort:0},
+      onboardingDone:false, inviteBonusClaimed:false, referralChecked:false,
+      vibrationOn:true, soundOn:true, cachedName:null
     };
   }
   let state = freshState();
@@ -1375,6 +1559,7 @@
       }
     });
     if(!state.collectionBest) state.collectionBest = {};
+    ensureUpgrades();
   }
   function getRod(id){ return RODS.find(r=>r.id===id); }
   function getBait(id){ return BAITS.find(b=>b.id===id); }
@@ -1453,6 +1638,7 @@
   }
   function showLevelUpToast(level, coins){
     showToast(PARTY_SVG + ' Уровень ' + level + '! +' + formatNum(coins) + ' ' + COIN_SVG);
+    sfx('levelup');
   }
 
   function getUserId(){
@@ -1482,12 +1668,23 @@
     }).catch(()=>{});
   }
 
-  // ---------- ПРИГЛАШЕНИЕ ДРУГА (без реферальной системы) ----------
-  // Никакого отслеживания того, кто по чьей ссылке пришёл: просто делимся
-  // ссылкой на игру и сразу выдаём бонус монет самому пригласившему, один раз.
-  const INVITE_BONUS_COINS = 100;
+  // ---------- ПРИГЛАШЕНИЕ ДРУГА (двусторонняя реферальная система) ----------
+  // Ссылка несёт startapp=ref<мой_telegram_id>. Когда друг откроет игру по
+  // этой ссылке, его tg.initData (с этим же start_param внутри) уйдёт на
+  // Cloud Function registerReferral, которая ПРОВЕРИТ подпись Telegram и
+  // только после этого свяжет два аккаунта. Никаких монет клиент себе сам
+  // не начисляет — реальная награда обеим сторонам приходит только тогда,
+  // когда сервер увидит, что приглашённый друг реально дошёл до 10-й рыбы
+  // (см. functions/index.js, onSaveWritten). Здесь на клиенте — только
+  // формирование ссылки и разовая попытка регистрации при своём собственном
+  // запуске (см. tryRegisterReferral, вызывается при старте игры).
   function inviteLink(){
-    return inviteReady() ? BOT_LINK : 'https://t.me';
+    if(!inviteReady()) return 'https://t.me';
+    const tgUser = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
+    if(tgUser && tgUser.id){
+      return BOT_LINK + (BOT_LINK.indexOf('?')===-1 ? '?' : '&') + 'startapp=ref' + tgUser.id;
+    }
+    return BOT_LINK; // вне Telegram (обычный браузер) — ссылка без реферала, это ок
   }
   function shareInvite(){
     if(!inviteReady()){
@@ -1497,21 +1694,64 @@
     }
     const link = inviteLink();
     const text = 'Я уже поймал ' + formatNum(state.totalCatches) + ' рыб и дошёл до ' + state.level + ' уровня в Тихой Гавани 🎣 '
-      + 'Присоединяйся!';
+      + 'Присоединяйся - когда поймаешь 10-ю рыбу, бонус получим оба!';
     const shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent(text);
     if(tg && tg.openTelegramLink) tg.openTelegramLink(shareUrl);
     else window.open(shareUrl, '_blank');
     haptic();
-    grantInviteBonus();
   }
-  // Бонус выдаётся один раз за первое нажатие "Пригласить друга" — без проверки,
-  // действительно ли кто-то перешёл по ссылке и начал играть.
-  function grantInviteBonus(){
-    if(state.inviteBonusClaimed) return;
-    state.inviteBonusClaimed = true;
-    state.coins += INVITE_BONUS_COINS;
-    saveState(); refreshTopUI();
-    showToast(GIFT_SVG + ' Бонус за приглашение! +' + INVITE_BONUS_COINS + ' ' + COIN_SVG);
+  // Вызывается один раз при запуске игры. Если игрок пришёл по чьей-то
+  // ссылке (в его initData есть start_param вида ref<id>), сервер это
+  // проверит и сразу выдаст небольшой приветственный бонус. Основная,
+  // крупная награда обеим сторонам придёт позже — отдельным толчком с
+  // сервера, когда этот же игрок дойдёт до 10-й рыбы (см. refreshTopUI
+  // после следующего saveState — сервер сам допишет монеты в /saves/$uid).
+  function tryRegisterReferral(){
+    if(!referralFnReady()) return;
+    if(!tg || !tg.initData) return; // механика работает только внутри Telegram
+    if(state.referralChecked) return; // не долбим сервер на каждый повторный запуск
+    fetch(REFERRAL_FN_URL, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ initData: tg.initData })
+    }).then(r=>r.json()).then(data=>{
+      state.referralChecked = true;
+      if(data && data.referral && data.welcomeBonus){
+        state.coins += data.welcomeBonus;
+        showToast(GIFT_SVG + ' Ты пришёл по приглашению друга! +' + data.welcomeBonus + ' ' + COIN_SVG);
+        sfx('coin'); refreshTopUI();
+      }
+      saveState();
+    }).catch(()=>{}); // сеть подвела — не страшно, попробуем при следующем запуске
+  }
+  // Список приглашённых друзей и статус их активации — читается напрямую
+  // из Firebase (тот же принцип, что и общий лидерборд): /referralIndex
+  // пишет ТОЛЬКО Cloud Function через Admin SDK (в правилах ".write": false),
+  // клиент может это только читать.
+  function renderReferrals(){
+    const box = document.getElementById('refBlock');
+    if(!box) return;
+    box.innerHTML = '';
+    if(!fbReady() || !tg || !tg.initDataUnsafe || !tg.initDataUnsafe.user) return;
+    const myUid = getUserId();
+    fetch(FIREBASE_URL + '/referralIndex/' + myUid + '.json').then(r=>r.json()).then(data=>{
+      if(!data) return;
+      const rows = Object.keys(data).map(k=>data[k]);
+      if(!rows.length) return;
+      rows.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+      const completedCount = rows.filter(r=>r.status==='completed').length;
+      const section = document.createElement('div'); section.className = 'refsection';
+      const head = document.createElement('h3');
+      head.textContent = 'Мои приглашения (' + completedCount + ' из ' + rows.length + ' активны)';
+      section.appendChild(head);
+      rows.forEach(r=>{
+        const row = document.createElement('div'); row.className = 'refrow';
+        const badgeText = r.status === 'completed' ? 'Активен' : 'Ждём улова';
+        row.innerHTML = '<div class="refname">' + (r.name || 'Игрок') + '</div>'
+          + '<div class="refstatus ' + (r.status==='completed'?'completed':'pending') + '">' + badgeText + '</div>';
+        section.appendChild(row);
+      });
+      box.appendChild(section);
+    }).catch(()=>{});
   }
 
   // ---------- UI REFS ----------
@@ -1917,6 +2157,18 @@
     }
   }
 
+  // Строка активных бустов ("⚡ 4м") раньше обновлялась только внутри
+  // refreshTopUI() — то есть только по факту действий игрока (улов, покупка
+  // и т.п.). Если просто держать приложение открытым, циферка "зависала" и
+  // не отражала реальное оставшееся время. Вынесли обновление в отдельную
+  // лёгкую функцию и тикаем её по таймеру каждые 20 секунд, независимо от
+  // остальных действий.
+  function refreshBoostLine(){
+    const activeBoosts = BOOST_ITEMS.filter(b=>isBoostActive(b.id)).map(b=>'<span class="ico-inline">'+b.ico+'</span>'+boostRemaining(b.id)+'м');
+    boostline.innerHTML = activeBoosts.join('&nbsp; ');
+  }
+  setInterval(refreshBoostLine, 20000);
+
   function refreshTopUI(){
     coinsVal.textContent = formatNum(state.coins);
     document.querySelectorAll('.coinsValMirror').forEach(el=>{ el.textContent = formatNum(state.coins); });
@@ -1925,8 +2177,7 @@
     xpText.textContent = formatNum(state.xp) + '/' + formatNum(xpNeeded(state.level));
     xpfill.style.width = Math.min(100, (state.xp/xpNeeded(state.level))*100) + '%';
     gearline.textContent = getRod(state.activeRod).name + ' · ' + getBait(state.activeBait).name;
-    const activeBoosts = BOOST_ITEMS.filter(b=>isBoostActive(b.id)).map(b=>'<span class="ico-inline">'+b.ico+'</span>'+boostRemaining(b.id)+'м');
-    boostline.innerHTML = activeBoosts.join('&nbsp; ');
+    refreshBoostLine();
     applySkin(state.activeSkin);
     locTitle.textContent = currentLoc().name;
     stageEl.style.background = `linear-gradient(to bottom, ${currentLoc().top} 0%, ${currentLoc().bottom} 32%, ${currentLoc().bottom} 33%, var(--water-deep) 68%)`;
@@ -2077,6 +2328,7 @@
       const rect = splash.getBoundingClientRect();
       burstParticles(rect.left+rect.width/2, rect.top+rect.height/2, loc.splashFx, 6);
       haptic('light');
+      sfx('splash');
     }, 460);
     setTimeout(()=>{
       bobber.classList.remove('landing'); bobber.classList.add('idle-bob');
@@ -2096,7 +2348,7 @@
   function triggerBite(){
     if(gameState!=='waiting') return;
     clearInterval(rippleInterval);
-    gameState='biting'; currentFish=pickFish(); haptic('light');
+    gameState='biting'; currentFish=pickFish(); haptic('light'); sfx('bite');
     biteStartedAt = Date.now();
     const variant = BITE_VARIANTS[Math.floor(Math.random()*BITE_VARIANTS.length)];
     bobber.classList.remove('idle-bob'); bobber.classList.add(variant);
@@ -2112,7 +2364,7 @@
     biteBang.style.left=rect.left+rect.width/2+'px'; biteBang.style.top=rect.top+'px';
     biteBang.classList.remove('show'); void biteBang.offsetWidth; biteBang.classList.add('show');
     status.textContent='КЛЮЁТ! Тяни!'; btn.textContent='Тяни!'; btn.classList.add('pull'); btn.disabled=false;
-    const comfortMult = 1 + upgradeLevel('comfort') * WORKSHOP_ITEMS.find(w=>w.id==='comfort').step;
+    const comfortMult = 1 + workshopEffectValue('comfort');
     const winMs = Math.round(getRod(state.activeRod).window * RARITY_SPEED[currentFish.tier] * baitStat(getBait(state.activeBait),'biteWindowMult',1) * comfortMult);
     timerbar.style.display='block'; timerfill.style.transition='none'; timerfill.style.transform='scaleX(1)';
     requestAnimationFrame(()=>{ timerfill.style.transition=`transform ${winMs}ms linear`; timerfill.style.transform='scaleX(0)'; });
@@ -2136,7 +2388,7 @@
   // было бы выгоднее, чем ждать честной поклёвки.
   function earlyStrike(){
     clearTimeout(windowTimeout);
-    gameState='idle'; haptic('error');
+    gameState='idle'; haptic('error'); sfx('miss');
     bobber.classList.remove('bite-jitter','bite-jitter-2','bite-jitter-3');
     timerbar.style.display='none';
     status.textContent='Слишком рано! Дождись настоящей поклёвки';
@@ -2186,7 +2438,7 @@
   function failReel(){
     if(gameState!=='reeling') return;
     clearInterval(reelDecayInterval);
-    gameState='idle'; haptic('error');
+    gameState='idle'; haptic('error'); sfx('miss');
     bobber.classList.remove('reel-struggle'); rodsvg.classList.remove('reeling'); lineEl.classList.remove('tense');
     status.textContent='Рыба сорвалась с крючка... Попробуй снова';
     nextCastAllowedAt = Date.now() + CAST_COOLDOWN_MS;
@@ -2195,8 +2447,7 @@
 
   function missedBite(){
     if(gameState!=='biting') return;
-    gameState='idle'; haptic('error'); bobber.classList.remove('bite-jitter','bite-jitter-2','bite-jitter-3');
-    status.textContent='Рыба сорвалась... Попробуй снова';
+    gameState='idle'; haptic('error'); sfx('miss'); bobber.classList.remove('bite-jitter','bite-jitter-2','bite-jitter-3');
     nextCastAllowedAt = Date.now() + CAST_COOLDOWN_MS;
     setTimeout(resetVisual, 900);
   }
@@ -2230,7 +2481,7 @@
   }
 
   function landFish(){
-    gameState='idle'; haptic('success');
+    gameState='idle'; haptic('success'); sfx('catch');
     nextCastAllowedAt = Date.now() + CAST_COOLDOWN_MS;
     bobber.classList.remove('reel-struggle'); rodsvg.classList.remove('reeling'); lineEl.classList.remove('tense');
     const fish = currentFish;
@@ -2277,6 +2528,7 @@
   let lastTapTime = 0;
   btn.addEventListener('pointerdown', (e)=>{
     e.preventDefault();
+    ensureAudioCtx();
     const now = Date.now(); if(now - lastTapTime < 90) return; lastTapTime = now;
     // Анти-автокликер: считаем тапы за последнюю секунду. Живой человек не
     // тапает быстрее ~9 раз в секунду постоянно — всё, что сверху, отбрасываем
@@ -2379,6 +2631,7 @@
   document.getElementById('inviteBtn').addEventListener('click', shareInvite);
 
   // ---------- SHOP (gear) ----------
+  let activeShopTab = 'boosts';
   function renderShop(){
     const list = document.getElementById('shoplist');
     // Баг: при покупке предмета список магазина полностью перерисовывается
@@ -2388,34 +2641,70 @@
     // в середине/конце списка больше не дёргает экран вверх.
     const prevScroll = list.scrollTop;
     list.innerHTML = '';
-    const h0 = document.createElement('div'); h0.className='sectiontitle'; h0.textContent='Временные бусты'; list.appendChild(h0);
-    BOOST_ITEMS.forEach(b=>list.appendChild(boostCard(b)));
-    const h1 = document.createElement('div'); h1.className='sectiontitle'; h1.textContent='Удочки'; list.appendChild(h1);
-    RODS.forEach(r=>list.appendChild(gearCard(r,'rod')));
-    const h2 = document.createElement('div'); h2.className='sectiontitle'; h2.textContent='Наживка'; list.appendChild(h2);
-    BAITS.forEach(b=>list.appendChild(gearCard(b,'bait')));
-    const h3 = document.createElement('div'); h3.className='sectiontitle'; h3.textContent='Внешний вид удочки'; list.appendChild(h3);
-    ROD_SKINS.filter(s=>!s.storyOnly || state.ownedSkins.includes(s.id)).forEach(s=>list.appendChild(gearCard(s,'skin')));
-
-    const hW = document.createElement('div'); hW.className='sectiontitle'; hW.textContent='Мастерская'; list.appendChild(hW);
-    const wNote = document.createElement('div'); wNote.className='lbnote'; wNote.style.margin='-2px 0 4px';
-    wNote.textContent = 'Постоянные улучшения за монеты — растут вместе с тобой и не пропадают со временем.';
-    list.appendChild(wNote);
-    WORKSHOP_ITEMS.forEach(w=>list.appendChild(workshopCard(w)));
-
-    const hS = document.createElement('div'); hS.className='sectiontitle'; hS.textContent='Настройки'; list.appendChild(hS);
-    list.appendChild(vibrationSettingRow());
-
-    const h4 = document.createElement('div'); h4.className='sectiontitle'; h4.textContent='Опасная зона'; list.appendChild(h4);
+    if(activeShopTab === 'boosts'){
+      BOOST_ITEMS.forEach(b=>list.appendChild(boostCard(b)));
+    } else if(activeShopTab === 'rods'){
+      RODS.forEach(r=>list.appendChild(gearCard(r,'rod')));
+    } else if(activeShopTab === 'baits'){
+      BAITS.forEach(b=>list.appendChild(gearCard(b,'bait')));
+    } else if(activeShopTab === 'skins'){
+      ROD_SKINS.filter(s=>!s.storyOnly || state.ownedSkins.includes(s.id)).forEach(s=>list.appendChild(gearCard(s,'skin')));
+    } else if(activeShopTab === 'workshop'){
+      const wNote = document.createElement('div'); wNote.className='lbnote'; wNote.style.margin='0 0 4px';
+      wNote.textContent = 'Постоянные улучшения за монеты - растут вместе с тобой и не пропадают со временем.';
+      list.appendChild(wNote);
+      WORKSHOP_ITEMS.forEach(w=>list.appendChild(workshopCard(w)));
+    }
+    list.scrollTop = prevScroll;
+  }
+  document.querySelectorAll('.shoptab').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.shoptab').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      activeShopTab = btn.dataset.shoptab;
+      renderShop();
+    });
+  });
+  // ---------- Настройки (вибрация, сброс прогресса) ----------
+  // Раньше эти пункты висели в самом низу общей ленты магазина и маячили
+  // перед глазами при каждой покупке. Теперь они спрятаны за иконкой
+  // шестерёнки в шапке магазина и живут в отдельном модальном окне.
+  const settingsModal = document.getElementById('settingsModal');
+  function renderSettingsModal(){
+    const body = document.getElementById('settingsBody');
+    body.innerHTML = '';
+    body.appendChild(soundSettingRow());
+    body.appendChild(vibrationSettingRow());
     const resetBtn = document.createElement('button');
     resetBtn.className = 'btn-reset-progress';
     resetBtn.innerHTML = TRASH_SVG + ' Сбросить весь прогресс';
-    resetBtn.addEventListener('click', openResetModal);
-    list.appendChild(resetBtn);
-    list.scrollTop = prevScroll;
+    resetBtn.addEventListener('click', ()=>{ settingsModal.classList.remove('show'); openResetModal(); });
+    body.appendChild(resetBtn);
   }
+  document.getElementById('shopSettingsBtn').addEventListener('click', ()=>{
+    renderSettingsModal();
+    settingsModal.classList.add('show');
+    haptic('light');
+  });
+  document.getElementById('settingsCloseBtn').addEventListener('click', ()=>{
+    settingsModal.classList.remove('show');
+  });
   // Переключатель вибрации: реагирует на тактильную отдачу игры (haptic()).
   // По умолчанию включена; состояние сохраняется в state.vibrationOn.
+  // Переключатель звука: короткие SFX на заброс/всплеск, поклёвку, улов,
+  // монеты и левелап. По умолчанию включён; состояние хранится в state.soundOn.
+  function soundSettingRow(){
+    const row = document.createElement('div'); row.className = 'settingrow';
+    const checked = state.soundOn !== false;
+    row.innerHTML = `<div class="settxt"><span class="setname">Звук</span><span class="setdesc">Короткие эффекты: заброс, поклёвка, улов, монеты, левелап</span></div>
+      <label class="switch"><input type="checkbox" id="soundToggle" ${checked?'checked':''}><span class="slider"></span></label>`;
+    row.querySelector('#soundToggle').addEventListener('change', (e)=>{
+      state.soundOn = e.target.checked;
+      saveState();
+      if(state.soundOn) sfx('coin');
+    });
+    return row;
+  }
   function vibrationSettingRow(){
     const row = document.createElement('div'); row.className = 'settingrow';
     const checked = state.vibrationOn !== false;
@@ -2448,35 +2737,32 @@
     });
     return el;
   }
-  function workshopCost(item, level){
-    return Math.round(item.baseCost * Math.pow(item.growth, level) / 10) * 10;
-  }
   function workshopEffectLabel(item, level){
     // Человекочитаемое описание суммарного эффекта уже купленных уровней.
-    if(item.id==='income') return `+${Math.round(level*item.step*100)}% к цене продажи улова`;
-    if(item.id==='comfort') return `+${Math.round(level*item.step*100)}% к окну подсечки`;
-    if(item.id==='luck') return `+${(level*item.step).toFixed(1)} к смещению шансов в пользу редкой рыбы`;
+    const eff = workshopEffect(item, level);
+    if(item.id==='income') return `+${(eff*100).toFixed(1)}% к цене продажи`;
+    if(item.id==='comfort') return `+${(eff*100).toFixed(1)}% к окну подсечки`;
+    if(item.id==='luck') return `+${eff.toFixed(1)} к смещению шансов`;
     return '';
   }
   function workshopCard(item){
     const lvl = (state.upgrades && state.upgrades[item.id]) || 0;
-    const maxed = lvl >= item.maxLevel;
-    const cost = maxed ? null : workshopCost(item, lvl);
-    const affordable = !maxed && state.coins >= cost;
+    const cost = workshopCost(item, lvl);
+    const affordable = state.coins >= cost;
+    const eff = workshopEffect(item, lvl);
+    const pctOfCap = Math.min(100, Math.round((eff/item.capEffect)*100));
     const el = document.createElement('div'); el.className='card2';
-    const label = maxed ? 'Макс. уровень' : (cost + ' ' + COIN_SVG);
-    const effectText = lvl>0 ? workshopEffectLabel(item, lvl) : 'Пока не куплено';
+    const effectText = lvl>0 ? (workshopEffectLabel(item, lvl) + ` · ${pctOfCap}% от предела`) : 'Пока не куплено';
     el.innerHTML = `<div class="icobox">${item.icon}</div>
-      <div class="info"><div class="name">${item.name} · ур.${lvl}/${item.maxLevel}</div><div class="desc">${item.desc} · ${effectText}</div></div>
-      <div class="action"><button class="${maxed?'btn-owned':'btn-buy'}" ${(maxed||!affordable)?'disabled':''}>${label}</button></div>`;
+      <div class="info"><div class="name">${item.name} · ур.${lvl}</div><div class="desc">${item.desc} · ${effectText}</div></div>
+      <div class="action"><button class="btn-buy" ${!affordable?'disabled':''}>${cost} ${COIN_SVG}</button></div>`;
     el.querySelector('button').addEventListener('click', ()=>{
-      if(maxed) return;
       const curLvl = (state.upgrades && state.upgrades[item.id]) || 0;
       const curCost = workshopCost(item, curLvl);
       if(state.coins < curCost) return;
       state.coins -= curCost;
       state.upgrades[item.id] = curLvl + 1;
-      haptic('success'); saveState(); refreshTopUI(); renderShop();
+      haptic('success'); sfx('coin'); saveState(); refreshTopUI(); renderShop();
     });
     return el;
   }
@@ -2510,7 +2796,7 @@
         if(kind==='rod') state.ownedRods.push(item.id); else if(kind==='bait') state.ownedBaits.push(item.id); else state.ownedSkins.push(item.id);
       }
       if(kind==='rod') state.activeRod = item.id; else if(kind==='bait') state.activeBait = item.id; else state.activeSkin = item.id;
-      haptic('success'); saveState(); refreshTopUI(); renderShop();
+      haptic('success'); sfx('coin'); saveState(); refreshTopUI(); renderShop();
     });
     return el;
   }
@@ -2520,14 +2806,16 @@
   function stackValue(f){
     const weights = state.inventory[f.id] || [];
     const tempBoost = isBoostActive('coins2') ? 2 : 1;
-    const permBoost = 1 + upgradeLevel('income') * WORKSHOP_ITEMS.find(w=>w.id==='income').step;
+    const permBoost = 1 + workshopEffectValue('income');
     const boost = tempBoost * permBoost;
     const total = weights.reduce((sum,w)=>sum + fishPrice(f, w)*boost, 0);
     const avgWeight = weights.length ? weights.reduce((s,w)=>s+w,0)/weights.length : 0;
     return { count: weights.length, total, avgWeight };
   }
   function renderMarket(){
-    const list = document.getElementById('marketlist'); list.innerHTML = '';
+    const list = document.getElementById('marketlist');
+    const prevScroll = list.scrollTop;
+    list.innerHTML = '';
     const loc = currentLoc();
     let any = false;
     loc.fish.forEach((f)=>{
@@ -2544,11 +2832,12 @@
       el.querySelector('[data-act="sellstack"]').addEventListener('click', ()=>{
         const { total:sum } = stackValue(f);
         state.inventory[f.id] = []; state.coins += sum; bumpQuest('sell_coins', sum); bumpStoryQuest('sell_coins', sum);
-        haptic('success'); saveState(); refreshTopUI(); renderMarket();
+        haptic('success'); sfx('coin'); saveState(); refreshTopUI(); renderMarket();
       });
       list.appendChild(el);
     });
     if(!any){ const empty=document.createElement('div'); empty.className='lbnote'; empty.textContent='Пока нечего продавать - иди на рыбалку в разделе «Рыбалка».'; list.appendChild(empty); }
+    list.scrollTop = prevScroll;
   }
   document.getElementById('sellall').addEventListener('click', ()=>{
     const loc = currentLoc(); let total = 0;
@@ -2556,26 +2845,45 @@
       const weights = state.inventory[f.id]||[];
       if(weights.length>0){ total += stackValue(f).total; state.inventory[f.id]=[]; }
     });
-    if(total>0){ state.coins += total; bumpQuest('sell_coins', total); bumpStoryQuest('sell_coins', total); haptic('success'); saveState(); refreshTopUI(); renderMarket(); }
+    if(total>0){ state.coins += total; bumpQuest('sell_coins', total); bumpStoryQuest('sell_coins', total); haptic('success'); sfx('coin'); saveState(); refreshTopUI(); renderMarket(); }
   });
 
   // ---------- COLLECTION ----------
+  // Раньше это была одна лента: 6 локаций x 9 рыб подряд, приходилось листать
+  // до самого дна ради последней локации. Теперь, как и в магазине, локации
+  // разбиты на вкладки — список показывает только текущую локацию.
+  let activeCollTab = null;
+  function renderCollTabs(){
+    const tabs = document.getElementById('colltabs'); tabs.innerHTML = '';
+    if(!activeCollTab || !LOCATIONS.find(l=>l.id===activeCollTab)) activeCollTab = state.currentLocation || LOCATIONS[0].id;
+    LOCATIONS.forEach(loc=>{
+      const unlocked = isLocUnlocked(loc);
+      const btn = document.createElement('button');
+      btn.className = 'shoptab' + (loc.id===activeCollTab?' active':'');
+      btn.textContent = unlocked ? loc.name : ('🔒 ' + loc.name);
+      btn.addEventListener('click', ()=>{ activeCollTab = loc.id; renderCollection(); });
+      tabs.appendChild(btn);
+    });
+  }
   function renderCollection(){
+    renderCollTabs();
     const list = document.getElementById('colllist'); list.innerHTML = '';
     let discovered=0, totalSpecies=0;
     LOCATIONS.forEach(loc=>{
-      const h = document.createElement('div'); h.className='sectiontitle'; h.textContent = loc.name; list.appendChild(h);
       loc.fish.forEach(f=>{
         totalSpecies++;
-        const count = state.collectionTotal[f.id] || 0;
-        if(count>0) discovered++;
-        const best = state.collectionBest[f.id] || 0;
-        const el = document.createElement('div'); el.className='card2' + (count===0?' locked':'');
-        el.innerHTML = `<div class="icobox">${count>0?fishIconSVG(f):'❔'}</div>
-          <div class="info"><div class="name">${count>0?f.name:'???'}</div>
-          <div class="desc">${count>0 ? ('Поймано: '+count+' · рекорд '+best.toFixed(2)+' кг · '+RARITY_LABEL[f.tier]) : 'Ещё не найдено'}</div></div>`;
-        list.appendChild(el);
+        if((state.collectionTotal[f.id] || 0) > 0) discovered++;
       });
+    });
+    const loc = LOCATIONS.find(l=>l.id===activeCollTab) || LOCATIONS[0];
+    loc.fish.forEach(f=>{
+      const count = state.collectionTotal[f.id] || 0;
+      const best = state.collectionBest[f.id] || 0;
+      const el = document.createElement('div'); el.className='card2' + (count===0?' locked':'');
+      el.innerHTML = `<div class="icobox">${count>0?fishIconSVG(f):'❔'}</div>
+        <div class="info"><div class="name">${count>0?f.name:'???'}</div>
+        <div class="desc">${count>0 ? ('Поймано: '+count+' · рекорд '+best.toFixed(2)+' кг · '+RARITY_LABEL[f.tier]) : 'Ещё не найдено'}</div></div>`;
+      list.appendChild(el);
     });
     document.getElementById('collSummary').textContent = `Открыто ${discovered} из ${totalSpecies} видов`;
   }
@@ -2701,13 +3009,14 @@
     else if(scr==='market'){ renderMarket(); document.getElementById('screen-market').classList.add('show'); }
     else if(scr==='quests'){ renderQuests(); document.getElementById('screen-quests').classList.add('show'); }
     else if(scr==='collection'){ renderCollection(); document.getElementById('screen-collection').classList.add('show'); }
-    else if(scr==='top'){ renderTop(); document.getElementById('screen-top').classList.add('show'); }
+    else if(scr==='top'){ renderTop(); renderReferrals(); document.getElementById('screen-top').classList.add('show'); }
   }));
 
   // ---------- INIT ----------
   buildSkinDefs();
   loadState(function(){
     fixInventory(); ensureQuests(); ensureStory(); refreshTopUI(); syncLeaderboard();
+    tryRegisterReferral();
     if(!state.onboardingDone) openOnboarding();
   });
 })();
