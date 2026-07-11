@@ -15,7 +15,7 @@
     --shadow-soft:0 10px 28px rgba(0,0,0,0.35); --shadow-lift:0 16px 40px rgba(0,0,0,0.45);
     --radius-lg:20px; --radius-md:16px; --radius-sm:12px;
   }
-  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action:manipulation;}
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action:manipulation; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none;}
   /* --tg-vh обновляется из JS реальной высотой вьюпорта Telegram
      (viewportStableHeight / window.innerHeight), потому что 100dvh неровно
      ведёт себя в WebView некоторых клиентов Telegram (Android, Desktop) при
@@ -315,7 +315,8 @@
     text-shadow:0 2px 8px rgba(0,0,0,0.6); letter-spacing:.2px;}
   #mainbtn{width:100%; max-width:340px; padding:16px 0; border:none; border-radius:20px; font-family:'Baloo 2', sans-serif;
     font-weight:800; font-size:17px; letter-spacing:.2px; background:linear-gradient(180deg, var(--gold), var(--gold-deep)); color:var(--ink);
-    box-shadow:0 6px 0 #93691C, 0 12px 22px rgba(0,0,0,0.45); transition:transform .08s ease, box-shadow .08s ease;}
+    box-shadow:0 6px 0 #93691C, 0 12px 22px rgba(0,0,0,0.45); transition:transform .08s ease, box-shadow .08s ease;
+    -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; touch-action:manipulation;}
   #mainbtn:active{transform:translateY(4px); box-shadow:0 2px 0 #93691C, 0 4px 10px rgba(0,0,0,0.3);}
   #mainbtn.pull{background:linear-gradient(180deg, var(--coral), var(--coral-deep)); box-shadow:0 6px 0 #8A3A20, 0 12px 22px rgba(0,0,0,0.45);
     animation:pullPulse 0.7s ease-in-out infinite;}
@@ -1331,7 +1332,7 @@
     {id:'magic', name:'Магическая наживка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="15" r="9" fill="#B98CF2" opacity=".85" stroke="#7A4BC9" stroke-width="1"/><ellipse cx="12.5" cy="11.5" rx="3" ry="1.8" fill="#FFFFFF" opacity=".5" transform="rotate(-25 12.5 11.5)"/><rect x="9" y="25" width="14" height="3" rx="1.5" fill="#7A4BC9"/></svg>', desc:'Сильно больше шанс легендарной · зона вываживания чуть шире, чтобы её реально можно было довести до конца', weights:[20,20,25,20,15], price:3200, unlockLevel:15, reelTargetDelta:-1},
     {id:'royal', name:'Королевская наживка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 24 4 12l7 5 5-9 5 9 7-5-2 12z" fill="#F6C453" stroke="#8A5A16" stroke-width="1.2" stroke-linejoin="round"/><rect x="5" y="24" width="22" height="3" rx="1.2" fill="#D9962C"/></svg>', desc:'Лучший баланс: редкая рыба крупнее обычного · зона вываживания чуть шире', weights:[18,22,26,22,12], price:5200, unlockLevel:19, weightMult:1.15, reelTargetDelta:-0.7},
     {id:'sulfur', name:'Серная наживка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="9" fill="#D9C23E" opacity=".9" stroke="#A68B2E" stroke-width="1"/><circle cx="16" cy="16" r="4" fill="#E8451F" opacity=".7"/></svg>', desc:'Заметно больше редкой и ценной рыбы в кипящих источниках · зона вываживания чуть шире', weights:[16,20,26,24,14], price:6800, unlockLevel:21, reelTargetDelta:-0.7},
-    {id:'phoenix', name:'Феникс-наживка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 4c4 6 8 9 8 15a8 8 0 1 1-16 0c0-6 4-9 8-15z" fill="#F2C14E" stroke="#B33E1A" stroke-width="1.2"/><path d="M16 4c2 5 1 8-1 10" stroke="#E8451F" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>', desc:'Максимальный шанс легендарной рыбы · рыба заметно крупнее · зона вываживания заметно шире и меньше теряется при промахе - иначе такую редкую рыбу было бы не довести до конца', weights:[12,18,24,26,20], price:9200, unlockLevel:24, weightMult:1.2, reelTargetDelta:-1.5, reelDecayMult:0.85},
+    {id:'phoenix', name:'Феникс-наживка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 4c4 6 8 9 8 15a8 8 0 1 1-16 0c0-6 4-9 8-15z" fill="#F2C14E" stroke="#B33E1A" stroke-width="1.2"/><path d="M16 4c2 5 1 8-1 10" stroke="#E8451F" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>', desc:'Максимальный шанс легендарной рыбы · рыба заметно крупнее · зона вываживания заметно шире и меньше теряется при промахе', weights:[12,18,24,26,20], price:9200, unlockLevel:24, weightMult:1.2, reelTargetDelta:-1.5, reelDecayMult:0.85},
   ];
   // Доп. свойства наживки со значениями по умолчанию (если не указаны в самой наживке)
   function baitStat(bait, key, def){ return (bait && typeof bait[key]==='number') ? bait[key] : def; }
