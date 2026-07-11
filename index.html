@@ -324,17 +324,24 @@
   #mainbtn:disabled{opacity:.5;}
   #timerbar{width:100%; max-width:340px; height:9px; border-radius:6px; background:rgba(247,243,232,0.18); overflow:hidden; display:none; box-shadow:inset 0 1px 3px rgba(0,0,0,0.3); position:relative;}
   #timerfill{height:100%; width:100%; background:linear-gradient(90deg, var(--coral-deep), var(--coral)); transform-origin:left;}
-  /* Прицельное вываживание (ценная/легендарная рыба): полоса больше не только
-     показывает прогресс, но и несёт "зону" + бегущий маркер. Тап засчитывается,
-     только если маркер сейчас внутри зоны — иначе прогресс не растёт. */
-  #timerbar.precision{overflow:visible;}
-  #timerbar.precision #timerfill{opacity:.4;}
-  #reelZone{position:absolute; top:0; bottom:0; left:0; width:0; background:rgba(255,233,176,0.55); border-radius:4px; display:none; pointer-events:none;}
-  #reelZone.show{display:block;}
-  #reelMarker{position:absolute; top:-4px; bottom:-4px; left:0; width:3px; margin-left:-1.5px; background:#fff;
-    box-shadow:0 0 8px rgba(255,255,255,0.9); border-radius:2px; display:none; pointer-events:none; transition:background .1s ease, box-shadow .1s ease;}
-  #reelMarker.show{display:block;}
-  #reelMarker.miss{background:var(--coral-deep); box-shadow:0 0 10px rgba(217,80,46,0.9);}
+  /* Единая механика вываживания для всей рыбы: держишь кнопку — твоя зона
+     всплывает вверх по треку, отпускаешь — тонет обратно (гравитация).
+     Рыбка сама "плавает" по треку туда-сюда. Пока рыбка внутри твоей зоны —
+     верхняя полоса прогресса растёт, если рыбка снаружи — потихоньку падает.
+     Дошла до конца — поймал; упала до нуля — сорвалась. Один и тот же принцип
+     для любой редкости, сложность отличается только скоростью/размером зоны. */
+  #reelbar{width:100%; max-width:340px; display:none;}
+  #reelbar.show{display:block;}
+  #reelProgressTrack{width:100%; height:8px; border-radius:5px; background:rgba(247,243,232,0.18); overflow:hidden; box-shadow:inset 0 1px 3px rgba(0,0,0,0.3); margin-bottom:8px;}
+  #reelProgressFill{height:100%; width:100%; background:linear-gradient(90deg, var(--coral-deep), var(--gold)); transform-origin:left; transform:scaleX(0); transition:background .2s ease;}
+  #reelProgressTrack.win #reelProgressFill{background:linear-gradient(90deg, var(--gold-deep), var(--gold)); box-shadow:0 0 12px rgba(246,196,83,0.85);}
+  #reelProgressTrack.lose #reelProgressFill{background:var(--coral-deep);}
+  #reelTrack{position:relative; width:100%; height:34px; border-radius:11px; background:rgba(10,31,38,0.4); box-shadow:inset 0 2px 6px rgba(0,0,0,0.4); overflow:hidden;}
+  #reelZone{position:absolute; top:3px; bottom:3px; left:0; width:30%; background:rgba(255,233,176,0.32); border:2px solid rgba(255,233,176,0.8); border-radius:9px; transition:background .12s ease, border-color .12s ease, box-shadow .12s ease;}
+  #reelZone.inzone{background:rgba(140,255,175,0.38); border-color:rgba(140,255,175,0.95); box-shadow:0 0 16px rgba(140,255,175,0.65);}
+  #reelMarker{position:absolute; top:50%; left:0; width:18px; height:18px; margin:-9px 0 0 -9px; border-radius:50%;
+    background:radial-gradient(circle at 34% 28%, #fff, #FFD87A 55%, #E8451F 100%); box-shadow:0 1px 5px rgba(0,0,0,0.5); transition:box-shadow .12s ease;}
+  #reelMarker.inzone{box-shadow:0 0 10px rgba(140,255,175,0.9), 0 1px 5px rgba(0,0,0,0.5);}
   #gearline{font-size:10.5px; opacity:.68; font-weight:700; text-align:center; letter-spacing:.2px;}
   #boostline{font-size:11px; font-weight:800; text-align:center; color:var(--gold); min-height:14px;}
 
@@ -603,7 +610,7 @@
   @keyframes lineTense{0%,100%{filter:none;} 50%{filter:brightness(1.35);}}
   /* Чем ближе к успешному вываживанию, тем яростнее "сопротивляется" рыба —
      подменяем анимации на более быстрые/размашистые по мере роста прогресса
-     (см. updateReelBar). Это чисто ощущение нарастающего напряжения, на баланс
+     (см. updateReelVisual). Это чисто ощущение нарастающего напряжения, на баланс
      не влияет. */
   #bobber.reel-struggle.lvl2{animation:reelStruggle .15s ease-in-out infinite;}
   #bobber.reel-struggle.lvl3{animation:reelStruggle2 .1s ease-in-out infinite;}
@@ -827,7 +834,11 @@
 
     <div id="bottompanel">
       <div id="status">Готов начать</div>
-      <div id="timerbar"><div id="timerfill"></div><div id="reelZone"></div><div id="reelMarker"></div></div>
+      <div id="timerbar"><div id="timerfill"></div></div>
+      <div id="reelbar">
+        <div id="reelProgressTrack"><div id="reelProgressFill"></div></div>
+        <div id="reelTrack"><div id="reelZone"></div><div id="reelMarker"></div></div>
+      </div>
       <button id="mainbtn">Закинуть удочку</button>
       <div id="gearline"></div>
       <div id="boostline"></div>
@@ -1304,23 +1315,23 @@
   ];
 
   const RODS = [
-    {id:'bamboo', name:'Бамбуковая удочка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 27 L24 6" stroke="#B98550" stroke-width="2.6" stroke-linecap="round"/><path d="M24 6 Q28 16 22.5 25" fill="none" stroke="#F7F3E8" stroke-width="1.3" stroke-dasharray="2 2.4"/><path d="M22.5 25q-2.4 2-1.2 4.4" fill="none" stroke="#D9962C" stroke-width="1.8" stroke-linecap="round"/></svg>', desc:'Базовое окно поклёва 700 мс', window:700, price:0, unlockLevel:1},
-    {id:'carbon', name:'Карбоновая удочка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 5v14a5 5 0 1 0 5-5" fill="none" stroke="#9AA7AD" stroke-width="2.6" stroke-linecap="round"/><circle cx="16" cy="5" r="2" fill="none" stroke="#9AA7AD" stroke-width="2"/></svg>', desc:'Окно поклёва 950 мс', window:950, price:900, unlockLevel:5},
-    {id:'titan', name:'Титановая удочка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 8v-3M16 27v-3M8 16H5M27 16h-3M10.3 10.3l-2-2M23.7 23.7l-2-2M10.3 21.7l-2 2M23.7 8.3l-2 2" stroke="#C9D6DA" stroke-width="2.4" stroke-linecap="round"/><circle cx="16" cy="16" r="7" fill="#9AA7AD" stroke="#5c6a70" stroke-width="1.2"/><circle cx="16" cy="16" r="3" fill="#0A1F26" opacity=".4"/></svg>', desc:'Окно поклёва 1300 мс', window:1300, price:5200, unlockLevel:13},
-    {id:'abyssal', name:'Абиссальная удочка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 10v18M9 6l7 8 7-8M9 6v6M23 6v6" fill="none" stroke="#6FE8E8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>', desc:'Окно поклёва 1700 мс', window:1700, price:9500, unlockLevel:19},
-    {id:'magma', name:'Магматическая удочка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 6c5 7 8 11 8 15a8 8 0 1 1-16 0c0-4 3-8 8-15z" fill="none" stroke="#FF7A2E" stroke-width="2.4" stroke-linejoin="round"/><circle cx="16" cy="21" r="3" fill="#FF7A2E"/></svg>', desc:'Окно поклёва 2200 мс', window:2200, price:15000, unlockLevel:22},
+    {id:'bamboo', name:'Бамбуковая удочка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 27 L24 6" stroke="#B98550" stroke-width="2.6" stroke-linecap="round"/><path d="M24 6 Q28 16 22.5 25" fill="none" stroke="#F7F3E8" stroke-width="1.3" stroke-dasharray="2 2.4"/><path d="M22.5 25q-2.4 2-1.2 4.4" fill="none" stroke="#D9962C" stroke-width="1.8" stroke-linecap="round"/></svg>', desc:'Базовое окно поклёва 700 мс · зона вываживания без бонуса', window:700, price:0, unlockLevel:1, reelZoneMult:1},
+    {id:'carbon', name:'Карбоновая удочка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 5v14a5 5 0 1 0 5-5" fill="none" stroke="#9AA7AD" stroke-width="2.6" stroke-linecap="round"/><circle cx="16" cy="5" r="2" fill="none" stroke="#9AA7AD" stroke-width="2"/></svg>', desc:'Окно поклёва 950 мс · жёстче держит нагрузку, зона вываживания шире на 5%', window:950, price:900, unlockLevel:5, reelZoneMult:1.05},
+    {id:'titan', name:'Титановая удочка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 8v-3M16 27v-3M8 16H5M27 16h-3M10.3 10.3l-2-2M23.7 23.7l-2-2M10.3 21.7l-2 2M23.7 8.3l-2 2" stroke="#C9D6DA" stroke-width="2.4" stroke-linecap="round"/><circle cx="16" cy="16" r="7" fill="#9AA7AD" stroke="#5c6a70" stroke-width="1.2"/><circle cx="16" cy="16" r="3" fill="#0A1F26" opacity=".4"/></svg>', desc:'Окно поклёва 1300 мс · зона вываживания шире на 10%', window:1300, price:5200, unlockLevel:13, reelZoneMult:1.10},
+    {id:'abyssal', name:'Абиссальная удочка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 10v18M9 6l7 8 7-8M9 6v6M23 6v6" fill="none" stroke="#6FE8E8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>', desc:'Окно поклёва 1700 мс · зона вываживания шире на 15%', window:1700, price:9500, unlockLevel:19, reelZoneMult:1.15},
+    {id:'magma', name:'Магматическая удочка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 6c5 7 8 11 8 15a8 8 0 1 1-16 0c0-4 3-8 8-15z" fill="none" stroke="#FF7A2E" stroke-width="2.4" stroke-linejoin="round"/><circle cx="16" cy="21" r="3" fill="#FF7A2E"/></svg>', desc:'Окно поклёва 2200 мс · зона вываживания шире на 20%', window:2200, price:15000, unlockLevel:22, reelZoneMult:1.20},
   ];
   const BAITS = [
     {id:'plain', name:'Обычная наживка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 22c2-6 4 4 8-2s2-10 8-8 4 8 2 12" fill="none" stroke="#E8938A" stroke-width="4" stroke-linecap="round"/></svg>', desc:'Стандартные шансы улова · без особенностей', weights:[40,30,18,9,3], price:0, unlockLevel:1},
     {id:'quick', name:'Шустрый мотыль', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><ellipse cx="16" cy="18" rx="4.5" ry="6" fill="#3a3a3a"/><ellipse cx="10" cy="13" rx="5" ry="3" fill="#CFE8EE" opacity=".8" transform="rotate(-20 10 13)"/><ellipse cx="22" cy="13" rx="5" ry="3" fill="#CFE8EE" opacity=".8" transform="rotate(20 22 13)"/><circle cx="16" cy="10" r="3" fill="#1c1c1c"/></svg>', desc:'Клёв начинается заметно быстрее · рыба чуть попроще', weights:[45,28,16,8,3], price:450, unlockLevel:2, biteDelayMult:0.55},
     {id:'patient', name:'Ленивый опарыш', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 22a4 4 0 1 1 4-4 4 4 0 1 1 4 4 4 4 0 1 1 4-4 4 4 0 1 1 4 4 4 4 0 1 1 4-4" fill="none" stroke="#8FBF6E" stroke-width="4.2" stroke-linecap="round"/><circle cx="6" cy="18" r="2.6" fill="#5F8F45"/></svg>', desc:'Гораздо больше времени на подсечку · рыба попроще', weights:[42,29,17,9,3], price:650, unlockLevel:3, biteWindowMult:1.45},
     {id:'aroma', name:'Ароматная наживка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 27V13" stroke="#4c7a3a" stroke-width="2" stroke-linecap="round"/><path d="M16 13c-6-1-9 3-10 8 6 1 9-3 10-8zM16 17c6-1 9 3 10 8-6 1-9-3-10-8z" fill="#6FAE55" stroke="#4c7a3a" stroke-width="1"/></svg>', desc:'Больше редкой и ценной рыбы', weights:[30,25,25,15,5], price:900, unlockLevel:6},
-    {id:'sticky', name:'Плотный жмых', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="9" y="11" width="14" height="10" rx="3" fill="#F5E27A" stroke="#C9A93A" stroke-width="1.2" transform="rotate(-8 16 16)"/></svg>', desc:'Вываживать намного проще и нужно меньше рывков · окно подсечки короче', weights:[38,30,19,10,3], price:1300, unlockLevel:8, reelDecayMult:0.4, reelTargetDelta:-1, biteWindowMult:0.85},
+    {id:'sticky', name:'Плотный жмых', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="9" y="11" width="14" height="10" rx="3" fill="#F5E27A" stroke="#C9A93A" stroke-width="1.2" transform="rotate(-8 16 16)"/></svg>', desc:'Вываживать намного проще: зона шире и рыба меньше срывается · окно подсечки короче', weights:[38,30,19,10,3], price:1300, unlockLevel:8, reelDecayMult:0.4, reelTargetDelta:-1, biteWindowMult:0.85},
     {id:'heavy', name:'Кровяная наживка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 6c5 7 8 11 8 15a8 8 0 1 1-16 0c0-4 3-8 8-15z" fill="#D9502E" stroke="#8a1f10" stroke-width="1"/><ellipse cx="13" cy="20" rx="2" ry="3" fill="#F2A897" opacity=".6"/></svg>', desc:'Рыба крупнее и тяжелее обычного · клюёт реже', weights:[25,28,24,16,7], price:1800, unlockLevel:11, weightMult:1.4, biteDelayMult:1.25},
-    {id:'magic', name:'Магическая наживка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="15" r="9" fill="#B98CF2" opacity=".85" stroke="#7A4BC9" stroke-width="1"/><ellipse cx="12.5" cy="11.5" rx="3" ry="1.8" fill="#FFFFFF" opacity=".5" transform="rotate(-25 12.5 11.5)"/><rect x="9" y="25" width="14" height="3" rx="1.5" fill="#7A4BC9"/></svg>', desc:'Сильно больше шанс легендарной', weights:[20,20,25,20,15], price:3200, unlockLevel:15},
-    {id:'royal', name:'Королевская наживка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 24 4 12l7 5 5-9 5 9 7-5-2 12z" fill="#F6C453" stroke="#8A5A16" stroke-width="1.2" stroke-linejoin="round"/><rect x="5" y="24" width="22" height="3" rx="1.2" fill="#D9962C"/></svg>', desc:'Лучший баланс: редкая рыба крупнее обычного', weights:[18,22,26,22,12], price:5200, unlockLevel:19, weightMult:1.15},
-    {id:'sulfur', name:'Серная наживка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="9" fill="#D9C23E" opacity=".9" stroke="#A68B2E" stroke-width="1"/><circle cx="16" cy="16" r="4" fill="#E8451F" opacity=".7"/></svg>', desc:'Заметно больше редкой и ценной рыбы в кипящих источниках', weights:[16,20,26,24,14], price:6800, unlockLevel:21},
-    {id:'phoenix', name:'Феникс-наживка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 4c4 6 8 9 8 15a8 8 0 1 1-16 0c0-6 4-9 8-15z" fill="#F2C14E" stroke="#B33E1A" stroke-width="1.2"/><path d="M16 4c2 5 1 8-1 10" stroke="#E8451F" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>', desc:'Максимальный шанс легендарной рыбы · рыба заметно крупнее', weights:[12,18,24,26,20], price:9200, unlockLevel:24, weightMult:1.2},
+    {id:'magic', name:'Магическая наживка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="15" r="9" fill="#B98CF2" opacity=".85" stroke="#7A4BC9" stroke-width="1"/><ellipse cx="12.5" cy="11.5" rx="3" ry="1.8" fill="#FFFFFF" opacity=".5" transform="rotate(-25 12.5 11.5)"/><rect x="9" y="25" width="14" height="3" rx="1.5" fill="#7A4BC9"/></svg>', desc:'Сильно больше шанс легендарной · зона вываживания чуть шире, чтобы её реально можно было довести до конца', weights:[20,20,25,20,15], price:3200, unlockLevel:15, reelTargetDelta:-1},
+    {id:'royal', name:'Королевская наживка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 24 4 12l7 5 5-9 5 9 7-5-2 12z" fill="#F6C453" stroke="#8A5A16" stroke-width="1.2" stroke-linejoin="round"/><rect x="5" y="24" width="22" height="3" rx="1.2" fill="#D9962C"/></svg>', desc:'Лучший баланс: редкая рыба крупнее обычного · зона вываживания чуть шире', weights:[18,22,26,22,12], price:5200, unlockLevel:19, weightMult:1.15, reelTargetDelta:-0.7},
+    {id:'sulfur', name:'Серная наживка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="9" fill="#D9C23E" opacity=".9" stroke="#A68B2E" stroke-width="1"/><circle cx="16" cy="16" r="4" fill="#E8451F" opacity=".7"/></svg>', desc:'Заметно больше редкой и ценной рыбы в кипящих источниках · зона вываживания чуть шире', weights:[16,20,26,24,14], price:6800, unlockLevel:21, reelTargetDelta:-0.7},
+    {id:'phoenix', name:'Феникс-наживка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 4c4 6 8 9 8 15a8 8 0 1 1-16 0c0-6 4-9 8-15z" fill="#F2C14E" stroke="#B33E1A" stroke-width="1.2"/><path d="M16 4c2 5 1 8-1 10" stroke="#E8451F" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>', desc:'Максимальный шанс легендарной рыбы · рыба заметно крупнее · зона вываживания заметно шире и меньше теряется при промахе - иначе такую редкую рыбу было бы не довести до конца', weights:[12,18,24,26,20], price:9200, unlockLevel:24, weightMult:1.2, reelTargetDelta:-1.5, reelDecayMult:0.85},
   ];
   // Доп. свойства наживки со значениями по умолчанию (если не указаны в самой наживке)
   function baitStat(bait, key, def){ return (bait && typeof bait[key]==='number') ? bait[key] : def; }
@@ -1379,10 +1390,16 @@
   const WORKSHOP_ITEMS = [
     { id:'luck', name:'Чутьё рыбака', icon:'🍀', desc:'Стабильно смещает шансы клёва в пользу редкой и ценной рыбы', baseCost:900, growthPow:1.47, capEffect:18, satK:0.15 },
     { id:'income', name:'Деловая хватка', icon:'💰', desc:'Поднимает цену продажи всего улова на рынке', baseCost:1100, growthPow:1.52, capEffect:0.5, satK:0.12 },
-    { id:'comfort', name:'Твёрдая рука', icon:'🎯', desc:'Расширяет окно подсечки при поклёве - легче не прозевать рыбу', baseCost:700, growthPow:1.4, capEffect:0.6, satK:0.13 },
+    { id:'comfort', name:'Твёрдая рука', icon:'🎯', desc:'Расширяет окно подсечки при поклёве и слегка уширяет зону вываживания - легче не прозевать поклёв и удержать рыбу в зоне', baseCost:700, growthPow:1.4, capEffect:0.6, satK:0.13 },
+    // Раньше вываживание было просто серией тапов, и никакая прокачка не
+    // была напрямую привязана к самому процессу удержания рыбы в зоне.
+    // Теперь это отдельный навык (аналоговое слежение), поэтому нужна
+    // прокачка, которая реально в нём помогает: быстрее растёт прогресс и
+    // меньше теряется, когда рыба на миг выходит из зоны игрока.
+    { id:'grip', name:'Цепкая хватка', icon:'💪', desc:'Быстрее растёт прогресс вываживания и меньше теряется, если рыба ненадолго вышла из зоны', baseCost:1300, growthPow:1.5, capEffect:0.55, satK:0.14 },
   ];
   function ensureUpgrades(){
-    if(!state.upgrades) state.upgrades = { luck:0, income:0, comfort:0 };
+    if(!state.upgrades) state.upgrades = { luck:0, income:0, comfort:0, grip:0 };
     WORKSHOP_ITEMS.forEach(w=>{ if(typeof state.upgrades[w.id] !== 'number') state.upgrades[w.id] = 0; });
   }
   function upgradeLevel(id){ return (state.upgrades && state.upgrades[id]) || 0; }
@@ -1538,7 +1555,7 @@
       questsDate:null, dailyQuests:[],
       storyChapter:0, storyProgress:0,
       boosts:{xp2:0, coins2:0, luck:0},
-      upgrades:{luck:0, income:0, comfort:0},
+      upgrades:{luck:0, income:0, comfort:0, grip:0},
       onboardingDone:false,
       vibrationOn:true, soundOn:true, cachedName:null
     };
@@ -2274,6 +2291,7 @@
   function resetVisual(){
     stopLineTracking();
     stopReelMarker();
+    reelHolding = false;
     bobber.classList.add('hidden'); btn.classList.remove('pull','lvl2','lvl3'); btn.disabled=false;
     timerbar.style.display='none'; status.textContent='Готов начать'; btn.textContent='Закинуть удочку';
     timerbar.classList.remove('danger');
@@ -2436,56 +2454,41 @@
     windowTimeout = setTimeout(missedBite, winMs);
   }
 
-  const REEL_TARGET = [5,5,8,11,15]; // тапов нужно на вываживание по уровню редкости
-  let reelProgress = 0, reelTarget = 0, reelDecayInterval = null, reelTimeout = null;
-  let reelPeak = 0, reelDangerFlagged = false, reelStreak = 0, reelIntensity = 1;
-  const REEL_STREAK_POPUPS = [3,5,8,12,17,23];
-
-  // ---------- ПРИЦЕЛЬНОЕ ВЫВАЖИВАНИЕ (ценная/легендарная рыба, tier>=3) ----------
-  // Вместо простого спама тапов маркер бегает туда-сюда по полосе, и тап
-  // засчитывается в прогресс, только если в этот момент маркер внутри
-  // подсвеченной зоны. Промах не отнимает прогресс (декей и так есть), но и
-  // не продвигает вываживание — так крупная рыба ощущается сложнее не просто
-  // "числом тапов", а другим навыком.
+  // ---------- ВЫВАЖИВАНИЕ: держи рыбу в зоне ----------
+  // Один и тот же принцип для любой редкости рыбы: рыбка сама "плавает" по
+  // треку туда-сюда (плавно, к случайным точкам), а игрок держит кнопку,
+  // чтобы поднять свою зону вверх по треку, и отпускает, чтобы дать ей
+  // просесть обратно (гравитация) — как в классических рыболовных мини-играх.
+  // Пока рыбка внутри зоны игрока — верхняя полоса общего прогресса растёт,
+  // снаружи — потихоньку падает. Дошла до конца — рыба поймана, упала до
+  // нуля — сорвалась. Сложность по редкости — это только скорость/непредска-
+  // зуемость рыбки и размер зоны, а не другой набор правил.
   const reelZoneEl = document.getElementById('reelZone'), reelMarkerEl = document.getElementById('reelMarker');
-  let reelPrecision = false, reelZoneStart = 0, reelZoneWidth = 0.22, reelMarkerPos = 0, reelMarkerDir = 1, reelMarkerRAF = null, reelMarkerMissTimer = null;
+  const reelbarEl = document.getElementById('reelbar'), reelFillEl = document.getElementById('reelProgressFill');
 
-  function randomizeReelZone(){
-    // "Твёрдая рука" (comfort) — тот же апгрейд, что расширяет окно подсечки —
-    // здесь слегка расширяет зону прицеливания, логично продолжая свой смысл.
-    const comfortMult = 1 + workshopEffectValue('comfort') * 0.5;
-    const baseWidth = currentFish.tier >= 4 ? 0.15 : 0.22;
-    reelZoneWidth = Math.min(0.55, baseWidth * comfortMult);
-    reelZoneStart = Math.random() * (1 - reelZoneWidth);
-    reelZoneEl.style.left = (reelZoneStart*100) + '%';
-    reelZoneEl.style.width = (reelZoneWidth*100) + '%';
-  }
-  function startReelMarker(){
-    reelMarkerPos = 0; reelMarkerDir = 1;
-    const speed = (currentFish.tier >= 4 ? 0.0016 : 0.0011); // доля полосы за мс
-    let last = performance.now();
-    (function frame(ts){
-      if(gameState !== 'reeling' || !reelPrecision) return;
-      const dt = ts - last; last = ts;
-      reelMarkerPos += reelMarkerDir * speed * dt;
-      if(reelMarkerPos >= 1){ reelMarkerPos = 1; reelMarkerDir = -1; }
-      else if(reelMarkerPos <= 0){ reelMarkerPos = 0; reelMarkerDir = 1; }
-      reelMarkerEl.style.left = (reelMarkerPos*100) + '%';
-      reelMarkerRAF = requestAnimationFrame(frame);
-    })(last);
-  }
-  function stopReelMarker(){
-    if(reelMarkerRAF) cancelAnimationFrame(reelMarkerRAF);
-    reelMarkerRAF = null; reelPrecision = false;
-    clearTimeout(reelMarkerMissTimer);
-    reelZoneEl.classList.remove('show'); reelMarkerEl.classList.remove('show','miss');
-    timerbar.classList.remove('precision');
-  }
-  function reelMarkerMissFlash(){
-    reelMarkerEl.classList.add('miss');
-    clearTimeout(reelMarkerMissTimer);
-    reelMarkerMissTimer = setTimeout(()=>reelMarkerEl.classList.remove('miss'), 150);
-  }
+  // По уровню редкости (0..4): ширина зоны игрока, скорость её подъёма/паде-
+  // ния, скорость и "непоседливость" рыбки, скорость роста/падения общего
+  // прогресса. Чем реже рыба, тем уже зона и шустрее/непредсказуемее рыбка —
+  // но никогда не требуется реакция быстрее человеческой, потому что это
+  // непрерывное слежение, а не одно попадание в узкое окно.
+  const REEL_DIFFICULTY = [
+    {zoneWidth:0.40, fishSpeed:0.00028, retarget:[1200,2200], gravity:0.00050, rise:0.00080, gain:34, loss:10},
+    {zoneWidth:0.36, fishSpeed:0.00032, retarget:[1000,1900], gravity:0.00052, rise:0.00078, gain:30, loss:11},
+    {zoneWidth:0.30, fishSpeed:0.00045, retarget:[800,1500],  gravity:0.00058, rise:0.00076, gain:25, loss:14},
+    {zoneWidth:0.25, fishSpeed:0.00058, retarget:[600,1150],  gravity:0.00064, rise:0.00074, gain:21, loss:17},
+    {zoneWidth:0.21, fishSpeed:0.00072, retarget:[450,900],   gravity:0.00070, rise:0.00072, gain:18, loss:20},
+  ];
+
+  let reelHolding = false, reelZonePos = 0, reelZoneWidth = 0.3;
+  let reelFishPos = 0.5, reelFishTarget = 0.5, reelFishSpeed = 0.0004;
+  let reelGravity = 0.0005, reelRise = 0.0008, reelGain = 25, reelLoss = 14;
+  let reelProgress = 0, reelRAF = null, reelLastTs = 0, reelTimeout = null;
+  let fishRetargetTimeout = null, reelWasInZone = false, reelIntensity = 1;
+  // Грейс-период в начале вываживания: рыбка и зона стартуют в одной точке
+  // (0.5), поэтому проверку на поражение временно не делаем строгой — иначе
+  // игрок может проиграть ещё до того, как успел среагировать на первый кадр.
+  const REEL_GRACE_MS = 600, REEL_GRACE_FLOOR = 4;
+  let reelStartedAt = 0;
 
   function pull(){
     if(gameState!=='biting') return;
@@ -2509,97 +2512,121 @@
     setTimeout(resetVisual, 900);
   }
 
-  function startReeling(){
-    gameState = 'reeling';
-    const bait = getBait(state.activeBait);
-    reelProgress = 0; reelTarget = Math.max(2, REEL_TARGET[currentFish.tier] + baitStat(bait,'reelTargetDelta',0));
-    reelPeak = 0; reelDangerFlagged = false; reelStreak = 0; reelIntensity = 1;
-    status.textContent = 'Вываживай! Тапай быстро!';
-    btn.classList.add('pull'); btn.disabled = false;
-    btn.textContent = `Тяни! (0/${reelTarget})`;
-    timerbar.style.display='block'; timerfill.style.transition='none'; timerfill.style.transform='scaleX(0)';
-    bobber.classList.add('reel-struggle'); bobber.classList.remove('lvl2','lvl3');
-    rodsvg.classList.add('reeling'); rodsvg.classList.remove('lvl2','lvl3');
-    btn.classList.remove('lvl2','lvl3');
-    lineEl.classList.add('tense');
-    clearInterval(reelDecayInterval);
-    const decayAmount = baitStat(bait,'reelDecayMult',1);
-    reelDecayInterval = setInterval(()=>{
-      reelProgress = Math.max(0, reelProgress - decayAmount);
-      updateReelBar();
-      // Заметная просадка после пика — рыба реально может сорваться, если не
-      // поторопиться. Короткая вспышка полосы + лёгкий тап-предупреждение,
-      // не чаще одного раза за просадку (сбрасывается новым удачным тапом).
-      if(!reelDangerFlagged && reelPeak > 0 && reelProgress <= reelPeak - 1.4){
-        reelDangerFlagged = true;
-        haptic('light');
-        timerbar.classList.remove('danger'); void timerbar.offsetWidth; timerbar.classList.add('danger');
-      }
-    }, 500);
-    clearTimeout(reelTimeout);
-    reelTimeout = setTimeout(failReel, 6000);
-
-    reelPrecision = currentFish.tier >= 3;
-    if(reelPrecision){
-      timerbar.classList.add('precision');
-      reelZoneEl.classList.add('show'); reelMarkerEl.classList.add('show');
-      status.textContent = 'Лови момент — тапай, когда маркер в зоне!';
-      randomizeReelZone();
-      startReelMarker();
-    } else {
-      timerbar.classList.remove('precision');
-      reelZoneEl.classList.remove('show'); reelMarkerEl.classList.remove('show');
-    }
+  function scheduleFishRetarget(range){
+    clearTimeout(fishRetargetTimeout);
+    const delay = range[0] + Math.random()*(range[1]-range[0]);
+    fishRetargetTimeout = setTimeout(()=>{
+      reelFishTarget = Math.random();
+      scheduleFishRetarget(range);
+    }, delay);
   }
 
-  function updateReelBar(){
-    const pct = Math.min(1, reelProgress/reelTarget);
-    timerfill.style.transition = 'transform .12s ease-out';
-    timerfill.style.transform = `scaleX(${pct})`;
-    btn.textContent = `Тяни! (${Math.min(Math.ceil(reelProgress),reelTarget)}/${reelTarget})`;
-    // Чем ближе к цели, тем яростнее "борьба" — переключаем анимации на более
-    // быстрые/размашистые уровни. Чисто ощущение нарастающего напряжения.
-    const lvl = pct >= 0.82 ? 3 : (pct >= 0.48 ? 2 : 1);
+  function stopReelLoop(){
+    if(reelRAF) cancelAnimationFrame(reelRAF);
+    reelRAF = null;
+    clearTimeout(fishRetargetTimeout);
+    clearTimeout(reelTimeout);
+  }
+  function hideReelBar(){
+    reelbarEl.classList.remove('show');
+    reelZoneEl.classList.remove('inzone'); reelMarkerEl.classList.remove('inzone');
+    reelFillEl.parentElement.classList.remove('win','lose');
+  }
+  function stopReelMarker(){
+    stopReelLoop();
+    hideReelBar();
+  }
+
+  function updateReelVisual(inZone){
+    reelZoneEl.style.left = (reelZonePos*100) + '%';
+    reelZoneEl.style.width = (reelZoneWidth*100) + '%';
+    reelMarkerEl.style.left = (reelFishPos*100) + '%';
+    reelZoneEl.classList.toggle('inzone', inZone);
+    reelMarkerEl.classList.toggle('inzone', inZone);
+    reelFillEl.style.transform = `scaleX(${Math.max(0,Math.min(1,reelProgress/100))})`;
+    const lvl = reelProgress >= 82 ? 3 : (reelProgress >= 48 ? 2 : 1);
     if(lvl !== reelIntensity){
       reelIntensity = lvl;
       bobber.classList.remove('lvl2','lvl3'); rodsvg.classList.remove('lvl2','lvl3'); btn.classList.remove('lvl2','lvl3');
       if(lvl >= 2){ bobber.classList.add('lvl'+lvl); rodsvg.classList.add('lvl'+lvl); btn.classList.add('lvl'+lvl); }
-      if(lvl === 3) haptic('medium');
     }
   }
 
-  function reelTap(){
-    if(gameState!=='reeling') return;
-    if(reelPrecision){
-      const inZone = reelMarkerPos >= reelZoneStart && reelMarkerPos <= reelZoneStart + reelZoneWidth;
-      if(!inZone){
-        reelMarkerMissFlash();
-        reelStreak = 0;
-        return; // мимо зоны — тап не засчитан, прогресс не растёт
-      }
-      randomizeReelZone(); // попал — зона перескакивает на новое место
-      reelStreak++;
-      if(REEL_STREAK_POPUPS.includes(reelStreak)){
-        const r = bobber.getBoundingClientRect();
-        popText(r.left+r.width/2, r.top, 'Серия ×'+reelStreak+'!', 'streak');
-      }
+  function reelFrame(ts){
+    if(gameState !== 'reeling'){ reelRAF = null; return; }
+    const dt = Math.min(60, ts - reelLastTs); reelLastTs = ts;
+    const diff = reelFishTarget - reelFishPos;
+    const maxStep = reelFishSpeed * dt;
+    reelFishPos += Math.abs(diff) <= maxStep ? diff : Math.sign(diff)*maxStep;
+    reelZonePos += (reelHolding ? reelRise : -reelGravity) * dt;
+    reelZonePos = Math.max(0, Math.min(1-reelZoneWidth, reelZonePos));
+    const inZone = reelFishPos >= reelZonePos && reelFishPos <= reelZonePos + reelZoneWidth;
+    if(inZone && !reelWasInZone) haptic('light');
+    reelWasInZone = inZone;
+    reelProgress += (inZone ? reelGain : -reelLoss) * dt/1000;
+    // Пока идёт грейс-период — не даём полосе провалиться до настоящего
+    // нуля, только до небольшого минимума. Это не влияет на верхнюю границу
+    // и на обычную логику после окончания грейс-периода.
+    const inGrace = (ts - reelStartedAt) < REEL_GRACE_MS;
+    reelProgress = Math.max(inGrace ? REEL_GRACE_FLOOR : 0, Math.min(100, reelProgress));
+    if(reelProgress >= 100){
+      reelProgress = 100; updateReelVisual(inZone);
+      reelFillEl.parentElement.classList.add('win');
+      stopReelLoop();
+      // Даём игроку реально увидеть заполненную до конца полосу на экране,
+      // прежде чем показать карточку улова — иначе поимка выглядит так,
+      // будто произошла "на середине".
+      setTimeout(()=>{ hideReelBar(); landFish(); }, 220);
+      return;
     }
-    reelProgress++;
-    reelPeak = Math.max(reelPeak, reelProgress); reelDangerFlagged = false;
-    haptic('light');
-    updateReelBar();
-    const rect = bobber.getBoundingClientRect();
-    burstParticles(rect.left+rect.width/2, rect.top+rect.height/2, ['droplet'], 2);
-    if(reelProgress >= reelTarget){
-      clearInterval(reelDecayInterval); clearTimeout(reelTimeout);
-      stopReelMarker();
-      landFish();
+    if(!inGrace && reelProgress <= 0){
+      reelProgress = 0; updateReelVisual(inZone);
+      reelFillEl.parentElement.classList.add('lose');
+      stopReelLoop();
+      setTimeout(failReel, 220);
+      return;
     }
+    updateReelVisual(inZone);
+    reelRAF = requestAnimationFrame(reelFrame);
+  }
+
+  function startReeling(){
+    gameState = 'reeling';
+    timerbar.style.display = 'none';
+    const bait = getBait(state.activeBait);
+    const rod = getRod(state.activeRod);
+    const diff = REEL_DIFFICULTY[currentFish.tier];
+    const comfortMult = 1 + workshopEffectValue('comfort') * 0.4;
+    const baitZoneMult = 1 - baitStat(bait,'reelTargetDelta',0) * 0.06;
+    const rodZoneMult = rod.reelZoneMult || 1;
+    reelZoneWidth = Math.max(0.14, Math.min(0.55, diff.zoneWidth * comfortMult * baitZoneMult * rodZoneMult));
+    reelZonePos = Math.max(0, Math.min(1-reelZoneWidth, 0.5 - reelZoneWidth/2));
+    reelFishPos = 0.5; reelFishTarget = 0.5;
+    reelFishSpeed = diff.fishSpeed; reelGravity = diff.gravity; reelRise = diff.rise;
+    const gripEff = workshopEffectValue('grip');
+    reelGain = diff.gain * (1 + gripEff);
+    reelLoss = diff.loss * baitStat(bait,'reelDecayMult',1) * (1 - gripEff*0.5);
+    reelProgress = 0; reelHolding = false; reelWasInZone = false; reelIntensity = 1;
+    status.textContent = 'Держи рыбу в подсвеченной зоне!';
+    btn.classList.add('pull'); btn.disabled = false;
+    btn.textContent = 'Держи!';
+    bobber.classList.add('reel-struggle'); bobber.classList.remove('lvl2','lvl3');
+    rodsvg.classList.add('reeling'); rodsvg.classList.remove('lvl2','lvl3');
+    btn.classList.remove('lvl2','lvl3');
+    lineEl.classList.add('tense');
+    reelbarEl.classList.add('show');
+    updateReelVisual(false);
+    scheduleFishRetarget(diff.retarget);
+    clearTimeout(reelTimeout);
+    reelTimeout = setTimeout(failReel, 20000); // страховка от зависания, не основной критерий
+    reelLastTs = performance.now();
+    reelStartedAt = reelLastTs;
+    reelRAF = requestAnimationFrame(reelFrame);
   }
 
   function failReel(){
     if(gameState!=='reeling') return;
-    clearInterval(reelDecayInterval);
+    clearTimeout(reelTimeout);
     stopReelMarker();
     gameState='idle'; haptic('error'); sfx('miss');
     bobber.classList.remove('reel-struggle','lvl2','lvl3'); rodsvg.classList.remove('reeling','lvl2','lvl3');
@@ -2702,17 +2729,23 @@
   btn.addEventListener('pointerdown', (e)=>{
     e.preventDefault();
     ensureAudioCtx();
+    if(gameState==='reeling'){ reelHolding = true; return; }
     const now = Date.now(); if(now - lastTapTime < 90) return; lastTapTime = now;
     // Анти-автокликер: считаем тапы за последнюю секунду. Живой человек не
     // тапает быстрее ~9 раз в секунду постоянно — всё, что сверху, отбрасываем
-    // молча, не давая ни забросу, ни подсечке, ни вываживанию засчитаться.
+    // молча, не давая ни забросу, ни подсечке засчитаться.
     recentTaps.push(now);
     while(recentTaps.length && now - recentTaps[0] > TAP_WINDOW_MS) recentTaps.shift();
     if(recentTaps.length > MAX_TAPS_PER_WINDOW) return;
     if(gameState==='idle') cast();
     else if(gameState==='biting') pull();
-    else if(gameState==='reeling') reelTap();
   });
+  // Вываживание держится, пока палец/курсор на кнопке — отпустили в любом
+  // месте (даже соскользнув с кнопки) — зона сразу начинает тонуть обратно.
+  btn.addEventListener('pointerup', ()=>{ reelHolding = false; });
+  btn.addEventListener('pointercancel', ()=>{ reelHolding = false; });
+  btn.addEventListener('pointerleave', ()=>{ if(gameState==='reeling') reelHolding = false; });
+  document.addEventListener('pointerup', ()=>{ if(gameState==='reeling') reelHolding = false; });
   document.getElementById('cc-close').addEventListener('click', ()=>{ catchcard.style.display='none'; });
 
   // ---------- RESET PROGRESS (with double confirmation) ----------
@@ -2924,6 +2957,7 @@
     if(item.id==='income') return `+${(eff*100).toFixed(1)}% к цене продажи`;
     if(item.id==='comfort') return `+${(eff*100).toFixed(1)}% к окну подсечки`;
     if(item.id==='luck') return `+${eff.toFixed(1)} к смещению шансов`;
+    if(item.id==='grip') return `+${(eff*100).toFixed(1)}% к приросту, -${(eff*50).toFixed(1)}% к потере прогресса`;
     return '';
   }
   function workshopCard(item){
