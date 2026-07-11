@@ -15,7 +15,8 @@
     --shadow-soft:0 10px 28px rgba(0,0,0,0.35); --shadow-lift:0 16px 40px rgba(0,0,0,0.45);
     --radius-lg:20px; --radius-md:16px; --radius-sm:12px;
   }
-  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action:manipulation; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none;}
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action:manipulation; -webkit-user-select:none !important; user-select:none !important; -webkit-touch-callout:none !important;}
+  html, body{-webkit-user-select:none !important; user-select:none !important; -webkit-touch-callout:none !important; -webkit-user-drag:none;}
   /* --tg-vh обновляется из JS реальной высотой вьюпорта Telegram
      (viewportStableHeight / window.innerHeight), потому что 100dvh неровно
      ведёт себя в WebView некоторых клиентов Telegram (Android, Desktop) при
@@ -2727,6 +2728,14 @@
   }
 
   let lastTapTime = 0;
+  // На iOS долгое удержание пальца иногда всё равно вызывает системную лупу
+  // выделения текста, даже с user-select/touch-callout:none в CSS и
+  // preventDefault() на pointerdown — это низкоуровневый жест распознавания
+  // самого Safari. Глушим его явно на всех связанных touch-событиях.
+  btn.addEventListener('touchstart', (e)=>{ e.preventDefault(); }, {passive:false});
+  btn.addEventListener('contextmenu', (e)=>{ e.preventDefault(); });
+  btn.addEventListener('selectstart', (e)=>{ e.preventDefault(); });
+  btn.addEventListener('dragstart', (e)=>{ e.preventDefault(); });
   btn.addEventListener('pointerdown', (e)=>{
     e.preventDefault();
     ensureAudioCtx();
@@ -2795,7 +2804,7 @@
     { icon:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 8h3l2.6 13.5a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 2-1.6L27 12H10.4" fill="none" stroke="#F7F3E8" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="13.5" cy="27" r="1.9" fill="#F7F3E8"/><circle cx="21.5" cy="27" r="1.9" fill="#F7F3E8"/></svg>',
       title:'Прокачивай снаряжение', text:'В «Магазине» покупай удочки, наживку и бусты, чтобы ловить рыбу крупнее и реже, плюс выполняй задания за награды.' },
     { icon:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M4 16 27 5 20 27l-5-9-9-2z" fill="#F6C453" stroke="#8A5A16" stroke-width="1.3" stroke-linejoin="round"/><path d="M15 18 27 5" fill="none" stroke="#8A5A16" stroke-width="1.1"/></svg>',
-      title:'Позови друга на рыбалку', text:'Поделись игрой с другом и сразу получи бонус монет.', share:true },
+      title:'Позови друга на рыбалку', text:'Поделись игрой с другом.', share:true },
   ];
   let onboardIndex = 0;
   const onboardModal = document.getElementById('onboardModal'),
