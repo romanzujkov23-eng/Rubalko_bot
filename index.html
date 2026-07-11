@@ -167,20 +167,46 @@
   #levelbox .xpbar{height:6px; border-radius:5px; background:rgba(247,243,232,0.16); overflow:hidden;}
   #levelbox .xpfill{height:100%; border-radius:5px; background:linear-gradient(90deg, var(--gold-deep), var(--gold)); width:0%; transition:width .4s ease;}
 
-  .title{width:100%; max-width:460px; text-align:center;}
-  .title h1{font-family:'Baloo 2', sans-serif; font-weight:800; font-size:17px; margin:0; letter-spacing:.2px; text-shadow:0 2px 10px rgba(0,0,0,0.45);
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  /* ---------- Переключатель локации: одна аккуратная "капсула" вместо
+     скроллящегося ряда мелких таблеток. Тап открывает #locModal с полноценной
+     визуальной сеткой карточек локаций (превью-градиент + иконка биома). ---------- */
+  .locswitch{width:100%; max-width:460px; display:flex; align-items:center; gap:10px; margin:0; appearance:none; -webkit-appearance:none; font:inherit;
+    background:rgba(8,26,32,0.55); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+    border:1px solid var(--glass-border); border-radius:16px; padding:6px 14px 6px 6px;
+    box-shadow:0 4px 14px rgba(0,0,0,0.25); font-family:'Nunito',sans-serif; color:var(--cream);
+    cursor:pointer; text-align:left; transition:transform .15s ease, background .2s ease;}
+  .locswitch:active{transform:scale(.98); background:rgba(8,26,32,0.72);}
+  .locswitch-icon{width:34px; height:34px; border-radius:11px; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(150deg, var(--loc-top,#FFC27A), var(--loc-bottom,#164A5C)); box-shadow:inset 0 0 0 1px rgba(255,255,255,0.28);}
+  .locswitch-icon svg{width:18px; height:18px; display:block; color:#fff; filter:drop-shadow(0 1px 2px rgba(0,0,0,.4));}
+  .locswitch-text{flex:1; min-width:0; display:flex; flex-direction:column; gap:1px;}
+  .locswitch-label{font-size:9.5px; font-weight:800; text-transform:uppercase; letter-spacing:.6px; opacity:.55;}
+  .locswitch-name{font-family:'Baloo 2',sans-serif; font-weight:800; font-size:15px; line-height:1.15;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-shadow:0 2px 8px rgba(0,0,0,.35);}
+  .locswitch-chevron{flex-shrink:0; opacity:.6;}
 
-  #locrow{width:100%; max-width:460px; display:flex; justify-content:flex-start;
-    gap:7px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; overscroll-behavior-x:contain;
-    -webkit-mask-image:linear-gradient(to right, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
-    mask-image:linear-gradient(to right, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);}
-  #locrow::-webkit-scrollbar{display:none;}
-  .locpill{border:1px solid var(--glass-border); border-radius:999px; padding:7px 14px; font-size:11.5px; font-weight:800; flex-shrink:0; white-space:nowrap;
-    background:rgba(8,26,32,0.5); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); color:rgba(247,243,232,0.62); transition:background .2s ease, color .2s ease, transform .15s ease;}
-  .locpill:active{transform:scale(.96);}
-  .locpill.active{background:linear-gradient(180deg, var(--gold), var(--gold-deep)); color:var(--ink); border-color:transparent; box-shadow:0 4px 12px rgba(246,196,83,0.35);}
-  .locpill.locked{opacity:.45;}
+  .loc-modal-card{max-width:380px; max-height:82vh; display:flex; flex-direction:column;}
+  .loc-modal-sub{margin-top:-6px;}
+  .locgrid{display:grid; grid-template-columns:1fr 1fr; gap:10px; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    padding:2px 2px 4px; margin:2px 0 4px;}
+  .loccard{position:relative; border-radius:16px; overflow:hidden; aspect-ratio:1/0.92; display:flex; flex-direction:column;
+    justify-content:space-between; padding:9px; text-align:left; border:2px solid transparent; cursor:pointer;
+    transition:transform .15s ease, border-color .2s ease; box-shadow:0 4px 12px rgba(0,0,0,0.3);}
+  .loccard:active{transform:scale(.96);}
+  .loccard.active{border-color:var(--gold); box-shadow:0 0 0 1px var(--gold), 0 6px 16px rgba(246,196,83,.4);}
+  .loccard .loccard-icon{width:28px; height:28px; border-radius:9px; background:rgba(5,16,20,.4); backdrop-filter:blur(3px);
+    display:flex; align-items:center; justify-content:center;}
+  .loccard .loccard-icon svg{width:16px; height:16px; color:#fff; filter:drop-shadow(0 1px 2px rgba(0,0,0,.4));}
+  .loccard .loccard-info{display:flex; flex-direction:column; gap:3px;}
+  .loccard .loccard-name{font-family:'Baloo 2',sans-serif; font-weight:800; font-size:12.5px; color:#fff; line-height:1.18;
+    text-shadow:0 2px 6px rgba(0,0,0,.55);}
+  .loccard .loccard-sub{font-size:9.5px; font-weight:700; color:rgba(255,255,255,.8); text-shadow:0 1px 4px rgba(0,0,0,.5);}
+  .loccard.locked .loccard-name, .loccard.locked .loccard-sub{opacity:.55;}
+  .loccard .loccard-lockbadge{position:absolute; top:8px; right:8px; width:22px; height:22px; border-radius:8px;
+    background:rgba(5,16,20,.55); backdrop-filter:blur(3px); display:flex; align-items:center; justify-content:center;}
+  .loccard .loccard-lockbadge svg{width:12px; height:12px; color:#fff;}
+  .loccard.locked{filter:saturate(.55);}
+  .loccard.locked::after{content:''; position:absolute; inset:0; background:rgba(5,16,20,.38); pointer-events:none;}
 
   #bonusbanner{width:100%; max-width:460px; box-sizing:border-box; display:none;
     background:linear-gradient(180deg, var(--gold), var(--gold-deep)); color:var(--ink); border-radius:16px; padding:10px 12px 10px 15px; font-weight:800; font-size:12.5px;
@@ -343,7 +369,7 @@
      плашка: собственные отступы (margin у .navbtn) открывают зазор сверху/снизу,
      мягкий градиент+обводка+свечение вместо плоской заливки — тот же язык,
      что и у активных вкладок магазина/заданий/локаций (.shoptab.active,
-     .qtab.active, .locpill.active), только светлее, чтобы не спорить с
+     .qtab.active, .loccard.active), только светлее, чтобы не спорить с
      разноцветными иконками навигации. */
   .navbtn.active{color:var(--gold);
     background:linear-gradient(180deg, rgba(246,196,83,0.24), rgba(217,150,44,0.09));
@@ -625,8 +651,14 @@
         </div>
         <div class="pill"><span class="ico-inline"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M4 16c5-7 14-9 21-6-1 2-1 10 0 12-7 3-16 1-21-6Z" fill="#7FD8E0" stroke="#2E7480" stroke-width="1.2"/><path d="M25 10c2 2 3 4 3 6s-1 4-3 6c-1-2-1-10 0-12Z" fill="#5CB8C4"/><circle cx="10.5" cy="14" r="1.3" fill="#0A1F26"/></svg></span><span id="catchVal">0</span></div>
       </div>
-      <div class="title"><h1 id="locTitle">Тихая Гавань</h1></div>
-      <div id="locrow"></div>
+      <button type="button" id="locSwitchBtn" class="locswitch" aria-haspopup="dialog">
+        <span class="locswitch-icon" id="locSwitchIcon"></span>
+        <span class="locswitch-text">
+          <span class="locswitch-label">Локация</span>
+          <span class="locswitch-name" id="locSwitchName">Тихая Гавань</span>
+        </span>
+        <svg class="locswitch-chevron" viewBox="0 0 24 24" width="14" height="14"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
       <div id="bonusbanner"><span class="ico-inline"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="13" width="20" height="14" rx="2" fill="#0A1F26"/><rect x="6" y="13" width="20" height="5" fill="#0A1F26" opacity=".7"/><rect x="14" y="13" width="4" height="14" fill="#F7F3E8"/><path d="M16 13c-2-6-9-6-9-1 0 1.5 2 1 9 1zM16 13c2-6 9-6 9-1 0 1.5-2 1-9 1z" fill="#F7F3E8" stroke="#0A1F26" stroke-width="1"/></svg></span> <span id="bonusText">Бонус готов!</span><button id="bonusBtn">Забрать</button></div>
     </div>
 
@@ -786,7 +818,6 @@
       <div class="subhead-text"><h2>Магазин</h2><p>Снаряжение для рыбалки</p></div>
       <div class="subhead-right">
         <div class="pill subhead-coins"><span class="coin-ico"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><radialGradient id="coinShineShop" cx="35%" cy="28%" r="80%"><stop offset="0%" stop-color="#FFF6DC"/><stop offset="45%" stop-color="#F6C453"/><stop offset="100%" stop-color="#C6811F"/></radialGradient><circle cx="16" cy="16" r="14.5" fill="url(#coinShineShop)" stroke="#8A5A16" stroke-width="1.3"/><circle cx="16" cy="16" r="11" fill="none" stroke="#FFEDB8" stroke-width="1" opacity="0.55"/><path d="M9.5 20c-.6-3.2.6-6.7 3.6-8.6 2-1.3 4.5-1.5 6.6-.6-2.4-.3-4.8.4-6.5 2-1.9 1.7-2.7 4.3-2.2 6.8-1.1-.3-1.5.3-1.5.4z" fill="#A66A17" opacity="0.65"/><path d="M12 20.5c2.6.9 5.6.2 7.5-1.9 1.5-1.7 2-3.9 1.6-6 .6 2.2.2 4.6-1.3 6.5-1.7 2.1-4.5 3-7.1 2.2-.4-.1-.6-.5-.7-.8z" fill="#A66A17" opacity="0.5"/><ellipse cx="11.2" cy="10.8" rx="4" ry="2.2" fill="#FFFFFF" opacity="0.5" transform="rotate(-28 11.2 10.8)"/></svg></span><span class="coinsValMirror">0</span></div>
-        <button id="shopSettingsBtn" class="icon-btn" aria-label="Настройки"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 10.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 3.5v3M16 25.5v3M28.5 16h-3M6.5 16h-3M24.4 7.6l-2.1 2.1M9.7 22.3l-2.1 2.1M24.4 24.4l-2.1-2.1M9.7 9.7 7.6 7.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
       </div>
     </div>
     <div class="shop-tabs" id="shoptabs">
@@ -824,12 +855,17 @@
   </div>
 
   <div class="subscreen" id="screen-top">
-    <div class="subhead"><h2>Топ рыбаков</h2><p>Рейтинг по общему опыту</p></div>
+    <div class="subhead">
+      <div class="subhead-text"><h2>Топ рыбаков</h2><p>Рейтинг по общему опыту</p></div>
+      <div class="subhead-right">
+        <button id="shopSettingsBtn" class="icon-btn" aria-label="Настройки"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg></button>
+      </div>
+    </div>
     <button id="inviteBtn" class="invite-btn">
       <span class="ico-inline"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M4 16 27 5 20 27l-5-9-9-2z" fill="#F6C453" stroke="#8A5A16" stroke-width="1.3" stroke-linejoin="round"/><path d="M15 18 27 5" fill="none" stroke="#8A5A16" stroke-width="1.1"/></svg></span>
       Пригласи друга - бонус получите оба.
     </button>
-    <p class="invite-sub">ПОКА НЕ РАБОТАЕТ, но друзей приглашать можете и нужете.</p>
+    <p class="invite-sub" id="inviteSub">Пригласить можно уже сейчас — награда придёт отдельным уведомлением, когда друг поймает 10-ю рыбу.</p>
     <div id="refBlock"></div>
     <div class="sublist" id="toplist"></div>
   </div>
@@ -870,6 +906,17 @@
       <div class="modal-actions">
         <button id="onboardSkipBtn" class="modal-btn-cancel">Пропустить</button>
         <button id="onboardNextBtn" class="modal-btn-primary">Далее</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="locModal">
+    <div class="modal-card loc-modal-card">
+      <h2>Выбери локацию</h2>
+      <p class="loc-modal-sub">Открывай новые места, повышая уровень</p>
+      <div class="locgrid" id="locGrid"></div>
+      <div class="modal-actions">
+        <button id="locModalCloseBtn" class="modal-btn-primary">Готово</button>
       </div>
     </div>
   </div>
@@ -1593,6 +1640,19 @@
   function currentLoc(){ return getLocation(state.currentLocation); }
   function isLocUnlocked(loc){ return state.level >= loc.unlockLevel; }
 
+  // Иконки биомов для переключателя локации и карточек в модалке выбора —
+  // маленькие, узнаваемые силуэты, никак не завязанные на эмодзи-шрифт устройства.
+  const LOC_ICONS = {
+    harbor:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="9" r="3" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M16 12v15M8 21c0 4 3.6 7 8 7s8-3 8-7M6 17h6M20 17h6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+    reef:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M5 24c4-2 6-8 4-13 3 1 5 5 4 10 2-4 1-10-2-13 4 0 7 4 7 9 1-5 5-8 9-7-3 2-4 6-3 10 2-3 6-4 8-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    ice:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 3v26M6 9l20 14M26 9 6 23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M16 3l-3 3M16 3l3 3M16 29l-3-3M16 29l3-3M6 9l4 .5M6 9l1.5-4M26 9l-4 .5M26 9l-1.5-4M6 23l4-.5M6 23l1.5 4M26 23l-4-.5M26 23l-1.5 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+    jungle:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 29V15" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M16 15C16 7 10 3 4 4c1 8 6 12 12 11Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M16 19C16 11 22 7 28 8c-1 8-6 12-12 11Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
+    abyss:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><ellipse cx="16" cy="16" rx="13" ry="8" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="16" cy="16" r="3.4" fill="currentColor"/><path d="M3 16c2-3 4-3 6 0M23 16c2-3 4-3 6 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+    volcano:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 26 13 10l3 5 3-5 7 16Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M16 3c-1.6 1.8-1.6 3.2 0 5 1.6-1.8 1.6-3.2 0-5Z" fill="currentColor"/><path d="M2 26h28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
+  };
+  function locIcon(scenery){ return LOC_ICONS[scenery] || LOC_ICONS.harbor; }
+
+
   function pickFish(){
     const baseWeights = isBoostActive('luck') ? LUCK_WEIGHTS : getBait(state.activeBait).weights;
     const weights = applyLuckUpgrade(baseWeights);
@@ -1723,11 +1783,42 @@
       saveState();
     }).catch(()=>{}); // сеть подвела — не страшно, попробуем при следующем запуске
   }
+  // ---------- ПОЛУЧЕНИЕ ОТЛОЖЕННЫХ НАГРАД (/pendingRewards/$uid) ----------
+  // ВАЖНО: сервер НИКОГДА не дописывает монеты напрямую в /saves/$uid — этот
+  // узел каждые ~300мс перезаписывается целиком клиентским saveState(), и
+  // серверный бонус тут же затёрло бы устаревшим локальным состоянием.
+  // Вместо этого сервер (Cloud Function onSaveWritten, увидев, что приглашённый
+  // друг поймал 10-ю рыбу) кладёт запись в отдельный узел /pendingRewards/$uid,
+  // который клиент читает и "забирает" сам — так же, как забирает welcomeBonus
+  // из tryRegisterReferral(), только асинхронно и без гонки с автосохранением.
+  function claimPendingRewards(){
+    if(!fbReady() || !tg || !tg.initDataUnsafe || !tg.initDataUnsafe.user) return;
+    const uid = getUserId();
+    fetch(FIREBASE_URL + '/pendingRewards/' + uid + '.json').then(r=>r.json()).then(data=>{
+      if(!data) return;
+      let total = 0;
+      Object.keys(data).forEach(k=>{ total += (data[k] && data[k].coins) || 0; });
+      if(total > 0){
+        state.coins += total;
+        showToast(GIFT_SVG + ' Друг активно рыбачит! +' + total + ' ' + COIN_SVG);
+        sfx('coin'); refreshTopUI(); saveState();
+      }
+      // Забранные награды сразу удаляем на сервере, чтобы не начислить их повторно
+      // при следующем запуске (идемпотентность — как и с referralChecked выше).
+      fetch(FIREBASE_URL + '/pendingRewards/' + uid + '.json', { method:'DELETE' }).catch(()=>{});
+    }).catch(()=>{}); // сеть подвела — заберём при следующем запуске, ничего не потеряется
+  }
   // Список приглашённых друзей и статус их активации — читается напрямую
   // из Firebase (тот же принцип, что и общий лидерборд): /referralIndex
   // пишет ТОЛЬКО Cloud Function через Admin SDK (в правилах ".write": false),
   // клиент может это только читать.
   function renderReferrals(){
+    const sub = document.getElementById('inviteSub');
+    if(sub){
+      sub.textContent = referralFnReady()
+        ? 'Пригласить можно уже сейчас — награда придёт отдельным уведомлением, когда друг поймает 10-ю рыбу.'
+        : 'Ссылкой уже можно делиться. Бонусы за приглашения скоро включим — они придут задним числом всем, кто уже позвал друзей.';
+    }
     const box = document.getElementById('refBlock');
     if(!box) return;
     box.innerHTML = '';
@@ -1762,8 +1853,9 @@
     catchVal=document.getElementById('catchVal'), catchcard=document.getElementById('catchcard'),
     lvlVal=document.getElementById('lvlVal'), xpText=document.getElementById('xpText'),
     xpfill=document.getElementById('xpfill'), gearline=document.getElementById('gearline'), boostline=document.getElementById('boostline'),
-    stageEl=document.getElementById('screen-fish'), locTitle=document.getElementById('locTitle'),
-    locrow=document.getElementById('locrow'), bonusbanner=document.getElementById('bonusbanner'),
+    stageEl=document.getElementById('screen-fish'), locSwitchBtn=document.getElementById('locSwitchBtn'),
+    locSwitchName=document.getElementById('locSwitchName'), locSwitchIcon=document.getElementById('locSwitchIcon'),
+    locModal=document.getElementById('locModal'), locGrid=document.getElementById('locGrid'), bonusbanner=document.getElementById('bonusbanner'),
     icehole=document.getElementById('icehole'), appEl=document.getElementById('app'),
     screenFlashEl=document.getElementById('screen-flash');
 
@@ -2179,25 +2271,34 @@
     gearline.textContent = getRod(state.activeRod).name + ' · ' + getBait(state.activeBait).name;
     refreshBoostLine();
     applySkin(state.activeSkin);
-    locTitle.textContent = currentLoc().name;
+    locSwitchName.textContent = currentLoc().name;
+    locSwitchIcon.innerHTML = locIcon(currentLoc().scenery);
+    locSwitchBtn.style.setProperty('--loc-top', currentLoc().top);
+    locSwitchBtn.style.setProperty('--loc-bottom', currentLoc().bottom);
     stageEl.style.background = `linear-gradient(to bottom, ${currentLoc().top} 0%, ${currentLoc().bottom} 32%, ${currentLoc().bottom} 33%, var(--water-deep) 68%)`;
     if(stageEl.dataset.loc !== currentLoc().id){
       stageEl.dataset.loc = currentLoc().id;
       renderScenery(currentLoc());
     }
-    renderLocRow();
+    if(locModal.classList.contains('show')) renderLocGrid();
     refreshBonusBanner();
   }
 
-  function renderLocRow(){
-    locrow.innerHTML = '';
+  function renderLocGrid(){
+    locGrid.innerHTML = '';
     LOCATIONS.forEach(loc=>{
       const unlocked = isLocUnlocked(loc);
-      const p = document.createElement('div');
-      p.className = 'locpill' + (loc.id===state.currentLocation?' active':'') + (!unlocked?' locked':'');
-      p.innerHTML = unlocked ? loc.name : (LOCK_SVG + ' ур.' + loc.unlockLevel);
-      if(unlocked) p.addEventListener('click', ()=>{ state.currentLocation = loc.id; saveState(); refreshTopUI(); });
-      locrow.appendChild(p);
+      const card = document.createElement('div');
+      card.className = 'loccard' + (loc.id===state.currentLocation?' active':'') + (!unlocked?' locked':'');
+      card.style.background = `linear-gradient(160deg, ${loc.top} 0%, ${loc.bottom} 100%)`;
+      card.innerHTML = `<span class="loccard-icon">${locIcon(loc.scenery)}</span>`
+        + (unlocked ? '' : `<span class="loccard-lockbadge">${LOCK_SVG}</span>`)
+        + `<span class="loccard-info"><span class="loccard-name">${loc.name}</span><span class="loccard-sub">${unlocked ? 'Открыто' : 'Ур. ' + loc.unlockLevel}</span></span>`;
+      if(unlocked) card.addEventListener('click', ()=>{
+        state.currentLocation = loc.id; saveState(); refreshTopUI(); haptic('light');
+        locModal.classList.remove('show');
+      });
+      locGrid.appendChild(card);
     });
   }
 
@@ -2287,10 +2388,16 @@
     if(Date.now() < nextCastAllowedAt) return;
     const loc = currentLoc();
     gameState='casting'; btn.disabled=true; status.textContent=loc.flavor.cast; haptic('light');
-    const tip = getTipPoint();
     rodsvg.classList.remove('casting'); void rodsvg.getBoundingClientRect(); rodsvg.classList.add('casting');
 
-    const cx = stageEl.clientWidth/2, cy = Math.min(window.innerHeight*0.62, window.innerHeight*0.30 + 50 + Math.random()*35);
+    // ВАЖНО: используем реальную высоту контейнера сцены (stageEl.clientHeight),
+    // а не window.innerHeight — на iPad/десктопе в развёрнутом режиме Telegram
+    // #app ограничен по высоте и отцентрирован, а window.innerHeight в момент
+    // разворачивания может быть неверным (поэтому в CSS есть отдельная поправка
+    // --tg-vh). Раньше из-за этого поплавок приземлялся не там, где реально
+    // нарисован контейнер, и леска визуально "улетала" мимо него.
+    const stageH = stageEl.clientHeight;
+    const cx = stageEl.clientWidth/2, cy = Math.min(stageH*0.62, stageH*0.30 + 50 + Math.random()*35);
     bobber.style.left=cx+'px'; bobber.style.top=cy+'px';
     bobber.classList.remove('hidden','idle-bob','bite-jitter');
 
@@ -2301,24 +2408,30 @@
       icehole.classList.remove('show');
     }
 
-    // Леска "вылетает" из катушки: рисуем финальную провисающую кривую целиком,
-    // но скрываем её через stroke-dasharray/dashoffset и раскрываем анимацией
-    // dashoffset — как будто леска разматывается и летит к поплавку.
+    // Леска "вылетает" из катушки и летит к поплавку. ВАЖНО: кончик удочки в этот
+    // момент сам качается по CSS-анимации rodCast (взмах длится 550мс), поэтому
+    // нельзя один раз посчитать tip в начале и рисовать леску от застывшей точки —
+    // именно из-за этого раньше леска "отрывалась" от удочки во время заброса.
+    // Вместо dashoffset-трюка на каждом кадре пересчитываем актуальный tip и тянем
+    // от него линию к целевой точке поплавка с нарастающим прогрессом.
     const BOBBER_H = 52;
     const end = { x: cx, y: cy - BOBBER_H/2 + BOBBER_H*0.32 }; // якорь совпадает с формулой в updateLinePosition
-    const len = Math.hypot(end.x - tip.x, end.y - tip.y);
-    const castPath = buildLinePath(tip, end, lineSagFor(len,false)*0.35);
-    lineEl.style.transition='none'; lineEl.classList.remove('tense');
-    lineEl.setAttribute('d', castPath);
-    const totalLen = lineEl.getTotalLength ? lineEl.getTotalLength() : len;
-    lineEl.style.strokeDasharray = totalLen;
-    lineEl.style.strokeDashoffset = totalLen;
+    lineEl.style.transition='none'; lineEl.style.strokeDasharray='none'; lineEl.style.strokeDashoffset='0';
+    lineEl.classList.remove('tense');
+    const castStart = performance.now();
+    const CAST_FLY_DELAY = 120, CAST_TRACK_UNTIL = 560; // синхронизировано с таймингами ниже
+    (function castLineFrame(){
+      const elapsed = performance.now() - castStart;
+      const progress = Math.max(0, Math.min(1, (elapsed - CAST_FLY_DELAY) / (CAST_TRACK_UNTIL - CAST_FLY_DELAY)));
+      const eased = 1 - Math.pow(1-progress, 2);
+      const liveTip = getTipPoint();
+      const curEnd = { x: liveTip.x + (end.x - liveTip.x)*eased, y: liveTip.y + (end.y - liveTip.y)*eased };
+      const len = Math.hypot(curEnd.x - liveTip.x, curEnd.y - liveTip.y);
+      lineEl.setAttribute('d', buildLinePath(liveTip, curEnd, lineSagFor(len,false)*0.35*eased));
+      if(elapsed < CAST_TRACK_UNTIL) requestAnimationFrame(castLineFrame);
+    })();
 
     setTimeout(()=>{
-      requestAnimationFrame(()=>{
-        lineEl.style.transition = 'stroke-dashoffset .35s ease-out';
-        lineEl.style.strokeDashoffset = 0;
-      });
       bobber.classList.add('landing');
     }, 120);
 
@@ -2686,7 +2799,15 @@
     settingsModal.classList.add('show');
     haptic('light');
   });
-  document.getElementById('settingsCloseBtn').addEventListener('click', ()=>{
+  locSwitchBtn.addEventListener('click', ()=>{
+    renderLocGrid();
+    locModal.classList.add('show');
+    haptic('light');
+  });
+  document.getElementById('locModalCloseBtn').addEventListener('click', ()=>{
+    locModal.classList.remove('show');
+  });
+  locModal.addEventListener('click', (e)=>{ if(e.target === locModal) locModal.classList.remove('show'); });  document.getElementById('settingsCloseBtn').addEventListener('click', ()=>{
     settingsModal.classList.remove('show');
   });
   // Переключатель вибрации: реагирует на тактильную отдачу игры (haptic()).
@@ -3017,6 +3138,7 @@
   loadState(function(){
     fixInventory(); ensureQuests(); ensureStory(); refreshTopUI(); syncLeaderboard();
     tryRegisterReferral();
+    claimPendingRewards();
     if(!state.onboardingDone) openOnboarding();
   });
 })();
