@@ -188,7 +188,7 @@
 
   .loc-modal-card{max-width:380px; max-height:82vh; display:flex; flex-direction:column;}
   .loc-modal-sub{margin-top:-6px;}
-  .locgrid{display:grid; grid-template-columns:1fr 1fr; gap:10px; overflow-y:auto; -webkit-overflow-scrolling:touch;
+  .locgrid{display:grid; grid-template-columns:1fr 1fr; gap:10px; overflow-y:auto; touch-action:pan-y; -webkit-overflow-scrolling:touch;
     padding:2px 2px 4px; margin:2px 0 4px;}
   .loccard{position:relative; border-radius:16px; overflow:hidden; aspect-ratio:1/0.92; display:flex; flex-direction:column;
     justify-content:space-between; padding:9px; text-align:left; border:2px solid transparent; cursor:pointer;
@@ -408,7 +408,7 @@
   .subhead h2{font-family:'Baloo 2',sans-serif; font-size:23px; margin:0 0 3px;}
   .subhead p{margin:0; font-size:11.5px; opacity:.6; font-weight:600;}
   .subhead .pill{flex-shrink:0; margin-top:1px;}
-  .sublist{flex:1; overflow-y:auto; padding:12px 16px calc(24px + 92px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; gap:10px; -webkit-overflow-scrolling:touch; overscroll-behavior-y:contain;}
+  .sublist{flex:1; overflow-y:auto; touch-action:pan-y; padding:12px 16px calc(24px + 92px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; gap:10px; -webkit-overflow-scrolling:touch; overscroll-behavior-y:contain;}
 
   .card2{background:var(--card); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border:1px solid var(--glass-border); border-radius:var(--radius-md); padding:13px; display:flex; align-items:center; gap:11px; box-shadow:0 4px 14px rgba(0,0,0,0.18); transition:transform .12s ease;}
   .card2:active{transform:scale(.985);}
@@ -472,7 +472,7 @@
      листать, чтобы найти нужный раздел. Теперь это горизонтальный ряд вкладок
      (с прокруткой вбок, если не помещаются), и в списке показывается только
      содержимое активной вкладки — списки стали короткими и предсказуемыми. */
-  .shop-tabs{display:flex; gap:7px; padding:10px 16px 2px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; flex-shrink:0;}
+  .shop-tabs{display:flex; gap:7px; padding:10px 16px 2px; overflow-x:auto; touch-action:pan-x; -webkit-overflow-scrolling:touch; scrollbar-width:none; flex-shrink:0;}
   .shop-tabs::-webkit-scrollbar{display:none;}
   .shoptab{flex:0 0 auto; border:1px solid var(--glass-border); background:rgba(10,31,38,0.45); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); color:rgba(247,243,232,0.65);
     border-radius:13px; padding:9px 14px; font-weight:800; font-size:12px; font-family:'Baloo 2',sans-serif; white-space:nowrap; transition:background .15s ease, color .15s ease;}
@@ -492,7 +492,19 @@
   #settingsModal .settingrow{margin-top:0;}
   #settingsModal .btn-reset-progress{margin-top:14px;}
 
-  .storycard{background:var(--card); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border:1px solid var(--glass-border); border-radius:var(--radius-lg); padding:16px; box-shadow:0 4px 14px rgba(0,0,0,0.18);}
+  .storycard{background:var(--card); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border:1px solid var(--glass-border); border-radius:var(--radius-lg); padding:16px; box-shadow:0 4px 14px rgba(0,0,0,0.18); overflow:hidden;}
+  /* Баннер главы: те же панорамные SVG-иллюстрации локаций, что служат фоном
+     во время рыбалки, здесь дают сюжету лицо - у каждой главы есть картинка
+     места действия вместо голого текста. Отрицательные поля утягивают баннер
+     к краям карточки (у .storycard теперь overflow:hidden, поэтому верхние
+     углы аккуратно обрежутся по радиусу карточки). */
+  .schapter-banner{position:relative; height:104px; margin:-16px -16px 12px; background-size:cover;}
+  .schapter-banner svg{position:absolute; inset:0; width:100%; height:100%; display:block;}
+  .schapter-banner::after{content:''; position:absolute; inset:0; background:linear-gradient(180deg, rgba(10,20,25,0) 40%, rgba(10,20,25,0.55) 100%);}
+  .schapter-banner-badge{position:absolute; right:10px; bottom:10px; width:32px; height:32px; border-radius:50%; z-index:1;
+    background:rgba(10,20,25,0.55); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);
+    display:flex; align-items:center; justify-content:center; box-shadow:0 3px 10px rgba(0,0,0,0.35), inset 0 0 0 1.5px rgba(255,255,255,0.14);}
+  .schapter-banner-badge svg{position:static; width:18px; height:18px;}
   .storycard .schapter{font-size:10.5px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:var(--gold); margin-bottom:5px;}
   .storycard .stitle{font-family:'Baloo 2',sans-serif; font-weight:800; font-size:15.5px; margin-bottom:7px; line-height:1.3;}
   .storycard .stext{font-size:12px; line-height:1.55; opacity:.8; margin-bottom:12px;}
@@ -1128,10 +1140,11 @@
   const TRASH_SVG = '<span class="ico-inline"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M9 10h14l-1.4 17.2a2 2 0 0 1-2 1.8H12.4a2 2 0 0 1-2-1.8L9 10Z" fill="none" stroke="#FF9C82" stroke-width="2" stroke-linejoin="round"/><path d="M6 10h20M13 6h6a1.5 1.5 0 0 1 1.5 1.5V10h-9V7.5A1.5 1.5 0 0 1 13 6Z" fill="none" stroke="#FF9C82" stroke-width="2" stroke-linejoin="round"/><path d="M13 14.5v9M19 14.5v9" stroke="#FF9C82" stroke-width="1.8" stroke-linecap="round"/></svg></span>';
   const PARTY_SVG = '<span class="ico-inline"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 26 22 10" stroke="#D9962C" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="9" r="2" fill="#FF7A59"/><circle cx="20" cy="6" r="1.6" fill="#F6C453"/><circle cx="25" cy="16" r="2" fill="#63B7EE"/><circle cx="14" cy="16" r="1.4" fill="#7FE08F"/><rect x="21.7" y="20.3" width="3" height="3" fill="#F6C453" transform="rotate(20 23.2 21.8)"/><circle cx="6" cy="19" r="1.4" fill="#F6C453"/></svg></span>';
   const FISH_ICON_SVG = '<span class="ico-inline"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M4 16c5-7 14-9 21-6-1 2-1 10 0 12-7 3-16 1-21-6Z" fill="#7FD8E0" stroke="#2E7480" stroke-width="1.2"/><path d="M25 10c2 2 3 4 3 6s-1 4-3 6c-1-2-1-10 0-12Z" fill="#5CB8C4"/><circle cx="10.5" cy="14" r="1.3" fill="#0A1F26"/></svg></span>';
+  const MYSTERY_SVG = '<span class="ico-inline"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M4 16c5-7 14-9 21-6-1 2-1 10 0 12-7 3-16 1-21-6Z" fill="none" stroke="rgba(247,243,232,0.4)" stroke-width="1.6" stroke-dasharray="2.4 2.6"/><path d="M25 10c2 2 3 4 3 6s-1 4-3 6c-1-2-1-10 0-12Z" fill="rgba(247,243,232,0.18)"/><text x="12.5" y="19.5" font-family=\'Baloo 2\',sans-serif font-weight="800" font-size="10" fill="rgba(247,243,232,0.55)">?</text></svg></span>';
   const GIFT_SVG = '<span class="ico-inline"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="13" width="20" height="14" rx="2" fill="#FF7A59"/><rect x="6" y="13" width="20" height="5" fill="#D9502E"/><rect x="14" y="13" width="4" height="14" fill="#F6C453"/><path d="M16 13c-2-6-9-6-9-1 0 1.5 2 1 9 1zM16 13c2-6 9-6 9-1 0 1.5-2 1-9 1z" fill="#F6C453" stroke="#D9962C" stroke-width="1"/></svg></span>';
 
   const RARITY_LABEL = ['обычная','обычная','редкая','ценная','легендарная'];
-  const RARITY_SPEED = [1, 1, 0.8, 0.6, 0.42]; // множитель окна поклёва: чем реже рыба, тем короче окно
+  const RARITY_SPEED = [1, 1, 0.85, 0.68, 0.52]; // множитель окна поклёва: чем реже рыба, тем короче окно
 
   // ---------- УНИКАЛЬНЫЕ SVG-ИКОНКИ ДЛЯ КАЖДОГО ВИДА РЫБЫ ----------
   function svgTag(inner){ return '<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">'+inner+'</svg>'; }
@@ -1317,11 +1330,11 @@
   ];
 
   const RODS = [
-    {id:'bamboo', name:'Бамбуковая удочка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 27 L24 6" stroke="#B98550" stroke-width="2.6" stroke-linecap="round"/><path d="M24 6 Q28 16 22.5 25" fill="none" stroke="#F7F3E8" stroke-width="1.3" stroke-dasharray="2 2.4"/><path d="M22.5 25q-2.4 2-1.2 4.4" fill="none" stroke="#D9962C" stroke-width="1.8" stroke-linecap="round"/></svg>', desc:'Базовое окно поклёва 700 мс · зона вываживания без бонуса', window:700, price:0, unlockLevel:1, reelZoneMult:1},
-    {id:'carbon', name:'Карбоновая удочка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 5v14a5 5 0 1 0 5-5" fill="none" stroke="#9AA7AD" stroke-width="2.6" stroke-linecap="round"/><circle cx="16" cy="5" r="2" fill="none" stroke="#9AA7AD" stroke-width="2"/></svg>', desc:'Окно поклёва 950 мс · жёстче держит нагрузку, зона вываживания шире на 5%', window:950, price:900, unlockLevel:5, reelZoneMult:1.05},
-    {id:'titan', name:'Титановая удочка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 8v-3M16 27v-3M8 16H5M27 16h-3M10.3 10.3l-2-2M23.7 23.7l-2-2M10.3 21.7l-2 2M23.7 8.3l-2 2" stroke="#C9D6DA" stroke-width="2.4" stroke-linecap="round"/><circle cx="16" cy="16" r="7" fill="#9AA7AD" stroke="#5c6a70" stroke-width="1.2"/><circle cx="16" cy="16" r="3" fill="#0A1F26" opacity=".4"/></svg>', desc:'Окно поклёва 1300 мс · зона вываживания шире на 10%', window:1300, price:5200, unlockLevel:13, reelZoneMult:1.10},
-    {id:'abyssal', name:'Абиссальная удочка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 10v18M9 6l7 8 7-8M9 6v6M23 6v6" fill="none" stroke="#6FE8E8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>', desc:'Окно поклёва 1700 мс · зона вываживания шире на 15%', window:1700, price:9500, unlockLevel:19, reelZoneMult:1.15},
-    {id:'magma', name:'Магматическая удочка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 6c5 7 8 11 8 15a8 8 0 1 1-16 0c0-4 3-8 8-15z" fill="none" stroke="#FF7A2E" stroke-width="2.4" stroke-linejoin="round"/><circle cx="16" cy="21" r="3" fill="#FF7A2E"/></svg>', desc:'Окно поклёва 2200 мс · зона вываживания шире на 20%', window:2200, price:15000, unlockLevel:22, reelZoneMult:1.20},
+    {id:'bamboo', name:'Бамбуковая удочка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 27 L24 6" stroke="#B98550" stroke-width="2.6" stroke-linecap="round"/><path d="M24 6 Q28 16 22.5 25" fill="none" stroke="#F7F3E8" stroke-width="1.3" stroke-dasharray="2 2.4"/><path d="M22.5 25q-2.4 2-1.2 4.4" fill="none" stroke="#D9962C" stroke-width="1.8" stroke-linecap="round"/></svg>', desc:'Базовое окно поклёва 850 мс · зона вываживания без бонуса', window:850, price:0, unlockLevel:1, reelZoneMult:1},
+    {id:'carbon', name:'Карбоновая удочка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 5v14a5 5 0 1 0 5-5" fill="none" stroke="#9AA7AD" stroke-width="2.6" stroke-linecap="round"/><circle cx="16" cy="5" r="2" fill="none" stroke="#9AA7AD" stroke-width="2"/></svg>', desc:'Окно поклёва 1150 мс · жёстче держит нагрузку, зона вываживания шире на 5%', window:1150, price:900, unlockLevel:5, reelZoneMult:1.05},
+    {id:'titan', name:'Титановая удочка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 8v-3M16 27v-3M8 16H5M27 16h-3M10.3 10.3l-2-2M23.7 23.7l-2-2M10.3 21.7l-2 2M23.7 8.3l-2 2" stroke="#C9D6DA" stroke-width="2.4" stroke-linecap="round"/><circle cx="16" cy="16" r="7" fill="#9AA7AD" stroke="#5c6a70" stroke-width="1.2"/><circle cx="16" cy="16" r="3" fill="#0A1F26" opacity=".4"/></svg>', desc:'Окно поклёва 1550 мс · зона вываживания шире на 10%', window:1550, price:5200, unlockLevel:13, reelZoneMult:1.10},
+    {id:'abyssal', name:'Абиссальная удочка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 10v18M9 6l7 8 7-8M9 6v6M23 6v6" fill="none" stroke="#6FE8E8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>', desc:'Окно поклёва 2050 мс · зона вываживания шире на 15%', window:2050, price:9500, unlockLevel:19, reelZoneMult:1.15},
+    {id:'magma', name:'Магматическая удочка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 6c5 7 8 11 8 15a8 8 0 1 1-16 0c0-4 3-8 8-15z" fill="none" stroke="#FF7A2E" stroke-width="2.4" stroke-linejoin="round"/><circle cx="16" cy="21" r="3" fill="#FF7A2E"/></svg>', desc:'Окно поклёва 2650 мс · зона вываживания шире на 20%', window:2650, price:15000, unlockLevel:22, reelZoneMult:1.20},
   ];
   const BAITS = [
     {id:'plain', name:'Обычная наживка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 22c2-6 4 4 8-2s2-10 8-8 4 8 2 12" fill="none" stroke="#E8938A" stroke-width="4" stroke-linecap="round"/></svg>', desc:'Стандартные шансы улова · без особенностей', weights:[40,30,18,9,3], price:0, unlockLevel:1},
@@ -1389,16 +1402,16 @@
   //    прокачкой - после условного 15-20 уровня выгода уже почти незаметна,
   //    и дальнейшие покупки — осознанный "избыточный" sink для тех, у кого
   //    просто накопилось много монет.
+  // Раньше вываживание было просто серией тапов, и никакая прокачка не
+  // была напрямую привязана к самому процессу удержания рыбы в зоне.
+  // Теперь это отдельный навык (аналоговое слежение), поэтому нужна
+  // прокачка, которая реально в нём помогает: быстрее растёт прогресс и
+  // меньше теряется, когда рыба на миг выходит из зоны игрока.
   const WORKSHOP_ITEMS = [
-    { id:'luck', name:'Чутьё рыбака', icon:'🍀', desc:'Стабильно смещает шансы клёва в пользу редкой и ценной рыбы', baseCost:900, growthPow:1.47, capEffect:18, satK:0.15 },
-    { id:'income', name:'Деловая хватка', icon:'💰', desc:'Поднимает цену продажи всего улова на рынке', baseCost:1100, growthPow:1.52, capEffect:0.5, satK:0.12 },
-    { id:'comfort', name:'Твёрдая рука', icon:'🎯', desc:'Расширяет окно подсечки при поклёве и слегка уширяет зону вываживания - легче не прозевать поклёв и удержать рыбу в зоне', baseCost:700, growthPow:1.4, capEffect:0.6, satK:0.13 },
-    // Раньше вываживание было просто серией тапов, и никакая прокачка не
-    // была напрямую привязана к самому процессу удержания рыбы в зоне.
-    // Теперь это отдельный навык (аналоговое слежение), поэтому нужна
-    // прокачка, которая реально в нём помогает: быстрее растёт прогресс и
-    // меньше теряется, когда рыба на миг выходит из зоны игрока.
-    { id:'grip', name:'Цепкая хватка', icon:'💪', desc:'Быстрее растёт прогресс вываживания и меньше теряется, если рыба ненадолго вышла из зоны', baseCost:1300, growthPow:1.5, capEffect:0.55, satK:0.14 },
+    { id:'luck', name:'Чутьё рыбака', icon:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="5.6" fill="#6FAE55" stroke="#3d6b2c" stroke-width="1.4"/><path d="M16 3v5M16 24v5M3 16h5M24 16h5M8 8l3.2 3.2M20.8 20.8 24 24M8 24l3.2-3.2M20.8 11.2 24 8" stroke="#8FBF6E" stroke-width="1.8" stroke-linecap="round"/></svg>', desc:'Стабильно смещает шансы клёва в пользу редкой и ценной рыбы', baseCost:900, growthPow:1.47, capEffect:18, satK:0.15 },
+    { id:'income', name:'Деловая хватка', icon:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><ellipse cx="15" cy="25" rx="9" ry="3.4" fill="#D9962C"/><ellipse cx="15" cy="20.6" rx="9" ry="3.4" fill="#F6C453" stroke="#8A5A16" stroke-width="1"/><ellipse cx="15" cy="16.2" rx="9" ry="3.4" fill="#FFE9B0" stroke="#8A5A16" stroke-width="1"/><path d="M24 4v9M20 8.5 24 4l4 4.5" fill="none" stroke="#7FE08F" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>', desc:'Поднимает цену продажи всего улова на рынке', baseCost:1100, growthPow:1.52, capEffect:0.5, satK:0.12 },
+    { id:'comfort', name:'Твёрдая рука', icon:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M10 27v-9.5a2 2 0 1 1 4 0v4.7M14 22.2v-9a2 2 0 1 1 4 0v6.4M18 19.6v-6.2a2 2 0 1 1 4 0v8.4c0 4-2.8 6.7-6.6 6.7h-1.7c-2.8 0-4.7-1.3-6-3.6L5.6 20.6c-.7-1.2.4-2.7 1.7-2.3L10 19.4" fill="none" stroke="#F7F3E8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>', desc:'Расширяет окно подсечки при поклёве и слегка уширяет зону вываживания - легче не прозевать поклёв и удержать рыбу в зоне', baseCost:700, growthPow:1.4, capEffect:0.6, satK:0.13 },
+    { id:'grip', name:'Цепкая хватка', icon:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="7" y="14" width="17" height="13" rx="5.5" fill="#E8734A" stroke="#B8481F" stroke-width="1.3"/><path d="M11 14v-3.4a2 2 0 1 1 4 0V14M15 14v-4.6a2 2 0 1 1 4 0V14M19 14v-3.4a2 2 0 1 1 4 0V14" fill="none" stroke="#B8481F" stroke-width="1.3" stroke-linecap="round"/><path d="M7.5 19.5a4.5 4.5 0 0 1 4.5-4.5" fill="none" stroke="#F2A897" stroke-width="1.4" stroke-linecap="round"/></svg>', desc:'Быстрее растёт прогресс вываживания и меньше теряется, если рыба ненадолго вышла из зоны', baseCost:1300, growthPow:1.5, capEffect:0.55, satK:0.14 },
   ];
   function ensureUpgrades(){
     if(!state.upgrades) state.upgrades = { luck:0, income:0, comfort:0, grip:0 };
@@ -2474,11 +2487,11 @@
   // но никогда не требуется реакция быстрее человеческой, потому что это
   // непрерывное слежение, а не одно попадание в узкое окно.
   const REEL_DIFFICULTY = [
-    {zoneWidth:0.40, fishSpeed:0.00028, retarget:[1200,2200], gravity:0.00050, rise:0.00080, gain:34, loss:10},
-    {zoneWidth:0.36, fishSpeed:0.00032, retarget:[1000,1900], gravity:0.00052, rise:0.00078, gain:30, loss:11},
-    {zoneWidth:0.30, fishSpeed:0.00045, retarget:[800,1500],  gravity:0.00058, rise:0.00076, gain:25, loss:14},
-    {zoneWidth:0.25, fishSpeed:0.00058, retarget:[600,1150],  gravity:0.00064, rise:0.00074, gain:21, loss:17},
-    {zoneWidth:0.21, fishSpeed:0.00072, retarget:[450,900],   gravity:0.00070, rise:0.00072, gain:18, loss:20},
+    {zoneWidth:0.46, fishSpeed:0.00024, retarget:[1380,2530], gravity:0.00043, rise:0.00080, gain:39, loss:8},
+    {zoneWidth:0.41, fishSpeed:0.00027, retarget:[1150,2185], gravity:0.00044, rise:0.00078, gain:35, loss:9},
+    {zoneWidth:0.35, fishSpeed:0.00038, retarget:[920,1725],  gravity:0.00049, rise:0.00076, gain:29, loss:12},
+    {zoneWidth:0.29, fishSpeed:0.00049, retarget:[690,1320],  gravity:0.00054, rise:0.00074, gain:24, loss:14},
+    {zoneWidth:0.24, fishSpeed:0.00061, retarget:[520,1035],  gravity:0.00060, rise:0.00072, gain:21, loss:17},
   ];
 
   let reelHolding = false, reelZonePos = 0, reelZoneWidth = 0.3;
@@ -2489,7 +2502,7 @@
   // Грейс-период в начале вываживания: рыбка и зона стартуют в одной точке
   // (0.5), поэтому проверку на поражение временно не делаем строгой — иначе
   // игрок может проиграть ещё до того, как успел среагировать на первый кадр.
-  const REEL_GRACE_MS = 600, REEL_GRACE_FLOOR = 4;
+  const REEL_GRACE_MS = 750, REEL_GRACE_FLOOR = 6;
   let reelStartedAt = 0;
 
   function pull(){
@@ -3085,7 +3098,7 @@
       const unlocked = isLocUnlocked(loc);
       const btn = document.createElement('button');
       btn.className = 'shoptab' + (loc.id===activeCollTab?' active':'');
-      btn.textContent = unlocked ? loc.name : ('🔒 ' + loc.name);
+      btn.innerHTML = unlocked ? loc.name : (LOCK_SVG + ' ' + loc.name);
       btn.addEventListener('click', ()=>{ activeCollTab = loc.id; renderCollection(); });
       tabs.appendChild(btn);
     });
@@ -3105,7 +3118,7 @@
       const count = state.collectionTotal[f.id] || 0;
       const best = state.collectionBest[f.id] || 0;
       const el = document.createElement('div'); el.className='card2' + (count===0?' locked':'');
-      el.innerHTML = `<div class="icobox">${count>0?fishIconSVG(f):'❔'}</div>
+      el.innerHTML = `<div class="icobox">${count>0?fishIconSVG(f):MYSTERY_SVG}</div>
         <div class="info"><div class="name">${count>0?f.name:'???'}</div>
         <div class="desc">${count>0 ? ('Поймано: '+count+' · рекорд '+best.toFixed(2)+' кг · '+RARITY_LABEL[f.tier]) : 'Ещё не найдено'}</div></div>`;
       list.appendChild(el);
@@ -3147,6 +3160,47 @@
     return 'Глава ' + idx;
   }
 
+  // ---------- КАРТИНКИ ДЛЯ СЮЖЕТНЫХ ГЛАВ ----------
+  // Раньше сюжет был просто текстом на карточке - без единого визуального
+  // якоря. Своих иллюстраций под каждую из 26 глав рисовать неоправданно
+  // дорого, зато у игры уже есть атмосферные панорамы локаций (SCENERY_SVG) -
+  // те же, что служат фоном во время рыбалки. Переиспользуем их как баннер
+  // главы: главы группируются по локации, где разворачивается действие
+  // (границы совпадают с unlockLevel следующей локации - переходная глава
+  // "Курс на ..." ещё физически в старой локации, герой туда только
+  // собирается). Поверх баннера - маленький кружок-бейдж с иконкой типа
+  // задания, чтобы даже несколько глав подряд с одной картинкой не сливались
+  // визуально в одно и то же.
+  const STORY_CHAPTER_LOC = ['harbor','harbor','harbor','harbor','harbor',
+    'reef','reef','reef','reef','reef',
+    'ice','ice','ice','ice',
+    'jungle','jungle','jungle','jungle',
+    'abyss','abyss','abyss',
+    'volcano','volcano','volcano','volcano','volcano'];
+  function storyChapterLoc(idx){
+    return STORY_CHAPTER_LOC[idx] || 'volcano';
+  }
+  const STORY_BADGE_SVG = {
+    catch_any: '<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M4 16c5-7 14-9 21-6-1 2-1 10 0 12-7 3-16 1-21-6Z" fill="#7FD8E0" stroke="#2E7480" stroke-width="1.2"/><path d="M25 10c2 2 3 4 3 6s-1 4-3 6c-1-2-1-10 0-12Z" fill="#5CB8C4"/><circle cx="10.5" cy="14" r="1.3" fill="#0A1F26"/></svg>',
+    catch_rare: '<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 4 22 12 16 28 10 12Z" fill="#B98CF2" stroke="#7A4BC9" stroke-width="1.2" stroke-linejoin="round"/><path d="M10 12h12" stroke="#7A4BC9" stroke-width="1" opacity="0.6"/><path d="M13 8l1.6 2M19 8l-1.6 2" stroke="#E8D6FF" stroke-width="1.3" stroke-linecap="round"/></svg>',
+    catch_heavy: '<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="13" width="6" height="7" rx="1.6" fill="#9AA7AD" stroke="#5c6a70" stroke-width="1"/><rect x="23" y="13" width="6" height="7" rx="1.6" fill="#9AA7AD" stroke="#5c6a70" stroke-width="1"/><rect x="9" y="15.3" width="14" height="2.4" fill="#5c6a70"/></svg>',
+    sell_coins: '<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><ellipse cx="16" cy="24" rx="10" ry="3.6" fill="#D9962C"/><ellipse cx="16" cy="19.4" rx="10" ry="3.6" fill="#F6C453" stroke="#8A5A16" stroke-width="1"/><ellipse cx="16" cy="14.8" rx="10" ry="3.6" fill="#FFE9B0" stroke="#8A5A16" stroke-width="1"/></svg>',
+    reach_level: '<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 6 26 18h-7v8h-6v-8H6Z" fill="#7FE08F" stroke="#3d8f4a" stroke-width="1.3" stroke-linejoin="round"/></svg>',
+    catch_legendary: '<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 3 20 12 30 13.5 22.5 20 24.5 30 16 24.8 7.5 30 9.5 20 2 13.5 12 12Z" fill="#F6C453" stroke="#8A5A16" stroke-width="1.1" stroke-linejoin="round"/></svg>',
+    catch_all_species: '<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M10 6h12v7a6 6 0 0 1-12 0V6z" fill="#F6C453" stroke="#8A5A16" stroke-width="1.3"/><path d="M10 8H6a4 4 0 0 0 4 6" fill="none" stroke="#D9962C" stroke-width="2" stroke-linecap="round"/><path d="M22 8h4a4 4 0 0 1-4 6" fill="none" stroke="#D9962C" stroke-width="2" stroke-linecap="round"/><rect x="14" y="19" width="4" height="5" fill="#D9962C"/><rect x="10" y="24" width="12" height="3" rx="1.5" fill="#F6C453" stroke="#8A5A16" stroke-width="1"/></svg>',
+  };
+  function storyBannerHTML(idx){
+    const ch = STORY_QUESTS[idx];
+    const locId = storyChapterLoc(idx);
+    const loc = LOCATIONS.find(l=>l.id===locId);
+    const scenery = SCENERY_SVG[locId] || '';
+    const badge = STORY_BADGE_SVG[ch.type] || '';
+    return `<div class="schapter-banner" style="background:linear-gradient(180deg, ${loc.top}66, ${loc.bottom})">
+      ${scenery}
+      <div class="schapter-banner-badge">${badge}</div>
+    </div>`;
+  }
+
   function renderStoryQuests(){
     ensureStory(); checkStoryLevel();
     const list = document.getElementById('questlist'); list.innerHTML = '';
@@ -3154,7 +3208,8 @@
     if(!ch){
       document.getElementById('questSummary').textContent = 'Сюжет пройден полностью - ты живая легенда Тихой Гавани!';
       const el = document.createElement('div'); el.className='storycard';
-      el.innerHTML = `<div class="schapter">Конец истории</div><div class="stitle">Все главы пройдены</div>
+      el.innerHTML = storyBannerHTML(STORY_QUESTS.length-1)
+        + `<div class="schapter">Конец истории</div><div class="stitle">Все главы пройдены</div>
         <div class="stext">Ты прошёл весь путь от новичка до легенды этих вод. Новые главы могут появиться позже.</div>`;
       list.appendChild(el);
       return;
@@ -3163,7 +3218,8 @@
     const done = state.storyProgress >= ch.target;
     const pct = Math.min(100, (state.storyProgress/ch.target)*100);
     const el = document.createElement('div'); el.className='storycard' + (done?' done':'');
-    el.innerHTML = `<div class="schapter">${storyChapterBadge(state.storyChapter)}</div>
+    el.innerHTML = storyBannerHTML(state.storyChapter)
+      + `<div class="schapter">${storyChapterBadge(state.storyChapter)}</div>
       <div class="stitle">${ch.title}</div>
       <div class="stext">${ch.story}</div>
       <div class="qbar"><div class="qfill" style="width:${pct}%"></div></div>
