@@ -409,6 +409,15 @@
   .subhead p{margin:0; font-size:11.5px; opacity:.6; font-weight:600;}
   .subhead .pill{flex-shrink:0; margin-top:1px;}
   .sublist{flex:1; overflow-y:auto; touch-action:pan-y; padding:12px 16px calc(24px + 92px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; gap:10px; -webkit-overflow-scrolling:touch; overscroll-behavior-y:contain;}
+  /* Гарантированный "хвост" внизу каждой прокручиваемой ленты (магазин/рынок/
+     задания/коллекция/топ). Раньше расстояние до навбара задавалось только
+     padding-bottom у .sublist: если контент ленты был почти равен высоте
+     экрана, scrollHeight мог оказаться равен clientHeight (из-за округления
+     в WebView Telegram на некоторых устройствах) - тогда прокрутка не
+     включалась вовсе, и последняя карточка оставалась перекрыта навбаром.
+     Реальный пустой блок (не padding) всегда учитывается в scrollHeight и
+     однозначно даёт ленте прокрутиться до конца на любом устройстве. */
+  .sublist::after{content:''; display:block; flex:0 0 auto; height:88px; width:1px;}
 
   .card2{background:var(--card); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border:1px solid var(--glass-border); border-radius:var(--radius-md); padding:13px; display:flex; align-items:center; gap:11px; box-shadow:0 4px 14px rgba(0,0,0,0.18); transition:transform .12s ease;}
   .card2:active{transform:scale(.985);}
@@ -865,7 +874,7 @@
         <div class="rarity" id="cc-rarity">обычная</div>
         <div class="xpline" id="cc-xp">+5 опыта</div>
         <div class="weightline" id="cc-weight">Вес: 0.3 кг</div>
-        <div class="hint">Продай в разделе «Рынок»</div>
+        <div class="hint" id="cc-hint">Продай в разделе «Рынок»</div>
         <button id="cc-close">Отлично!</button>
       </div>
     </div>
@@ -1145,6 +1154,51 @@
 
   const RARITY_LABEL = ['обычная','обычная','редкая','ценная','легендарная'];
   const RARITY_SPEED = [1, 1, 0.85, 0.68, 0.52]; // множитель окна поклёва: чем реже рыба, тем короче окно
+
+  // ---------- СЛУЧАЙНЫЕ НАХОДКИ НА КРЮЧКЕ ----------
+  // Вместо рыбы иногда попадается что-то другое - разбавляет однообразие
+  // поклёвок и даёт маленький сюрприз. Игрок не знает заранее, что клюнуло:
+  // подсечка выглядит и ощущается как обычная поклёвка (та же анимация и то
+  // же окно реакции), а тип улова раскрывается только на карточке результата.
+  // В отличие от рыбы, находка не требует вываживания - сундук/бутылка/сапог
+  // не "борются", поэтому после точной подсечки сразу показывается карточка.
+  const EVENT_CHANCE = 0.1; // ~1 из 10 поклёвок - находка, а не рыба
+  const EVENT_ITEMS = [
+    { id:'chest', name:'Сундук с монетами', kind:'coins', coinsRange:[60,140],
+      flavor:'Похоже, тут кто-то давно припрятал заначку...',
+      icon:'<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">'
+        + '<path d="M10 30h44v20a4 4 0 0 1-4 4H14a4 4 0 0 1-4-4V30Z" fill="#8A5A2E" stroke="#4A2E14" stroke-width="2.2" stroke-linejoin="round"/>'
+        + '<path d="M10 30c0-8.8 9.8-15 22-15s22 6.2 22 15" fill="#A6733E" stroke="#4A2E14" stroke-width="2.2" stroke-linejoin="round"/>'
+        + '<rect x="8.5" y="27.5" width="47" height="7.5" rx="2" fill="#D9962C" stroke="#4A2E14" stroke-width="2"/>'
+        + '<path d="M14 42h36M14 48h36" stroke="#6B4222" stroke-width="1.6" opacity="0.6"/>'
+        + '<circle cx="32" cy="33.5" r="5.4" fill="#F6C453" stroke="#8A5A16" stroke-width="1.6"/>'
+        + '<rect x="29.6" y="33.5" width="4.8" height="7" rx="1.6" fill="#8A5A16"/>'
+        + '</svg>' },
+    { id:'bottle', name:'Бутылка с посланием', kind:'lore', coinsRange:[20,60], xp:15,
+      flavor:'Записка внутри выцвела, но кое-что разобрать можно.',
+      icon:'<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">'
+        + '<path d="M27 7h10v9l4.5 6.5V48a6 6 0 0 1-6 6H28.5a6 6 0 0 1-6-6V22.5L27 16Z" fill="#8FD9C4" opacity="0.5" stroke="#4A9B84" stroke-width="2"/>'
+        + '<rect x="27" y="5" width="10" height="6" rx="2" fill="#5C4A32" stroke="#332318" stroke-width="1.4"/>'
+        + '<rect x="25.5" y="27" width="13" height="17" rx="1.6" fill="#F2E8D2" stroke="#C9B98A" stroke-width="1.2"/>'
+        + '<path d="M28 31h7M28 35h7M28 39h4.5" stroke="#8A7A54" stroke-width="1.3" stroke-linecap="round"/>'
+        + '</svg>' },
+    { id:'boot', name:'Старый сапог', kind:'junk', coinsRange:[1,5],
+      flavor:'Ну хоть что-то... рыбаки видали улов и получше.',
+      icon:'<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">'
+        + '<path d="M21 9h13v21l15 8.5v6a4.5 4.5 0 0 1-4.5 4.5H16a4.5 4.5 0 0 1-4.5-4.5V32.5a4.5 4.5 0 0 1 2.4-4L21 24Z" fill="#5C4A38" stroke="#2E2418" stroke-width="2.2" stroke-linejoin="round"/>'
+        + '<path d="M21 9h13v11H21Z" fill="#7A6650" opacity="0.65"/>'
+        + '<path d="M41 39.5h5.5A4.5 4.5 0 0 1 51 44v4.5H41Z" fill="#4A3A2C"/>'
+        + '<circle cx="25.5" cy="15" r="1.5" fill="#2E2418"/><circle cx="25.5" cy="20.5" r="1.5" fill="#2E2418"/>'
+        + '</svg>' },
+  ];
+  const BOTTLE_LORE = [
+    '«Здесь был Ржавый Боцман. Ищи меня у рифа, если не струсишь».',
+    '«Если нашёл это письмо - рыбалка тебе точно удалась».',
+    '«Легенда гласит: на дне Бездны спит рыба размером с лодку».',
+    '«Соль, ветер и терпение - вот и весь секрет хорошего улова».',
+    '«Заброшено с Ледяного озера. Долгий путь проделала эта бутылка...»',
+  ];
+  function pickEvent(){ return EVENT_ITEMS[Math.floor(Math.random()*EVENT_ITEMS.length)]; }
 
   // ---------- УНИКАЛЬНЫЕ SVG-ИКОНКИ ДЛЯ КАЖДОГО ВИДА РЫБЫ ----------
   function svgTag(inner){ return '<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">'+inner+'</svg>'; }
@@ -1831,7 +1885,7 @@
     icehole=document.getElementById('icehole'), appEl=document.getElementById('app'),
     screenFlashEl=document.getElementById('screen-flash');
 
-  let gameState='idle', biteTimeout, windowTimeout, currentFish=null, rippleInterval=null;
+  let gameState='idle', biteTimeout, windowTimeout, currentFish=null, currentEvent=null, rippleInterval=null;
 
   // ---------- ЗАЩИТА ОТ БЕСКОНЕЧНОГО СПАМА ПО КНОПКЕ ----------
   // Раньше кнопка одинаково реагировала на любой тап независимо от того, ждал ли
@@ -2446,7 +2500,11 @@
   function triggerBite(){
     if(gameState!=='waiting') return;
     clearInterval(rippleInterval);
-    gameState='biting'; currentFish=pickFish(); haptic('light'); sfx('bite');
+    gameState='biting'; haptic('light'); sfx('bite');
+    const isEvent = Math.random() < EVENT_CHANCE;
+    currentEvent = isEvent ? pickEvent() : null;
+    currentFish = isEvent ? null : pickFish();
+    const tier = currentFish ? currentFish.tier : 0; // находки клюют так же мягко, как обычная рыба
     biteStartedAt = Date.now();
     const variant = BITE_VARIANTS[Math.floor(Math.random()*BITE_VARIANTS.length)];
     bobber.classList.remove('idle-bob'); bobber.classList.add(variant);
@@ -2454,16 +2512,16 @@
     splash.style.left=rect.left+rect.width/2+'px'; splash.style.top=(rect.top+rect.height*0.91)+'px';
     splash.classList.remove('animate'); void splash.offsetWidth; splash.classList.add('animate');
     burstParticles(rect.left+rect.width/2, rect.top+rect.height/2, currentLoc().splashFx, 6);
-    if(currentFish.tier >= 2){
-      burstParticles(rect.left+rect.width/2, rect.top+rect.height/2, ['sparkle','star'], currentFish.tier>=4?12:7);
+    if(tier >= 2){
+      burstParticles(rect.left+rect.width/2, rect.top+rect.height/2, ['sparkle','star'], tier>=4?12:7);
     }
-    if(currentFish.tier >= 3) shakeScreen();
+    if(tier >= 3) shakeScreen();
     biteBang.innerHTML = FX_SVG[BITE_BANGS[Math.floor(Math.random()*BITE_BANGS.length)]];
     biteBang.style.left=rect.left+rect.width/2+'px'; biteBang.style.top=rect.top+'px';
     biteBang.classList.remove('show'); void biteBang.offsetWidth; biteBang.classList.add('show');
     status.textContent='КЛЮЁТ! Тяни!'; btn.textContent='Тяни!'; btn.classList.add('pull'); btn.disabled=false;
     const comfortMult = 1 + workshopEffectValue('comfort');
-    const winMs = Math.round(getRod(state.activeRod).window * RARITY_SPEED[currentFish.tier] * baitStat(getBait(state.activeBait),'biteWindowMult',1) * comfortMult);
+    const winMs = Math.round(getRod(state.activeRod).window * RARITY_SPEED[tier] * baitStat(getBait(state.activeBait),'biteWindowMult',1) * comfortMult);
     timerbar.style.display='block'; timerfill.style.transition='none'; timerfill.style.transform='scaleX(1)';
     requestAnimationFrame(()=>{ timerfill.style.transition=`transform ${winMs}ms linear`; timerfill.style.transform='scaleX(0)'; });
     windowTimeout = setTimeout(missedBite, winMs);
@@ -2510,6 +2568,7 @@
     if(Date.now() - biteStartedAt < MIN_REACTION_MS){ earlyStrike(); return; }
     clearTimeout(windowTimeout); haptic('success');
     bobber.classList.remove('bite-jitter','bite-jitter-2','bite-jitter-3');
+    if(currentEvent){ landEvent(); return; } // сундук/бутылка/сапог не "борются" - сразу к результату
     startReeling();
   }
 
@@ -2658,21 +2717,21 @@
     setTimeout(resetVisual, 900);
   }
 
-  function fishLeapEffect(fishDef){
+  function fishLeapEffect(iconHTML){
     const rect = bobber.getBoundingClientRect();
     const el = document.createElement('div');
     el.className = 'fishleap'; el.style.width='28px'; el.style.height='28px';
     el.style.left = (rect.left+rect.width/2)+'px'; el.style.top = (rect.top+rect.height/2)+'px';
-    el.innerHTML = fishIconSVG(fishDef);
+    el.innerHTML = iconHTML;
     document.body.appendChild(el);
     setTimeout(()=>el.remove(), 600);
   }
 
-  function flyFishToCounter(fishDef){
+  function flyFishToCounter(iconHTML){
     const from = bobber.getBoundingClientRect();
     const to = catchVal.getBoundingClientRect();
     const el = document.createElement('div');
-    el.className = 'flyfish'; el.style.width='22px'; el.style.height='22px'; el.innerHTML = fishIconSVG(fishDef);
+    el.className = 'flyfish'; el.style.width='22px'; el.style.height='22px'; el.innerHTML = iconHTML;
     el.style.left = (from.left + from.width/2 - 11) + 'px';
     el.style.top = (from.top + from.height/2 - 11) + 'px';
     el.style.transform = 'translate(0,0) scale(1)'; el.style.opacity = '1';
@@ -2694,8 +2753,9 @@
     const fish = currentFish;
     const bait = getBait(state.activeBait);
     const weight = Math.round(randomWeight(fish.tier) * baitStat(bait,'weightMult',1) * 100) / 100;
-    fishLeapEffect(fish);
-    setTimeout(()=>flyFishToCounter(fish), 260);
+    const iconHTML = fishIconSVG(fish);
+    fishLeapEffect(iconHTML);
+    setTimeout(()=>flyFishToCounter(iconHTML), 260);
     const bobRect = bobber.getBoundingClientRect();
     // Даже самая обычная рыба теперь даёт лёгкий всплеск частиц — раньше
     // искры/звёзды доставались только редкой рыбе (tier>=2), а массовая мелочь
@@ -2728,14 +2788,53 @@
     bumpStoryQuest('catch_all_species', distinctSpeciesCaught(), 'max');
     saveState(); refreshTopUI();
 
-    document.getElementById('cc-ico').innerHTML = fishIconSVG(fish);
+    document.getElementById('cc-ico').innerHTML = iconHTML;
     document.getElementById('cc-name').textContent = fish.name;
     const rarityEl = document.getElementById('cc-rarity');
     rarityEl.textContent = RARITY_LABEL[fish.tier]; rarityEl.className = 'rarity r' + fish.tier;
     document.getElementById('cc-xp').textContent = '+' + (fish.xp * (xpBoosted?2:1)) + ' опыта' + (xpBoosted?' (x2 буст)':'');
     document.getElementById('cc-weight').innerHTML = 'Вес: ' + weight.toFixed(2) + ' кг · цена ~' + fishPrice(fish, weight) + ' ' + COIN_SVG;
+    document.getElementById('cc-hint').textContent = 'Продай в разделе «Рынок»';
     const ccCard = document.querySelector('#catchcard .card');
     ccCard.className = 'card' + (fish.tier>=4?' r-legend':(fish.tier>=2?' r-rare':''));
+    catchcard.style.display = 'flex';
+    resetVisual();
+  }
+
+  // Разрешение поклёвки-находки (сундук/бутылка/сапог) - без вываживания,
+  // сразу к награде. Переиспользует карточку результата рыбы (#catchcard),
+  // чтобы не плодить отдельную модалку: та же вёрстка, только контент другой.
+  function landEvent(){
+    gameState='idle'; nextCastAllowedAt = Date.now() + CAST_COOLDOWN_MS;
+    bobber.classList.remove('reel-struggle','lvl2','lvl3'); rodsvg.classList.remove('reeling','lvl2','lvl3');
+    btn.classList.remove('lvl2','lvl3'); lineEl.classList.remove('tense');
+    const ev = currentEvent;
+    const coinsGain = ev.coinsRange[0] + Math.floor(Math.random()*(ev.coinsRange[1]-ev.coinsRange[0]+1));
+    const xpGain = ev.xp || 0;
+    fishLeapEffect(ev.icon);
+    setTimeout(()=>flyFishToCounter(ev.icon), 260);
+    const bobRect = bobber.getBoundingClientRect();
+    burstParticles(bobRect.left+bobRect.width/2, bobRect.top+bobRect.height/2, ['sparkle','dust'], ev.kind==='junk'?4:9);
+    popText(bobRect.left+bobRect.width/2, bobRect.top - 6, '+' + coinsGain, ev.kind==='coins'?'big':'');
+
+    let label, rClass, cardClass, subtitle;
+    if(ev.kind==='coins'){ haptic('success'); sfx('coin'); label='Находка'; rClass='r4'; cardClass=' r-legend'; subtitle = ev.flavor; }
+    else if(ev.kind==='lore'){ haptic('success'); sfx('catch'); label='Послание'; rClass='r2'; cardClass=' r-rare'; subtitle = BOTTLE_LORE[Math.floor(Math.random()*BOTTLE_LORE.length)]; }
+    else { haptic('light'); sfx('miss'); label='Хлам'; rClass='r0'; cardClass=''; subtitle = ev.flavor; }
+
+    state.coins += coinsGain;
+    if(xpGain) addXp(xpGain);
+    saveState(); refreshTopUI();
+
+    document.getElementById('cc-ico').innerHTML = ev.icon;
+    document.getElementById('cc-name').textContent = ev.name;
+    const rarityEl = document.getElementById('cc-rarity');
+    rarityEl.textContent = label; rarityEl.className = 'rarity ' + rClass;
+    document.getElementById('cc-xp').innerHTML = '+' + coinsGain + ' ' + COIN_SVG + (xpGain ? (' · +' + xpGain + ' опыта') : '');
+    document.getElementById('cc-weight').textContent = subtitle;
+    document.getElementById('cc-hint').textContent = xpGain ? 'Награда уже зачислена' : 'Монеты уже у тебя в кошельке';
+    const ccCard = document.querySelector('#catchcard .card');
+    ccCard.className = 'card' + cardClass;
     catchcard.style.display = 'flex';
     resetVisual();
   }
@@ -3193,10 +3292,8 @@
     const ch = STORY_QUESTS[idx];
     const locId = storyChapterLoc(idx);
     const loc = LOCATIONS.find(l=>l.id===locId);
-    const scenery = SCENERY_SVG[locId] || '';
     const badge = STORY_BADGE_SVG[ch.type] || '';
-    return `<div class="schapter-banner" style="background:linear-gradient(180deg, ${loc.top}66, ${loc.bottom})">
-      ${scenery}
+    return `<div class="schapter-banner" style="background:linear-gradient(135deg, ${loc.top}, ${loc.bottom})">
       <div class="schapter-banner-badge">${badge}</div>
     </div>`;
   }
