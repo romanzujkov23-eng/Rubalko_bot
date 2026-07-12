@@ -682,6 +682,29 @@
   @keyframes fishLeap{0%{transform:translate(-50%,-50%) translateY(0) scale(.5) rotate(-8deg); opacity:0;}
     35%{transform:translate(-50%,-50%) translateY(-46px) scale(1.15) rotate(6deg); opacity:1;}
     100%{transform:translate(-50%,-50%) translateY(-8px) scale(.9) rotate(0deg); opacity:1;}}
+
+  /* ---------- Варианты прыжка/полёта для находок (сундук/бутылка/сапог) ----------
+     У каждой находки свой характер движения, чтобы визуально отличаться от рыбы
+     ещё до того, как игрок прочитает карточку результата. */
+  .fishleap.leap-chest{animation-name:chestLeap; filter:drop-shadow(0 0 6px rgba(246,196,83,0.75));}
+  @keyframes chestLeap{0%{transform:translate(-50%,-50%) translateY(0) scale(.4) rotate(0deg); opacity:0;}
+    30%{transform:translate(-50%,-50%) translateY(-38px) scale(1.25) rotate(-4deg); opacity:1;}
+    55%{transform:translate(-50%,-50%) translateY(-30px) scale(1.05) rotate(3deg); opacity:1;}
+    100%{transform:translate(-50%,-50%) translateY(-6px) scale(1) rotate(0deg); opacity:1;}}
+
+  .fishleap.leap-bottle{animation-name:bottleLeap;}
+  @keyframes bottleLeap{0%{transform:translate(-50%,-50%) translateY(0) scale(.5) rotate(-14deg); opacity:0;}
+    40%{transform:translate(-50%,-50%) translateY(-40px) scale(1.05) rotate(10deg); opacity:1;}
+    70%{transform:translate(-50%,-50%) translateY(-34px) scale(.98) rotate(-6deg); opacity:1;}
+    100%{transform:translate(-50%,-50%) translateY(-10px) scale(.9) rotate(0deg); opacity:1;}}
+
+  .fishleap.leap-boot{animation-name:bootLeap;}
+  @keyframes bootLeap{0%{transform:translate(-50%,-50%) translateY(0) scale(.5) rotate(0deg); opacity:0;}
+    30%{transform:translate(-50%,-50%) translateY(-30px) scale(1.1) rotate(140deg); opacity:1;}
+    60%{transform:translate(-50%,-50%) translateY(-14px) scale(.95) rotate(260deg); opacity:1;}
+    100%{transform:translate(-50%,-50%) translateY(2px) scale(.85) rotate(340deg); opacity:1;}}
+
+  .flyfish.fly-chest{filter:drop-shadow(0 0 5px rgba(246,196,83,0.8));}
 </style>
 </head>
 <body>
@@ -1092,8 +1115,10 @@
     noise.start(t0); noise.stop(t0 + dur + 0.03);
   }
   // sfx(type) — короткие звуковые отклики на ключевые события: заброс/всплеск,
-  // поклёвка, удачный улов, получение монет, левелап. Отключается тумблером
-  // "Звук" в настройках (рядом с вибрацией), по умолчанию включён.
+  // поклёвка, удачный улов, получение монет, левелап, находки на крючке
+  // (сундук/бутылка/сапог — у каждой свой характерный звук) и общие UI-клики
+  // (переключение вкладок, сдача заданий). Отключается тумблером "Звук" в
+  // настройках (рядом с вибрацией), по умолчанию включён.
   function sfx(type){
     if(state && state.soundOn === false) return;
     if(!ensureAudioCtx()) return;
@@ -1123,6 +1148,45 @@
         break;
       case 'miss':
         playTone(220, 0, 0.18, 'sawtooth', 0.08, 120);
+        break;
+      // ---- находки на крючке: у каждой свой узнаваемый звук, отдельный от рыбы ----
+      case 'chest':
+        // глухой стук открывающейся крышки + рассыпающийся звонкий каскад монет
+        playNoise(0, 0.1, 0.1, 260);
+        playTone(140, 0, 0.14, 'sine', 0.16, 90);
+        playTone(880, 0.1, 0.06, 'square', 0.07);
+        playTone(1046, 0.16, 0.06, 'square', 0.07);
+        playTone(1318, 0.22, 0.06, 'square', 0.07);
+        playTone(1568, 0.28, 0.14, 'square', 0.09);
+        break;
+      case 'bottle':
+        // стеклянный чпок пробки + мягкий высокий перезвон
+        playNoise(0, 0.05, 0.08, 2600);
+        playTone(1200, 0.03, 0.07, 'sine', 0.09);
+        playTone(1800, 0.1, 0.16, 'triangle', 0.08);
+        break;
+      case 'boot':
+        // тупой мокрый шлепок - никакого блеска, находка так себе
+        playNoise(0, 0.12, 0.14, 340);
+        playTone(110, 0, 0.16, 'sine', 0.11, 70);
+        break;
+      // ---- общие UI-звуки ----
+      case 'click':
+        playTone(720, 0, 0.045, 'sine', 0.05);
+        break;
+      case 'quest':
+        // короткая фанфара для сдачи задания - светлее и короче левелапа
+        playTone(784, 0, 0.09, 'triangle', 0.12);
+        playTone(1046, 0.08, 0.09, 'triangle', 0.13);
+        playTone(1568, 0.16, 0.16, 'triangle', 0.14);
+        break;
+      case 'unlock':
+        playTone(440, 0, 0.09, 'triangle', 0.1);
+        playTone(660, 0.08, 0.14, 'triangle', 0.12);
+        break;
+      case 'error':
+        playTone(200, 0, 0.12, 'square', 0.06);
+        playTone(160, 0.1, 0.14, 'square', 0.06);
         break;
     }
   }
@@ -1199,6 +1263,14 @@
     '«Заброшено с Ледяного озера. Долгий путь проделала эта бутылка...»',
   ];
   function pickEvent(){ return EVENT_ITEMS[Math.floor(Math.random()*EVENT_ITEMS.length)]; }
+  // Награда находок раньше была одинаковой в любой локации: сундук всегда
+  // 60-140 монет что в Гавани, что в Вулкане. Из-за этого находка ощутимо
+  // помогала новичку (~30% к среднему улову в Гавани), но к позднему этапу
+  // почти терялась на фоне цен на рыбу (~4% от среднего улова в Вулкане).
+  // Множитель ниже примерно повторяет то, как растёт средняя цена рыбы от
+  // локации к локации, поэтому находка остаётся ощутимой на всей игре.
+  const LOCATION_FIND_MULT = { harbor:1, reef:1.5, ice:2.2, jungle:2.5, abyss:4, volcano:7 };
+  function currentFindMult(){ return LOCATION_FIND_MULT[state.currentLocation] || 1; }
 
   // ---------- УНИКАЛЬНЫЕ SVG-ИКОНКИ ДЛЯ КАЖДОГО ВИДА РЫБЫ ----------
   function svgTag(inner){ return '<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">'+inner+'</svg>'; }
@@ -1302,6 +1374,12 @@
     return Math.max(Math.round(fish.coins[0]*0.5), price);
   }
 
+  // xpMult (только у reef/ice/jungle) - выравнивает темп прокачки в середине
+  // игры: без него кумулятивный XP, нужный для следующего уровня, растёт
+  // быстрее (линейно), чем средний XP за улов в этих трёх локациях, из-за
+  // чего Риф-Лёд-Джунгли ощущались заметно более плотным грайндом, чем
+  // соседние Гавань и Бездна. Множитель применяется только к XP с рыбы,
+  // цену улова и остальные механики не трогает.
   const LOCATIONS = [
     { id:'harbor', name:'Тихая Гавань', unlockLevel:1, top:'#FFC27A', bottom:'#164A5C', scenery:'harbor',
       splashFx:['droplet','wave'], flavor:{cast:'Закидываем удочку с причала...', wait:'Тихо... жди клёва'},
@@ -1316,7 +1394,7 @@
         {id:'catfish', name:'Сом', ico:'🐊', tier:3, coins:[32,55], xp:27, design:{type:'fish', body:'#5C5347', belly:'#A69A82', fin:'#3E362B', tail:'round', elong:1.3, whiskers:true}},
         {id:'golden', name:'Золотая рыбка', ico:'✨', tier:4, coins:[80,120], xp:60, design:{type:'fish', body:'#F2C14E', belly:'#FFF0C2', fin:'#E8A93E', tail:'fan', pattern:'scale', patternColor:'#E8A93E'}},
       ]},
-    { id:'reef', name:'Морской Риф', unlockLevel:5, top:'#5FDCD2', bottom:'#0A3244', scenery:'reef',
+    { id:'reef', name:'Морской Риф', unlockLevel:5, top:'#5FDCD2', bottom:'#0A3244', scenery:'reef', xpMult:1.2,
       splashFx:['bubble','shell'], flavor:{cast:'Заброс к коралловому рифу...', wait:'Бирюзовые волны... жди клёва'},
       fish:[
         {id:'herring', name:'Сельдь', ico:'🐟', tier:0, coins:[8,15], xp:8, design:{type:'fish', body:'#A9C9D9', belly:'#F0F7FA', fin:'#7397A8', tail:'fork'}},
@@ -1329,7 +1407,7 @@
         {id:'moray', name:'Мурена', ico:'🐍', tier:3, coins:[52,85], xp:36, design:{type:'fish', body:'#8A7052', belly:'#B9A886', fin:'#5C4A34', tail:'pointed', elong:2.0, depth:0.55, pattern:'spots', patternColor:'#4A3B2A', teeth:true}},
         {id:'octopus', name:'Редкий осьминог', ico:'🐙', tier:4, coins:[130,200], xp:85, design:{type:'cephalopod', body:'#8F4E8C', arms:8}},
       ]},
-    { id:'ice', name:'Ледяное Озеро', unlockLevel:10, top:'#D8F3FF', bottom:'#0D2A3D', scenery:'ice',
+    { id:'ice', name:'Ледяное Озеро', unlockLevel:10, top:'#D8F3FF', bottom:'#0D2A3D', scenery:'ice', xpMult:1.3,
       splashFx:['snowflake','iceChip'], flavor:{cast:'Пробиваем лунку во льду и опускаем леску...', wait:'Тишина подо льдом... жди поклёвки'},
       fish:[
         {id:'icebass', name:'Ледяной окунь', ico:'🧊', tier:0, coins:[15,25], xp:12, design:{type:'fish', body:'#BFE0E8', belly:'#F0FAFC', fin:'#7FB8C9', tail:'round'}},
@@ -1342,7 +1420,7 @@
         {id:'narwhal', name:'Малый нарвал', ico:'🐋', tier:3, coins:[95,145], xp:52, design:{type:'mammal', body:'#7A93A3', belly:'#DCE6EA', tusk:true}},
         {id:'dragonfish', name:'Снежный дракон', ico:'🐉', tier:4, coins:[220,320], xp:120, design:{type:'reptile', body:'#D9F0F5', spike:'#A9D8E8', horns:true}},
       ]},
-    { id:'jungle', name:'Тропическая Река', unlockLevel:15, top:'#A9D97E', bottom:'#123A2E', scenery:'jungle',
+    { id:'jungle', name:'Тропическая Река', unlockLevel:15, top:'#A9D97E', bottom:'#123A2E', scenery:'jungle', xpMult:1.5,
       splashFx:['leaf','dew'], flavor:{cast:'Заброс в заросли тропической реки...', wait:'Влажная духота джунглей... жди клёва'},
       fish:[
         {id:'tetra', name:'Тетра', ico:'🐠', tier:0, coins:[18,28], xp:15, design:{type:'fish', body:'#3E8CC9', belly:'#E8734A', fin:'#2A5F8C', tail:'fork'}},
@@ -1523,7 +1601,9 @@
   const QUEST_POOL = [
     {type:'catch_any', min:6, max:15, label:n=>`Поймать ${n} рыб`, rc:n=>n*8, rx:n=>n*4},
     {type:'catch_rare', min:1, max:3, label:n=>`Поймать ${n} редких или ценных рыб`, rc:n=>n*45, rx:n=>n*22},
-    {type:'sell_coins', min:100, max:350, label:n=>`Заработать ${n} монет на рынке`, rc:n=>Math.floor(n*0.3), rx:n=>Math.floor(n*0.15)},
+    // Награда была всего 30%/15% от цели - фактически "кэшбэк" заметно
+    // слабее остальных заданий пула по отдаче за усилие. Подняли до 50%/22%.
+    {type:'sell_coins', min:100, max:350, label:n=>`Заработать ${n} монет на рынке`, rc:n=>Math.floor(n*0.5), rx:n=>Math.floor(n*0.22)},
     {type:'catch_heavy', min:2, max:6, label:n=>`Поймать рыбу весом от ${n} кг`, rc:n=>n*40, rx:n=>n*20},
     {type:'catch_new_species', min:1, max:2, label:n=>`Поймать ${n} ${n===1?'вид рыбы, которого':'вида рыбы, которых'} у тебя ещё нет`, rc:n=>n*90, rx:n=>n*45},
   ];
@@ -1560,15 +1640,19 @@
     { title:'Глава 8: Торговый путь', story:'Торговцы рифа готовы платить хорошую цену за твой улов, если докажешь размах своей рыбалки. Заработай 1200 монет на рынке.', type:'sell_coins', target:1200, rewardCoins:480, rewardXp:240 },
     { title:'Глава 9: Ледяной зов', story:'За Рифом лежат воды, что никогда не оттаивают. Чтобы дойти туда, нужно стать сильнее. Достигни 10 уровня.', type:'reach_level', target:10, rewardCoins:400, rewardXp:0 },
     { title:'Глава 10: Богатый улов', story:'Торговцы Ледяного озера уважают только тех, кто умеет зарабатывать. Заработай 2000 монет на рынке.', type:'sell_coins', target:2000, rewardCoins:500, rewardXp:250 },
-    { title:'Глава 11: Ледяные чудовища', story:'Подо льдом прячутся твари, что светятся в темноте воды. Поймай 5 легендарных рыб.', type:'catch_legendary', target:5, rewardCoins:800, rewardXp:400 },
+    // Главы 11/15/19 требуют легендарную рыбу (базовый шанс тира4 - всего 3%,
+    // плюс у него самое узкое окно подсечки и самое жёсткое вываживание из
+    // всех тиров) - без буста "Везение" или топовой наживки цели 5/8/12 растягивались
+    // в весьма долгий гринд. Смягчили до 3/5/8, награда осталась прежней.
+    { title:'Глава 11: Ледяные чудовища', story:'Подо льдом прячутся твари, что светятся в темноте воды. Поймай 3 легендарные рыбы.', type:'catch_legendary', target:3, rewardCoins:800, rewardXp:400 },
     { title:'Глава 12: Испытание льда', story:'Смотритель Ледяного озера считает, что выдержки в тебе маловато. Поймай 60 любых рыб и докажи обратное.', type:'catch_any', target:60, rewardCoins:600, rewardXp:300 },
     { title:'Глава 13: Курс на джунгли', story:'За морозными водами скрывается душная тропическая река. Чтобы пробраться туда, нужно стать ещё сильнее. Достигни 15 уровня.', type:'reach_level', target:15, rewardCoins:700, rewardXp:0 },
     { title:'Глава 14: Зов реки', story:'Проводник по джунглям качает головой: «Здесь водятся твари покрупнее, чем ты видел прежде». Поймай рыбу весом от 12 кг.', type:'catch_heavy', target:12, rewardCoins:900, rewardXp:450 },
-    { title:'Глава 15: Хищники вод', story:'В мутных водах реки таятся создания, о которых редко говорят вслух. Поймай 8 легендарных рыб.', type:'catch_legendary', target:8, rewardCoins:1100, rewardXp:550 },
+    { title:'Глава 15: Хищники вод', story:'В мутных водах реки таятся создания, о которых редко говорят вслух. Поймай 5 легендарных рыб.', type:'catch_legendary', target:5, rewardCoins:1100, rewardXp:550 },
     { title:'Глава 16: Золото реки', story:'Местные торговцы скупают улов джунглей по особой цене - если знаешь, как его продать. Заработай 4000 монет на рынке.', type:'sell_coins', target:4000, rewardCoins:1200, rewardXp:600 },
     { title:'Глава 17: Бездна зовёт', story:'Дальше только тьма - Глубокий Океан, куда пускают лишь легенд этих вод. Достигни 20 уровня.', type:'reach_level', target:20, rewardCoins:1000, rewardXp:0 },
     { title:'Глава 18: Чудовище из тьмы', story:'Говорят, где-то в темных водах живёт существо весом больше пятнадцати килограмм, о котором слагают легенды. Поймай его.', type:'catch_heavy', target:15, rewardCoins:1500, rewardXp:800 },
-    { title:'Глава 19: Тени бездны', story:'Смотритель качает головой при свете фонаря: «Чем глубже, тем чаще светящиеся твари. Собери их достаточно, чтобы я поверил - ты знаешь эти воды». Поймай 12 легендарных рыб.', type:'catch_legendary', target:12, rewardCoins:1800, rewardXp:900 },
+    { title:'Глава 19: Тени бездны', story:'Смотритель качает головой при свете фонаря: «Чем глубже, тем чаще светящиеся твари. Собери их достаточно, чтобы я поверил - ты знаешь эти воды». Поймай 8 легендарных рыб.', type:'catch_legendary', target:8, rewardCoins:1800, rewardXp:900 },
     { title:'Глава 20: Пламя на горизонте', story:'Старый смотритель указывает на дрожащее зарево за краем воды: «Дальше Бездны есть место, куда я сам не хожу - Вулканические Источники. Там кипит сама вода. Чтобы выжить там, нужна ещё большая сила». Достигни 25 уровня.', type:'reach_level', target:25, rewardCoins:1300, rewardXp:0 },
     { title:'Глава 21: Кипящие воды', story:'Пар обжигает лицо, а вода у берега похожа на суп. Местный проводник усмехается: «Здесь либо привыкаешь быстро, либо не задерживаешься вовсе». Поймай 20 любых рыб в этих водах.', type:'catch_any', target:20, rewardCoins:1600, rewardXp:800 },
     { title:'Глава 22: Танец с лавовым крабом', story:'Между раскалёнными камнями снуют существа, которых боятся даже бывалые рыбаки источников. Докажи, что тебе они не страшны: поймай 10 редких или ценных рыб.', type:'catch_rare', target:10, rewardCoins:2000, rewardXp:1000 },
@@ -1620,6 +1704,7 @@
       ownedRods:['bamboo'], activeRod:'bamboo', ownedBaits:['plain'], activeBait:'plain',
       ownedSkins:['classic'], activeSkin:'classic',
       currentLocation:'harbor', inventory:{}, collectionTotal:{}, collectionBest:{},
+      eventTotals:{}, eventBest:{},
       lastBonusDate:null, dailyStreak:0, anonId:null,
       questsDate:null, dailyQuests:[],
       storyChapter:0, storyProgress:0,
@@ -1726,6 +1811,8 @@
       }
     });
     if(!state.collectionBest) state.collectionBest = {};
+    if(!state.eventTotals) state.eventTotals = {};
+    if(!state.eventBest) state.eventBest = {};
     ensureUpgrades();
   }
   function getRod(id){ return RODS.find(r=>r.id===id); }
@@ -1885,7 +1972,7 @@
     icehole=document.getElementById('icehole'), appEl=document.getElementById('app'),
     screenFlashEl=document.getElementById('screen-flash');
 
-  let gameState='idle', biteTimeout, windowTimeout, currentFish=null, currentEvent=null, rippleInterval=null;
+  let gameState='idle', biteTimeout, windowTimeout, currentFish=null, currentEvent=null, currentFishXpMult=1, currentEventFindMult=1, rippleInterval=null;
 
   // ---------- ЗАЩИТА ОТ БЕСКОНЕЧНОГО СПАМА ПО КНОПКЕ ----------
   // Раньше кнопка одинаково реагировала на любой тап независимо от того, ждал ли
@@ -2094,6 +2181,8 @@
     burst: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="12,1 14.3,8.2 21.5,6.3 16.6,12 21.5,17.7 14.3,15.8 12,23 9.7,15.8 2.5,17.7 7.4,12 2.5,6.3 9.7,8.2" fill="#FF7A59"/><polygon points="12,5 13.3,10 18,9 14.7,12 18,15 13.3,14 12,19 10.7,14 6,15 9.3,12 6,9 10.7,10" fill="#FFD98F"/></svg>',
     exclaim: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="9.5" y="2" width="5" height="13" rx="2.4" fill="#FF7A59"/><circle cx="12" cy="20" r="2.6" fill="#FF7A59"/></svg>',
     target: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9.5" fill="none" stroke="#F6C453" stroke-width="2"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="#F6C453" stroke-width="2"/><circle cx="12" cy="12" r="2" fill="#F6C453"/></svg>',
+    paper: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="3" width="14" height="18" rx="1.4" fill="#F2E8D2" stroke="#C9B98A" stroke-width="1"/><path d="M7.5 8h9M7.5 11.5h9M7.5 15h6" stroke="#8A7A54" stroke-width="1.1" stroke-linecap="round"/></svg>',
+    mudsplat: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 3c1.6 2 2.4 3.8 1.2 5-1.4 1.4.6 2 1.8 3.4 1.6 1.8.6 4-1.4 4.8-2.2.9-3.6-.9-5.6-.2C5.8 16.8 4 15 5 12.6c.8-2 3-2 3.6-3.8C9.2 7 10.2 4.8 12 3Z" fill="#6B4A2E" opacity="0.85"/></svg>',
   };
   const PARTICLE_CFG = {
     harbor: {icons:['dust'], count:7, anim:'moteFloat', dur:[4,7], top:5, size:5},
@@ -2331,7 +2420,7 @@
         + (unlocked ? '' : `<span class="loccard-lockbadge">${LOCK_SVG}</span>`)
         + `<span class="loccard-info"><span class="loccard-name">${loc.name}</span><span class="loccard-sub">${unlocked ? 'Открыто' : 'Ур. ' + loc.unlockLevel}</span></span>`;
       if(unlocked) card.addEventListener('click', ()=>{
-        state.currentLocation = loc.id; saveState(); refreshTopUI(); haptic('light');
+        state.currentLocation = loc.id; saveState(); refreshTopUI(); haptic('light'); sfx('click');
         locModal.classList.remove('show');
       });
       locGrid.appendChild(card);
@@ -2354,7 +2443,7 @@
     state.dailyStreak = (state.lastBonusDate === yest) ? state.dailyStreak+1 : 1;
     const reward = 50 + Math.min(state.dailyStreak-1,10)*15;
     state.coins += reward; state.lastBonusDate = today;
-    haptic('success'); saveState(); refreshTopUI();
+    haptic('success'); sfx('coin'); saveState(); refreshTopUI();
   });
 
   function resetVisual(){
@@ -2504,6 +2593,8 @@
     const isEvent = Math.random() < EVENT_CHANCE;
     currentEvent = isEvent ? pickEvent() : null;
     currentFish = isEvent ? null : pickFish();
+    currentFishXpMult = currentLoc().xpMult || 1; // фиксируем на момент поклёвки - см. LOCATIONS.xpMult
+    currentEventFindMult = currentFindMult(); // фиксируем на момент поклёвки, см. LOCATION_FIND_MULT
     const tier = currentFish ? currentFish.tier : 0; // находки клюют так же мягко, как обычная рыба
     biteStartedAt = Date.now();
     const variant = BITE_VARIANTS[Math.floor(Math.random()*BITE_VARIANTS.length)];
@@ -2717,29 +2808,37 @@
     setTimeout(resetVisual, 900);
   }
 
-  function fishLeapEffect(iconHTML){
+  // variant — необязательный модификатор ('chest'/'bottle'/'boot'), задаёт
+  // характер прыжка через CSS-класс .fishleap.leap-<variant> (см. стили ниже):
+  // сундук чуть тяжелее подскакивает, бутылка плавно покачивается, сапог
+  // кувыркается - без variant всё работает как раньше (рыба).
+  function fishLeapEffect(iconHTML, variant){
     const rect = bobber.getBoundingClientRect();
     const el = document.createElement('div');
-    el.className = 'fishleap'; el.style.width='28px'; el.style.height='28px';
+    el.className = 'fishleap' + (variant ? (' leap-'+variant) : ''); el.style.width='28px'; el.style.height='28px';
     el.style.left = (rect.left+rect.width/2)+'px'; el.style.top = (rect.top+rect.height/2)+'px';
     el.innerHTML = iconHTML;
     document.body.appendChild(el);
-    setTimeout(()=>el.remove(), 600);
+    setTimeout(()=>el.remove(), 650);
   }
 
-  function flyFishToCounter(iconHTML){
+  // targetEl — необязательная цель полёта (по умолчанию счётчик улова catchVal);
+  // для находок логичнее лететь к счётчику монет coinsVal, т.к. они не рыба и
+  // не попадают в totalCatches. variant аналогичен fishLeapEffect.
+  function flyFishToCounter(iconHTML, variant, targetEl){
     const from = bobber.getBoundingClientRect();
-    const to = catchVal.getBoundingClientRect();
+    const to = (targetEl || catchVal).getBoundingClientRect();
     const el = document.createElement('div');
-    el.className = 'flyfish'; el.style.width='22px'; el.style.height='22px'; el.innerHTML = iconHTML;
+    el.className = 'flyfish' + (variant ? (' fly-'+variant) : ''); el.style.width='22px'; el.style.height='22px'; el.innerHTML = iconHTML;
     el.style.left = (from.left + from.width/2 - 11) + 'px';
     el.style.top = (from.top + from.height/2 - 11) + 'px';
-    el.style.transform = 'translate(0,0) scale(1)'; el.style.opacity = '1';
+    el.style.transform = 'translate(0,0) scale(1) rotate(0deg)'; el.style.opacity = '1';
     document.body.appendChild(el);
     requestAnimationFrame(()=>{
       const dx = (to.left + to.width/2) - (from.left + from.width/2);
       const dy = (to.top + to.height/2) - (from.top + from.height/2);
-      el.style.transform = `translate(${dx}px, ${dy}px) scale(0.3)`;
+      const spin = variant==='boot' ? ' rotate(340deg)' : (variant==='bottle' ? ' rotate(-24deg)' : ' rotate(0deg)');
+      el.style.transform = `translate(${dx}px, ${dy}px) scale(0.3)${spin}`;
       el.style.opacity = '0';
     });
     setTimeout(()=>el.remove(), 800);
@@ -2768,7 +2867,7 @@
     if(fish.tier >= 3) shakeScreen();
     if(fish.tier >= 4) goldFlash();
     const xpBoosted = isBoostActive('xp2');
-    const xpGain = fish.xp * (xpBoosted?2:1);
+    const xpGain = Math.round(fish.xp * (xpBoosted?2:1) * currentFishXpMult);
     popText(bobRect.left+bobRect.width/2, bobRect.top - 6, '+' + xpGain + ' XP', fish.tier>=3?'big':'');
     state.totalCatches += 1;
     const isNewSpecies = !(state.collectionTotal[fish.id] > 0);
@@ -2792,7 +2891,7 @@
     document.getElementById('cc-name').textContent = fish.name;
     const rarityEl = document.getElementById('cc-rarity');
     rarityEl.textContent = RARITY_LABEL[fish.tier]; rarityEl.className = 'rarity r' + fish.tier;
-    document.getElementById('cc-xp').textContent = '+' + (fish.xp * (xpBoosted?2:1)) + ' опыта' + (xpBoosted?' (x2 буст)':'');
+    document.getElementById('cc-xp').textContent = '+' + xpGain + ' опыта' + (xpBoosted?' (x2 буст)':'');
     document.getElementById('cc-weight').innerHTML = 'Вес: ' + weight.toFixed(2) + ' кг · цена ~' + fishPrice(fish, weight) + ' ' + COIN_SVG;
     document.getElementById('cc-hint').textContent = 'Продай в разделе «Рынок»';
     const ccCard = document.querySelector('#catchcard .card');
@@ -2804,26 +2903,39 @@
   // Разрешение поклёвки-находки (сундук/бутылка/сапог) - без вываживания,
   // сразу к награде. Переиспользует карточку результата рыбы (#catchcard),
   // чтобы не плодить отдельную модалку: та же вёрстка, только контент другой.
+  // У каждого типа находки свой звук (sfx 'chest'/'bottle'/'boot'), свой
+  // характер прыжка/полёта (variant, см. CSS .leap-*/.fly-*) и свои частицы -
+  // это единственное, что отличает находку от рыбы визуально до открытия карточки.
   function landEvent(){
     gameState='idle'; nextCastAllowedAt = Date.now() + CAST_COOLDOWN_MS;
     bobber.classList.remove('reel-struggle','lvl2','lvl3'); rodsvg.classList.remove('reeling','lvl2','lvl3');
     btn.classList.remove('lvl2','lvl3'); lineEl.classList.remove('tense');
     const ev = currentEvent;
-    const coinsGain = ev.coinsRange[0] + Math.floor(Math.random()*(ev.coinsRange[1]-ev.coinsRange[0]+1));
-    const xpGain = ev.xp || 0;
-    fishLeapEffect(ev.icon);
-    setTimeout(()=>flyFishToCounter(ev.icon), 260);
+    const findMult = currentEventFindMult;
+    const coinsGain = Math.round((ev.coinsRange[0] + Math.floor(Math.random()*(ev.coinsRange[1]-ev.coinsRange[0]+1))) * findMult);
+    const xpGain = Math.round((ev.xp || 0) * findMult);
+    const variant = ev.id; // 'chest' | 'bottle' | 'boot' - используется и в CSS-классах, и в звуках
+    fishLeapEffect(ev.icon, variant);
+    setTimeout(()=>flyFishToCounter(ev.icon, variant, coinsVal), 260);
     const bobRect = bobber.getBoundingClientRect();
-    burstParticles(bobRect.left+bobRect.width/2, bobRect.top+bobRect.height/2, ['sparkle','dust'], ev.kind==='junk'?4:9);
+    const particleIcons = ev.kind==='coins' ? ['sparkle','star'] : (ev.kind==='lore' ? ['sparkle','paper'] : ['mudsplat','dust']);
+    burstParticles(bobRect.left+bobRect.width/2, bobRect.top+bobRect.height/2, particleIcons, ev.kind==='junk'?4:(ev.kind==='coins'?14:9));
     popText(bobRect.left+bobRect.width/2, bobRect.top - 6, '+' + coinsGain, ev.kind==='coins'?'big':'');
 
     let label, rClass, cardClass, subtitle;
-    if(ev.kind==='coins'){ haptic('success'); sfx('coin'); label='Находка'; rClass='r4'; cardClass=' r-legend'; subtitle = ev.flavor; }
-    else if(ev.kind==='lore'){ haptic('success'); sfx('catch'); label='Послание'; rClass='r2'; cardClass=' r-rare'; subtitle = BOTTLE_LORE[Math.floor(Math.random()*BOTTLE_LORE.length)]; }
-    else { haptic('light'); sfx('miss'); label='Хлам'; rClass='r0'; cardClass=''; subtitle = ev.flavor; }
+    if(ev.kind==='coins'){
+      haptic('success'); sfx('chest'); label='Находка'; rClass='r4'; cardClass=' r-legend'; subtitle = ev.flavor;
+      shakeScreen(); goldFlash(); // сундук - самая ценная находка, отмечаем её так же эффектно, как легендарную рыбу
+    }
+    else if(ev.kind==='lore'){ haptic('success'); sfx('bottle'); label='Послание'; rClass='r2'; cardClass=' r-rare'; subtitle = BOTTLE_LORE[Math.floor(Math.random()*BOTTLE_LORE.length)]; }
+    else { haptic('light'); sfx('boot'); label='Хлам'; rClass='r0'; cardClass=''; subtitle = ev.flavor; }
 
     state.coins += coinsGain;
     if(xpGain) addXp(xpGain);
+    if(!state.eventTotals) state.eventTotals = {};
+    if(!state.eventBest) state.eventBest = {};
+    state.eventTotals[ev.id] = (state.eventTotals[ev.id]||0) + 1;
+    state.eventBest[ev.id] = Math.max(state.eventBest[ev.id]||0, coinsGain);
     saveState(); refreshTopUI();
 
     document.getElementById('cc-ico').innerHTML = ev.icon;
@@ -2838,6 +2950,7 @@
     catchcard.style.display = 'flex';
     resetVisual();
   }
+
 
   let lastTapTime = 0;
   // На iOS долгое удержание пальца иногда всё равно вызывает системную лупу
@@ -2987,6 +3100,7 @@
   }
   document.querySelectorAll('.shoptab').forEach(btn=>{
     btn.addEventListener('click', ()=>{
+      sfx('click');
       document.querySelectorAll('.shoptab').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
       activeShopTab = btn.dataset.shoptab;
@@ -3032,7 +3146,7 @@
   function soundSettingRow(){
     const row = document.createElement('div'); row.className = 'settingrow';
     const checked = state.soundOn !== false;
-    row.innerHTML = `<div class="settxt"><span class="setname">Звук</span><span class="setdesc">Короткие эффекты: заброс, поклёвка, улов, монеты, левелап</span></div>
+    row.innerHTML = `<div class="settxt"><span class="setname">Звук</span><span class="setdesc">Заброс, поклёвка, улов, находки, монеты, левелап, задания</span></div>
       <label class="switch"><input type="checkbox" id="soundToggle" ${checked?'checked':''}><span class="slider"></span></label>`;
     row.querySelector('#soundToggle').addEventListener('change', (e)=>{
       state.soundOn = e.target.checked;
@@ -3188,22 +3302,48 @@
   // ---------- COLLECTION ----------
   // Раньше это была одна лента: 6 локаций x 9 рыб подряд, приходилось листать
   // до самого дна ради последней локации. Теперь, как и в магазине, локации
-  // разбиты на вкладки — список показывает только текущую локацию.
+  // разбиты на вкладки — список показывает только текущую локацию. Плюс
+  // отдельная вкладка "Находки" — сундук/бутылка/сапог не рыбы и не относятся
+  // ни к одной локации, поэтому раньше были вообще никак не отражены в
+  // коллекции: находка давала монеты и пропадала бесследно. Теперь у неё тоже
+  // есть счётчик "сколько раз находили" и рекорд лучшей находки.
   let activeCollTab = null;
+  const FINDS_TAB_ID = 'finds';
   function renderCollTabs(){
     const tabs = document.getElementById('colltabs'); tabs.innerHTML = '';
-    if(!activeCollTab || !LOCATIONS.find(l=>l.id===activeCollTab)) activeCollTab = state.currentLocation || LOCATIONS[0].id;
+    if(!activeCollTab || (activeCollTab !== FINDS_TAB_ID && !LOCATIONS.find(l=>l.id===activeCollTab))) activeCollTab = state.currentLocation || LOCATIONS[0].id;
     LOCATIONS.forEach(loc=>{
       const unlocked = isLocUnlocked(loc);
       const btn = document.createElement('button');
       btn.className = 'shoptab' + (loc.id===activeCollTab?' active':'');
       btn.innerHTML = unlocked ? loc.name : (LOCK_SVG + ' ' + loc.name);
-      btn.addEventListener('click', ()=>{ activeCollTab = loc.id; renderCollection(); });
+      btn.addEventListener('click', ()=>{ sfx('click'); activeCollTab = loc.id; renderCollection(); });
       tabs.appendChild(btn);
     });
+    const findsBtn = document.createElement('button');
+    findsBtn.className = 'shoptab' + (activeCollTab===FINDS_TAB_ID?' active':'');
+    findsBtn.textContent = 'Находки';
+    findsBtn.addEventListener('click', ()=>{ sfx('click'); activeCollTab = FINDS_TAB_ID; renderCollection(); });
+    tabs.appendChild(findsBtn);
+  }
+  function renderFindsCollection(){
+    const list = document.getElementById('colllist'); list.innerHTML = '';
+    let discovered = 0;
+    EVENT_ITEMS.forEach(ev=>{
+      const count = (state.eventTotals && state.eventTotals[ev.id]) || 0;
+      const best = (state.eventBest && state.eventBest[ev.id]) || 0;
+      if(count>0) discovered++;
+      const el = document.createElement('div'); el.className='card2' + (count===0?' locked':'');
+      el.innerHTML = `<div class="icobox">${count>0?ev.icon:MYSTERY_SVG}</div>
+        <div class="info"><div class="name">${count>0?ev.name:'???'}</div>
+        <div class="desc">${count>0 ? ('Найдено: '+count+' · лучшая находка +'+best+' '+COIN_SVG) : 'Ещё не найдено'}</div></div>`;
+      list.appendChild(el);
+    });
+    document.getElementById('collSummary').textContent = `Находок открыто ${discovered} из ${EVENT_ITEMS.length}`;
   }
   function renderCollection(){
     renderCollTabs();
+    if(activeCollTab === FINDS_TAB_ID){ renderFindsCollection(); return; }
     const list = document.getElementById('colllist'); list.innerHTML = '';
     let discovered=0, totalSpecies=0;
     LOCATIONS.forEach(loc=>{
@@ -3243,7 +3383,7 @@
       el.querySelector('button').addEventListener('click', ()=>{
         if(q.claimed || q.progress < q.target) return;
         state.coins += q.rewardCoins; addXp(q.rewardXp); q.claimed = true;
-        haptic('success'); saveState(); refreshTopUI(); renderDailyQuests();
+        haptic('success'); sfx('quest'); saveState(); refreshTopUI(); renderDailyQuests();
       });
       list.appendChild(el);
     });
@@ -3327,7 +3467,7 @@
     el.querySelector('button').addEventListener('click', ()=>{
       if(state.storyProgress < ch.target) return;
       claimStoryChapter();
-      haptic('success'); saveState(); refreshTopUI(); renderStoryQuests();
+      haptic('success'); sfx('quest'); saveState(); refreshTopUI(); renderStoryQuests();
     });
     list.appendChild(el);
     if(STORY_QUESTS[state.storyChapter+1]){
@@ -3342,6 +3482,7 @@
   }
   document.querySelectorAll('.qtab').forEach(btn=>{
     btn.addEventListener('click', ()=>{
+      sfx('click');
       document.querySelectorAll('.qtab').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
       activeQuestTab = btn.dataset.qtab;
@@ -3375,6 +3516,7 @@
   // ---------- NAV ----------
   const navbtns = document.querySelectorAll('.navbtn');
   navbtns.forEach(b=>b.addEventListener('click', ()=>{
+    sfx('click');
     navbtns.forEach(x=>x.classList.remove('active')); b.classList.add('active');
     ['shop','market','quests','collection','top'].forEach(s=>document.getElementById('screen-'+s).classList.remove('show'));
     const scr = b.dataset.screen;
