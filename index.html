@@ -510,10 +510,18 @@
   .schapter-banner{position:relative; height:104px; margin:-16px -16px 12px; background-size:cover;}
   .schapter-banner svg{position:absolute; inset:0; width:100%; height:100%; display:block;}
   .schapter-banner::after{content:''; position:absolute; inset:0; background:linear-gradient(180deg, rgba(10,20,25,0) 40%, rgba(10,20,25,0.55) 100%);}
-  .schapter-banner-badge{position:absolute; right:10px; bottom:10px; width:32px; height:32px; border-radius:50%; z-index:1;
+  /* Сценка главы: вместо абстрактной иконки типа задания баннер теперь
+     показывает то, что реально происходит в тексте главы - смотритель гавани,
+     рыбаки за беседой, рыночный прилавок, крупная рыба на леске и т.д.
+     Подобрано по смыслу каждой истории в storyChapterScene(). Кладём поверх
+     цветного градиента локации отдельным слоем справа, чтобы не спорить с
+     затемнением снизу (schapter-banner::after) и с бейджем типа задания. */
+  .schapter-scene{position:absolute; inset:0; z-index:0; overflow:hidden;}
+  .schapter-scene svg{position:static; width:100%; height:100%; display:block;}
+  .schapter-banner-badge{position:absolute; left:10px; top:10px; width:30px; height:30px; border-radius:50%; z-index:2;
     background:rgba(10,20,25,0.55); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);
     display:flex; align-items:center; justify-content:center; box-shadow:0 3px 10px rgba(0,0,0,0.35), inset 0 0 0 1.5px rgba(255,255,255,0.14);}
-  .schapter-banner-badge svg{position:static; width:18px; height:18px;}
+  .schapter-banner-badge svg{position:static; width:17px; height:17px;}
   .storycard .schapter{font-size:10.5px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:var(--gold); margin-bottom:5px;}
   .storycard .stitle{font-family:'Baloo 2',sans-serif; font-weight:800; font-size:15.5px; margin-bottom:7px; line-height:1.3;}
   .storycard .stext{font-size:12px; line-height:1.55; opacity:.8; margin-bottom:12px;}
@@ -3021,13 +3029,15 @@
   // ---------- ОНБОРДИНГ (обучение при первом запуске) ----------
   const ONBOARD_STEPS = [
     { icon:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 27 L24 6" stroke="#B98550" stroke-width="2.6" stroke-linecap="round"/><path d="M24 6 Q28 16 22.5 25" fill="none" stroke="#F7F3E8" stroke-width="1.3" stroke-dasharray="2 2.4"/><path d="M22.5 25q-2.4 2-1.2 4.4" fill="none" stroke="#D9962C" stroke-width="1.8" stroke-linecap="round"/></svg>',
-      title:'Добро пожаловать в Тихую Гавань!', text:'Жми «Закинуть удочку» внизу экрана и жди, пока клюнет.' },
+      title:'Добро пожаловать в Тихую Гавань!', text:'Жми «Закинуть удочку» внизу экрана и жди, пока клюнет - дальше игра сама подскажет, что делать.' },
     { icon:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 4a11 11 0 0 0-11 11v5l-2 4h26l-2-4v-5A11 11 0 0 0 16 4z" fill="#F6C453" stroke="#8A5A16" stroke-width="1.2"/><path d="M13 26a3 3 0 0 0 6 0z" fill="#8A5A16"/></svg>',
       title:'Лови момент поклёвки', text:'Когда поплавок задёргается - быстро жми и тяни, чтобы подсечь рыбу, пока не сорвалась.' },
     { icon:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><ellipse cx="16" cy="23" rx="10" ry="4" fill="#D9962C"/><ellipse cx="16" cy="18.3" rx="10" ry="4" fill="#F6C453" stroke="#8A5A16" stroke-width="1"/><ellipse cx="16" cy="13.6" rx="10" ry="4" fill="#FFE9B0" stroke="#8A5A16" stroke-width="1"/></svg>',
       title:'Продавай улов', text:'Пойманная рыба попадает в инвентарь - заходи в «Рынок», чтобы обменять её на монеты.' },
     { icon:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 8h3l2.6 13.5a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 2-1.6L27 12H10.4" fill="none" stroke="#F7F3E8" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="13.5" cy="27" r="1.9" fill="#F7F3E8"/><circle cx="21.5" cy="27" r="1.9" fill="#F7F3E8"/></svg>',
-      title:'Прокачивай снаряжение', text:'В «Магазине» покупай удочки, наживку и бусты, чтобы ловить рыбу крупнее и реже, плюс выполняй задания за награды.' },
+      title:'Прокачивай снаряжение', text:'В «Магазине» покупай удочки, наживку и бусты, чтобы ловить рыбу крупнее и реже.' },
+    { icon:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M9 4h11l6 6v18a1.6 1.6 0 0 1-1.6 1.6H9A1.6 1.6 0 0 1 7.4 28V5.6A1.6 1.6 0 0 1 9 4z" fill="#F7F3E8" stroke="#8A5A16" stroke-width="1.2" stroke-linejoin="round"/><path d="M20 4v6h6" fill="none" stroke="#D9962C" stroke-width="1.3" stroke-linejoin="round"/><path d="M11.5 15h9M11.5 19h9M11.5 23h6" stroke="#B98550" stroke-width="1.4" stroke-linecap="round"/></svg>',
+      title:'Проходи сюжет Тихой Гавани', text:'Во вкладке «Задания» → «Сюжет» тебя ждут 26 глав с историей, наградами и новыми локациями - от тихой пристани до вулканических источников.' },
     { icon:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M4 16 27 5 20 27l-5-9-9-2z" fill="#F6C453" stroke="#8A5A16" stroke-width="1.3" stroke-linejoin="round"/><path d="M15 18 27 5" fill="none" stroke="#8A5A16" stroke-width="1.1"/></svg>',
       title:'Позови друга на рыбалку', text:'Поделись игрой с другом.', share:true },
   ];
@@ -3419,6 +3429,75 @@
   function storyChapterLoc(idx){
     return STORY_CHAPTER_LOC[idx] || 'volcano';
   }
+  // Сценки для баннеров сюжетных глав: в отличие от бейджа типа задания
+  // (что нужно сделать - поймать/продать/достичь уровня), сценка отвечает
+  // на вопрос "что происходит в истории" - кто говорит с игроком или какое
+  // событие описано. Стиль и палитра - как у остальных плоских иллюстраций
+  // игры (обводка --ink, тёплые/природные заливки).
+  const STORY_SCENE_SVG = {
+    // Смотритель смотрит прямо на тебя и держит фонарь на вытянутой руке -
+    // будто ты стоишь перед ним прямо сейчас, а не наблюдаешь издалека.
+    keeper: '<svg viewBox="0 0 400 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice"><rect width="400" height="140" fill="rgba(10,26,32,0.22)"/><circle cx="330" cy="78" r="90" fill="#F6C453" opacity="0.14"/><path d="M40 140 C46 92 108 66 200 66 C292 66 354 92 360 140Z" fill="#233C42"/><path d="M162 74 Q200 92 238 74 L238 92 Q200 106 162 92Z" fill="#16282C"/><rect x="184" y="62" width="32" height="22" fill="#C9986B"/><circle cx="200" cy="50" r="34" fill="#D9A374"/><path d="M160 38 Q200 8 240 38 L244 48 L156 48Z" fill="#2E4750"/><rect x="152" y="44" width="96" height="10" rx="5" fill="#233C42"/><path d="M180 50 q8 -5 14 0 M206 50 q8 -5 14 0" stroke="#4A342A" stroke-width="2.6" fill="none" stroke-linecap="round"/><circle cx="186" cy="58" r="2.8" fill="#1A1310"/><circle cx="214" cy="58" r="2.8" fill="#1A1310"/><path d="M176 66 Q200 90 224 66 Q220 82 200 88 Q180 82 176 66Z" fill="#EDE6D8"/><g transform="translate(332,84)"><circle r="36" fill="#F6C453" opacity="0.28"/><rect x="-18" y="-18" width="36" height="40" rx="4" fill="#F6C453" stroke="#6B4212" stroke-width="2"/><circle cy="4" r="9" fill="#FFF3D0"/><path d="M-13 -18 L13 -18 L0 -32Z" fill="#6B4212"/></g></svg>',
+    // Рыбак наклонился прямо к тебе через стол, жестикулирует, кружка чая
+    // стоит на твоей стороне стола - разговор происходит с тобой, не рядом.
+    fishermen: '<svg viewBox="0 0 400 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice"><rect width="400" height="140" fill="rgba(10,26,32,0.16)"/><path d="M0 140 L0 118 Q200 100 400 118 L400 140Z" fill="#6B4A2E"/><path d="M0 118 Q200 100 400 118" fill="none" stroke="rgba(0,0,0,0.25)" stroke-width="3"/><path d="M36 140 C32 94 58 60 130 58 C196 56 214 92 202 140Z" fill="#4E6B5A"/><circle cx="132" cy="46" r="32" fill="#D9A374"/><path d="M106 42 q26 -16 52 0" stroke="#3E2E22" stroke-width="2.6" fill="none" stroke-linecap="round"/><circle cx="120" cy="52" r="2.6" fill="#1A1310"/><circle cx="144" cy="52" r="2.6" fill="#1A1310"/><path d="M112 62 Q132 72 152 62" stroke="#3E2E22" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M172 74 Q214 52 236 68" stroke="#D9A374" stroke-width="13" stroke-linecap="round" fill="none"/><g transform="translate(320,108)"><rect x="-20" y="-24" width="40" height="34" rx="4" fill="#F7F3E8"/><path d="M20 -18 q14 4 0 20" fill="none" stroke="#F7F3E8" stroke-width="4"/><path d="M-8 -30 q4 -10 0 -18 M6 -30 q4 -10 0 -18" stroke="rgba(247,243,232,0.55)" stroke-width="3" fill="none" stroke-linecap="round"/></g></svg>',
+    // Взгляд в упор на прилавок: стол почти у самого края кадра, рыба и монеты
+    // лежат прямо перед тобой, чужая рука протягивает монету тебе навстречу.
+    market: '<svg viewBox="0 0 400 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice"><rect width="400" height="140" fill="rgba(10,26,32,0.1)"/><path d="M-10 0 L410 0 L390 34 L10 34Z" fill="#D9502E"/><path d="M-10 0 l14 34 M26 0 l14 34 M62 0 l14 34 M98 0 l14 34 M134 0 l14 34 M170 0 l14 34 M206 0 l14 34 M242 0 l14 34 M278 0 l14 34 M314 0 l14 34 M350 0 l14 34 M386 0 l14 34" stroke="#D9502E" stroke-width="12"/><path d="M0 140 L0 92 Q200 74 400 92 L400 140Z" fill="#7A5220"/><path d="M0 92 Q200 74 400 92" fill="none" stroke="rgba(0,0,0,0.3)" stroke-width="3"/><ellipse cx="140" cy="86" rx="60" ry="20" fill="#7FA8C9"/><path d="M196 86 L228 62 L228 110Z" fill="#7FA8C9"/><circle cx="110" cy="82" r="4" fill="#1A1310"/><circle cx="300" cy="90" r="16" fill="#F6C453"/><circle cx="322" cy="98" r="16" fill="#F6C453"/><circle cx="300" cy="106" r="16" fill="#D9962C"/><circle cx="322" cy="114" r="16" fill="#D9962C"/><path d="M370 100 Q350 80 330 92" stroke="#D9A374" stroke-width="16" stroke-linecap="round" fill="none"/></svg>',
+    // Твоё удилище (в углу кадра - словно держишь его сам) гнётся, а гигантская
+    // рыба ломает поверхность воды в упор перед тобой, обдавая брызгами.
+    big_fish: '<svg viewBox="0 0 400 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice"><rect width="400" height="140" fill="rgba(10,26,32,0.15)"/><rect x="0" y="96" width="400" height="44" fill="rgba(20,50,60,0.4)"/><path d="M0 96 Q100 88 200 96 Q300 104 400 96" fill="none" stroke="rgba(247,243,232,0.25)" stroke-width="3"/><path d="M-10 140 Q80 110 150 40" fill="none" stroke="#6B4A2E" stroke-width="10" stroke-linecap="round"/><path d="M150 40 Q190 70 190 100" fill="none" stroke="rgba(247,243,232,0.6)" stroke-width="2" stroke-dasharray="4 5"/><g transform="rotate(-10 260 78)"><ellipse cx="260" cy="78" rx="110" ry="46" fill="#2E4A3E"/><path d="M368 54 L400 26 L392 92Z" fill="#233C30"/><path d="M160 60 L184 30 L200 66Z" fill="#233C30"/></g><circle cx="205" cy="66" r="6" fill="#F7F3E8"/><path d="M330 100 q14 -20 4 -36 M360 116 q16 -22 4 -40 M300 122 q10 -14 2 -26" stroke="rgba(247,243,232,0.5)" stroke-width="5" fill="none" stroke-linecap="round"/></svg>',
+    // Легендарная рыба всплывает вплотную к тебе, в ослепительном свете -
+    // момент, а не картинка со стороны.
+    legendary: '<svg viewBox="0 0 400 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice"><rect width="400" height="140" fill="rgba(10,20,10,0.25)"/><circle cx="230" cy="70" r="120" fill="#F6C453" opacity="0.16"/><circle cx="230" cy="70" r="70" fill="#F6C453" opacity="0.2"/><path d="M-10 140 Q60 120 110 70" fill="none" stroke="#6B4A2E" stroke-width="8" stroke-linecap="round"/><ellipse cx="240" cy="78" rx="100" ry="42" fill="#E8A93E"/><path d="M336 56 L378 30 L360 96Z" fill="#C9963B"/><path d="M150 60 L176 30 L192 66Z" fill="#C9963B"/><circle cx="196" cy="70" r="5" fill="#1A1310"/><path d="M110 30 l5 12 12 5 -12 5 -5 12 -5 -12 -12 -5 12 -5Z" fill="#FFE9B0" opacity="0.9"/><path d="M340 110 l3 8 8 3 -8 3 -3 8 -3 -8 -8 -3 8 -3Z" fill="#FFE9B0" opacity="0.75"/></svg>',
+    // Вид из-под воды твоими глазами: собственные ласты в нижних углах кадра,
+    // пузырьки поднимаются мимо камеры, рыба проплывает совсем рядом.
+    diver: '<svg viewBox="0 0 400 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice"><rect width="400" height="140" fill="rgba(10,30,40,0.3)"/><path d="M140 -10 L180 -10 L110 150 L60 150Z" fill="rgba(247,243,232,0.08)"/><path d="M260 -10 L296 -10 L246 150 L200 150Z" fill="rgba(247,243,232,0.06)"/><path d="M0 140 Q30 110 70 130 Q40 140 0 140Z" fill="rgba(18,51,59,0.7)"/><path d="M400 140 Q370 110 330 130 Q360 140 400 140Z" fill="rgba(18,51,59,0.7)"/><ellipse cx="210" cy="76" rx="70" ry="30" fill="#3E7B8C"/><path d="M276 60 L310 42 L296 90Z" fill="#2A5966"/><circle cx="168" cy="70" r="4" fill="#0A1F26"/><circle cx="120" cy="30" r="10" fill="rgba(190,232,238,0.35)"/><circle cx="300" cy="20" r="7" fill="rgba(190,232,238,0.3)"/><circle cx="340" cy="60" r="5" fill="rgba(190,232,238,0.28)"/></svg>',
+    // Ты сам стоишь на краю причала (твои сапоги внизу кадра) и смотришь
+    // на дальний берег, куда лежит путь - вид от первого лица, а не карта.
+    horizon: '<svg viewBox="0 0 400 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice"><rect width="400" height="140" fill="rgba(10,26,32,0.15)"/><path d="M60 100 L150 40 L240 100Z" fill="rgba(10,30,38,0.4)"/><path d="M180 100 L280 55 L370 100Z" fill="rgba(10,30,38,0.55)"/><circle cx="220" cy="42" r="20" fill="#F6C453" opacity="0.7"/><circle cx="220" cy="42" r="38" fill="#F6C453" opacity="0.12"/><rect x="0" y="100" width="400" height="40" fill="rgba(6,18,22,0.4)"/><path d="M0 140 L0 118 Q200 108 400 118 L400 140Z" fill="#3E362B"/><ellipse cx="120" cy="126" rx="26" ry="8" fill="#2A241B"/><ellipse cx="180" cy="128" rx="26" ry="8" fill="#2A241B"/></svg>',
+    // Проводник смотрит прямо на тебя из-под широкополой шляпы, за спиной -
+    // полог джунглей, мачете он держит на вытянутой руке, у самого края кадра.
+    guide_jungle: '<svg viewBox="0 0 400 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice"><rect width="400" height="140" fill="rgba(10,26,10,0.2)"/><path d="M0 40 Q60 10 120 42 Q170 14 230 44 Q290 12 350 42 Q380 26 400 40 L400 90 L0 90Z" fill="rgba(20,42,20,0.45)"/><path d="M60 140 C56 94 90 66 200 66 C310 66 344 94 340 140Z" fill="#2E4720"/><circle cx="200" cy="52" r="34" fill="#C9963B"/><path d="M140 40 Q200 6 260 40 L266 50 L134 50Z" fill="#3E5A2B"/><rect x="128" y="46" width="144" height="10" rx="5" fill="#2E4720"/><path d="M180 52 q8 -5 14 0 M206 52 q8 -5 14 0" stroke="#3E2E1A" stroke-width="2.4" fill="none" stroke-linecap="round"/><circle cx="188" cy="60" r="2.6" fill="#1A1310"/><circle cx="212" cy="60" r="2.6" fill="#1A1310"/><path d="M300 90 L344 68 L352 78 L308 100Z" fill="rgba(160,160,160,0.85)"/></svg>',
+    // Проводник у кромки лавы смотрит прямо на тебя и держит факел на вытянутой
+    // руке рядом с камерой - свет падает тебе в лицо, не на кого-то вдалеке.
+    guide_volcano: '<svg viewBox="0 0 400 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice"><rect width="400" height="140" fill="rgba(20,10,6,0.22)"/><path d="M60 110 L220 20 L380 110Z" fill="rgba(30,14,10,0.55)"/><path d="M195 42 Q215 30 235 42 L226 60 Q215 52 204 60Z" fill="#D9502E" opacity="0.8"/><path d="M70 140 C66 94 100 66 200 66 C300 66 334 94 330 140Z" fill="#3E241A"/><circle cx="200" cy="52" r="34" fill="#C9963B"/><path d="M180 52 q8 -5 14 0 M206 52 q8 -5 14 0" stroke="#3E2E1A" stroke-width="2.4" fill="none" stroke-linecap="round"/><circle cx="188" cy="60" r="2.6" fill="#1A1310"/><circle cx="212" cy="60" r="2.6" fill="#1A1310"/><g transform="translate(330,70)"><circle r="40" fill="#FF7A2E" opacity="0.25"/><rect x="-4" y="0" width="8" height="50" fill="#3E2E1A"/><path d="M0 -30 Q16 -16 8 6 Q0 -6 -8 6 Q-16 -16 0 -30Z" fill="#FF7A2E"/><path d="M0 -18 Q8 -8 4 4 Q0 -2 -4 4 Q-8 -8 0 -18Z" fill="#FFE9B0"/></g></svg>',
+  };
+  // Какая сценка иллюстрирует каждую из 26 глав - подобрано по содержанию
+  // истории (кто говорит с игроком / какое событие описано в ch.story),
+  // а не по механике задания (ch.type), чтобы баннер отражал именно сюжет:
+  // говорит рыбак - рисуем рыбака, речь о продаже - рисуем рынок, и т.д.
+  const STORY_CHAPTER_SCENE = [
+    'keeper',        // Пролог: смотритель гавани щурится на снасть
+    'fishermen',     // Гл1: рыбаки шепчутся о редких тенях
+    'big_fish',      // Гл2: никто не верил, что попадётся что-то весомое
+    'market',        // Гл3: нужны деньги на снаряжение - заработай на рынке
+    'keeper',        // Гл4: смотритель кивает на горизонт
+    'legendary',     // Гл5: рыба, что светится золотом
+    'big_fish',      // Гл6: побороться с настоящим гигантом
+    'diver',         // Гл7: ныряльщики рифа шепчутся
+    'market',        // Гл8: торговцы рифа готовы платить хорошую цену
+    'horizon',       // Гл9: воды, что никогда не оттаивают - нужно стать сильнее
+    'market',        // Гл10: торговцы Ледяного озера уважают тех, кто зарабатывает
+    'legendary',     // Гл11: твари, что светятся в темноте воды
+    'keeper',        // Гл12: смотритель Ледяного озера считает, что выдержки маловато
+    'horizon',       // Гл13: душная тропическая река - стать ещё сильнее
+    'guide_jungle',  // Гл14: проводник по джунглям качает головой
+    'legendary',     // Гл15: создания, о которых редко говорят вслух
+    'market',        // Гл16: местные торговцы скупают улов джунглей
+    'horizon',       // Гл17: дальше только тьма - Глубокий Океан
+    'big_fish',      // Гл18: существо весом больше пятнадцати килограмм
+    'keeper',        // Гл19: смотритель качает головой при свете фонаря
+    'keeper',        // Гл20: старый смотритель указывает на зарево
+    'guide_volcano', // Гл21: местный проводник усмехается
+    'fishermen',     // Гл22: рыбаки источников, которых боятся даже бывалые
+    'big_fish',      // Гл23: нечто огромное и раскалённое на дне источника
+    'market',        // Гл24: торговцы у подножия вулкана
+    'keeper',        // Финал: старый смотритель у кромки кипящего источника
+  ];
+  function storyChapterScene(idx){
+    return STORY_SCENE_SVG[STORY_CHAPTER_SCENE[idx]] || '';
+  }
   const STORY_BADGE_SVG = {
     catch_any: '<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M4 16c5-7 14-9 21-6-1 2-1 10 0 12-7 3-16 1-21-6Z" fill="#7FD8E0" stroke="#2E7480" stroke-width="1.2"/><path d="M25 10c2 2 3 4 3 6s-1 4-3 6c-1-2-1-10 0-12Z" fill="#5CB8C4"/><circle cx="10.5" cy="14" r="1.3" fill="#0A1F26"/></svg>',
     catch_rare: '<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 4 22 12 16 28 10 12Z" fill="#B98CF2" stroke="#7A4BC9" stroke-width="1.2" stroke-linejoin="round"/><path d="M10 12h12" stroke="#7A4BC9" stroke-width="1" opacity="0.6"/><path d="M13 8l1.6 2M19 8l-1.6 2" stroke="#E8D6FF" stroke-width="1.3" stroke-linecap="round"/></svg>',
@@ -3433,7 +3512,9 @@
     const locId = storyChapterLoc(idx);
     const loc = LOCATIONS.find(l=>l.id===locId);
     const badge = STORY_BADGE_SVG[ch.type] || '';
+    const scene = storyChapterScene(idx);
     return `<div class="schapter-banner" style="background:linear-gradient(135deg, ${loc.top}, ${loc.bottom})">
+      <div class="schapter-scene">${scene}</div>
       <div class="schapter-banner-badge">${badge}</div>
     </div>`;
   }
