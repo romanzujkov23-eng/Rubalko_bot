@@ -18,12 +18,13 @@
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action:manipulation; -webkit-user-select:none !important; user-select:none !important; -webkit-touch-callout:none !important;}
   html, body{-webkit-user-select:none !important; user-select:none !important; -webkit-touch-callout:none !important; -webkit-user-drag:none;}
 
-  html{margin:0; padding:0; height:100%; overflow:hidden;}
-  body{margin:0; padding:0; position:fixed; top:0; right:0; bottom:0; left:0; width:auto; height:auto;
+  html{margin:0; padding:0; height:100%; height:calc(var(--tg-vh, 1vh) * 100); overflow:hidden;}
+  body{margin:0; padding:0; position:fixed; top:0; right:0; bottom:0; left:0; width:auto;
+    height:100%; height:calc(var(--tg-vh, 1vh) * 100);
     overflow:hidden; overscroll-behavior:none; font-family:'Nunito',sans-serif; background:var(--water-deep); color:var(--cream); -webkit-font-smoothing:antialiased;
     display:flex; justify-content:center; align-items:stretch;}
 
-  #app{position:relative; width:100%; max-width:560px; height:100%; max-height:960px; min-width:280px; margin:auto; overflow:hidden;
+  #app{position:relative; width:100%; max-width:560px; height:100%; height:calc(var(--tg-vh, 1vh) * 100); max-height:960px; min-width:280px; margin:auto; overflow:hidden;
     background:var(--water-deep); container-type:size; container-name:app;}
   @media (min-width:561px){
     body{background:linear-gradient(160deg, #0c2530, #061217);}
