@@ -910,16 +910,24 @@
     }catch(e){}
   }
 
+  // Desktop Telegram clients (Windows/macOS/Web) report viewportStableHeight
+  // unreliably (often much smaller than the real window), and don't need the
+  // mobile "keyboard/animation" height-lock workaround below. Detect them so
+  // we can trust the real window size instead and avoid getting stuck with a
+  // too-small #app that renders pinned to the top of the screen.
+  const DESKTOP_TG_PLATFORMS = ['tdesktop','macos','web','weba','webk'];
+  const isDesktopTg = !!(tg && DESKTOP_TG_PLATFORMS.indexOf(tg.platform) !== -1);
+
   let warmupUntil = Date.now() + 2500;
   let warmupMaxH = 0;
   function applyViewportHeight(){
     const candidates = [
-      tg && tg.viewportStableHeight,
+      (!isDesktopTg && tg) ? tg.viewportStableHeight : null,
       window.visualViewport && window.visualViewport.height,
       window.innerHeight
     ].filter(v => typeof v === 'number' && v >= 300);
     let h = candidates.length ? Math.max(...candidates) : (window.innerHeight || 600);
-    if(Date.now() < warmupUntil){
+    if(!isDesktopTg && Date.now() < warmupUntil){
       warmupMaxH = Math.max(warmupMaxH, h);
       h = warmupMaxH;
     }
