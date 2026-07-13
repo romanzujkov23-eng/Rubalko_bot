@@ -2965,7 +2965,9 @@
   let activeCollTab = null;
   const FINDS_TAB_ID = 'finds';
   function renderCollTabs(){
-    const tabs = document.getElementById('colltabs'); tabs.innerHTML = '';
+    const tabs = document.getElementById('colltabs');
+    const prevScrollLeft = tabs.scrollLeft;
+    tabs.innerHTML = '';
     if(!activeCollTab || (activeCollTab !== FINDS_TAB_ID && !LOCATIONS.find(l=>l.id===activeCollTab))) activeCollTab = state.currentLocation || LOCATIONS[0].id;
     LOCATIONS.forEach(loc=>{
       const unlocked = isLocUnlocked(loc);
@@ -2980,6 +2982,7 @@
     findsBtn.textContent = 'Находки';
     findsBtn.addEventListener('click', ()=>{ sfx('click'); activeCollTab = FINDS_TAB_ID; renderCollection(); });
     tabs.appendChild(findsBtn);
+    tabs.scrollLeft = prevScrollLeft;
   }
   function renderFindsCollection(){
     const list = document.getElementById('colllist'); list.innerHTML = '';
