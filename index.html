@@ -918,19 +918,40 @@
   const DESKTOP_TG_PLATFORMS = ['tdesktop','macos','web','weba','webk'];
   const isDesktopTg = !!(tg && DESKTOP_TG_PLATFORMS.indexOf(tg.platform) !== -1);
 
-  let warmupUntil = Date.now() + 2500;
-  let warmupMaxH = 0;
-  function applyViewportHeight(){
+  // NOTE on the "nav bar stuck at the top" bug on Telegram Desktop (Windows):
+  // the old code trusted a single JS-reported number (tg.viewportStableHeight
+  // or window.innerHeight) captured once and re-checked only on a fixed
+  // timeout schedule / resize events. Telegram Desktop's WebView sometimes
+  // reports a stale, much-too-small height right after load and then never
+  // fires a resize/viewportChanged event once the real window size settles,
+  // so that bad small value gets baked into --tg-vh forever. Since #app's
+  // height collapses to that bad value, the bottom-anchored #navbar (which
+  // sits 10px from the bottom of #app) ends up drawn near the top of the
+  // real, much taller window - exactly the bug in the screenshot.
+  // Fix: use ResizeObserver to continuously measure the REAL rendered size
+  // of the page and keep --tg-vh in sync with reality, regardless of what
+  // any Telegram API reports or whether it ever fires an update event.
+  function measuredHeight(){
     const candidates = [
       (!isDesktopTg && tg) ? tg.viewportStableHeight : null,
       window.visualViewport && window.visualViewport.height,
+      document.documentElement.clientHeight,
       window.innerHeight
-    ].filter(v => typeof v === 'number' && v >= 300);
-    let h = candidates.length ? Math.max(...candidates) : (window.innerHeight || 600);
+    ].filter(v => typeof v === 'number' && v >= 200);
+    return candidates.length ? Math.max(...candidates) : (window.innerHeight || 600);
+  }
+
+  let warmupUntil = Date.now() + 2500;
+  let warmupMaxH = 0;
+  function applyViewportHeight(){
+    let h = measuredHeight();
     if(!isDesktopTg && Date.now() < warmupUntil){
       warmupMaxH = Math.max(warmupMaxH, h);
       h = warmupMaxH;
     }
+    // Safety floor: never let the app collapse to a near-zero height because
+    // of a transient bogus reading (this is what causes the navbar-at-top bug).
+    h = Math.max(h, 400);
     document.documentElement.style.setProperty('--tg-vh', (h * 0.01) + 'px');
   }
   applyViewportHeight();
@@ -940,6 +961,18 @@
   window.addEventListener('resize', applyViewportHeight);
   window.addEventListener('orientationchange', ()=>setTimeout(applyViewportHeight, 60));
   if(window.visualViewport) window.visualViewport.addEventListener('resize', applyViewportHeight);
+
+  // Belt-and-braces for desktop clients that resize the mini-app window
+  // without firing any of the events above: keep watching the real,
+  // rendered box size and self-correct --tg-vh live if it ever drifts.
+  if(window.ResizeObserver){
+    let roFrame = null;
+    const ro = new ResizeObserver(function(){
+      if(roFrame) return;
+      roFrame = requestAnimationFrame(function(){ roFrame = null; applyViewportHeight(); });
+    });
+    ro.observe(document.documentElement);
+  }
   function haptic(type){
     if(state && state.vibrationOn === false) return;
     if(tg && tg.HapticFeedback){
