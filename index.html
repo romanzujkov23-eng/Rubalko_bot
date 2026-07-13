@@ -118,7 +118,7 @@
     100%{transform:translate(-50%,-50%) translate(var(--bx), var(--by)) scale(1.05) rotate(var(--br)); opacity:0;}}
 
   #hud{position:absolute; top:0; left:0; width:100%; z-index:5; display:flex; flex-direction:column; align-items:center;
-    gap:8px; padding:calc(12px + env(safe-area-inset-top)) 14px 0; pointer-events:none;}
+    gap:8px; padding:calc(12px + var(--safe-top, env(safe-area-inset-top))) 14px 0; pointer-events:none;}
   #hud > *{pointer-events:auto;}
 
   #topbar{width:100%; max-width:460px; display:flex; align-items:stretch; gap:8px;}
@@ -185,7 +185,7 @@
   #bonusbanner span{display:flex; align-items:center; gap:6px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   #bonusbanner button{border:none; background:var(--ink); color:var(--cream); border-radius:10px; padding:7px 13px; font-weight:800; font-size:11.5px; flex-shrink:0;}
 
-  #rodsvg{position:absolute; right:-14%; bottom:calc(96px + env(safe-area-inset-bottom)); width:62%; height:52%; max-width:300px; max-height:360px;
+  #rodsvg{position:absolute; right:-14%; bottom:calc(96px + var(--safe-bottom, env(safe-area-inset-bottom))); width:62%; height:52%; max-width:300px; max-height:360px;
     z-index:2; pointer-events:none; transform-origin:94% 94%; animation:rodIdle 3.4s ease-in-out infinite; will-change:transform;
     transition:opacity .2s ease;}
   #rodsvg.casting{animation:rodCast .55s cubic-bezier(.3,.1,.3,1);}
@@ -263,7 +263,7 @@
   #bitebang.show{animation:pop .55s ease-out;}
   @keyframes pop{0%{opacity:0; transform:translate(-50%,-100%) scale(.4);} 30%{opacity:1; transform:translate(-50%,-160%) scale(1.15);} 100%{opacity:0; transform:translate(-50%,-190%) scale(1);}}
 
-  #bottompanel{position:absolute; left:0; bottom:calc(92px + env(safe-area-inset-bottom)); width:100%; z-index:5; padding:10px 16px 8px;
+  #bottompanel{position:absolute; left:0; bottom:calc(92px + var(--safe-bottom, env(safe-area-inset-bottom))); width:100%; z-index:5; padding:10px 16px 8px;
     background:linear-gradient(to top, rgba(5,16,20,0.85), rgba(5,16,20,0)); display:flex; flex-direction:column; align-items:center; gap:9px;}
   #status{font-weight:800; font-size:12.5px; min-height:17px; text-align:center; color:var(--cream);
     text-shadow:0 2px 8px rgba(0,0,0,0.6); letter-spacing:.2px;}
@@ -314,7 +314,7 @@
 
   .r0{color:#C8DFD6;} .r1{color:#C8DFD6;} .r2{color:#7FE08F;} .r3{color:#63B7EE;} .r4{color:#F6C453;}
 
-  #navbar{position:absolute; left:10px; right:10px; bottom:calc(10px + env(safe-area-inset-bottom)); height:78px; z-index:20; display:flex;
+  #navbar{position:absolute; left:10px; right:10px; bottom:calc(10px + var(--safe-bottom, env(safe-area-inset-bottom))); height:78px; z-index:20; display:flex;
     background:rgba(9,26,32,0.78); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); border:1px solid var(--glass-border);
     border-radius:24px; box-shadow:0 12px 30px rgba(0,0,0,0.4); padding:6px;
 
@@ -335,13 +335,13 @@
 
   .subscreen{position:absolute; top:0; right:0; bottom:0; left:0; z-index:8; background:var(--water-deep); display:none; flex-direction:column;}
   .subscreen.show{display:flex;}
-  .subhead{padding:calc(16px + env(safe-area-inset-top)) 18px 12px; flex-shrink:0; border-bottom:1px solid rgba(247,243,232,0.06);
+  .subhead{padding:calc(16px + var(--safe-top, env(safe-area-inset-top))) 18px 12px; flex-shrink:0; border-bottom:1px solid rgba(247,243,232,0.06);
     display:flex; align-items:flex-start; justify-content:space-between; gap:12px;}
   .subhead .subhead-text{min-width:0;}
   .subhead h2{font-family:'Baloo 2',sans-serif; font-size:23px; margin:0 0 3px;}
   .subhead p{margin:0; font-size:11.5px; opacity:.6; font-weight:600;}
   .subhead .pill{flex-shrink:0; margin-top:1px;}
-  .sublist{flex:1; overflow-y:auto; touch-action:pan-y; padding:12px 16px calc(24px + 92px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; gap:10px; -webkit-overflow-scrolling:touch; overscroll-behavior-y:contain;}
+  .sublist{flex:1; overflow-y:auto; touch-action:pan-y; padding:12px 16px calc(24px + 92px + var(--safe-bottom, env(safe-area-inset-bottom))); display:flex; flex-direction:column; gap:10px; -webkit-overflow-scrolling:touch; overscroll-behavior-y:contain;}
 
   .sublist::after{content:''; display:block; flex:0 0 auto; height:88px; width:1px;}
 
@@ -495,7 +495,7 @@
     display:flex; align-items:center; justify-content:center; gap:7px;}
   .onboard-share-btn svg{width:16px; height:16px;}
 
-  #levelupToast{position:absolute; top:calc(190px + env(safe-area-inset-top)); left:50%; transform:translateX(-50%) translateY(-14px); z-index:35;
+  #levelupToast{position:absolute; top:calc(190px + var(--safe-top, env(safe-area-inset-top))); left:50%; transform:translateX(-50%) translateY(-14px); z-index:35;
     background:linear-gradient(180deg, var(--gold), var(--gold-deep)); color:var(--ink); border-radius:18px; padding:11px 20px; font-family:'Baloo 2',sans-serif;
     font-weight:800; font-size:14px; box-shadow:0 12px 28px rgba(0,0,0,0.4); opacity:0; pointer-events:none;
     transition:opacity .25s ease, transform .25s ease; text-align:center; white-space:nowrap;}
@@ -917,6 +917,36 @@
   // too-small #app that renders pinned to the top of the screen.
   const DESKTOP_TG_PLATFORMS = ['tdesktop','macos','web','weba','webk'];
   const isDesktopTg = !!(tg && DESKTOP_TG_PLATFORMS.indexOf(tg.platform) !== -1);
+
+  // --- Safe-area inset sanitizing --------------------------------------------
+  // #navbar, #bottompanel and #rodsvg all anchor themselves with
+  // "bottom: Npx + env(safe-area-inset-bottom)". On a real phone that inset
+  // is small (0-40px, for the home-indicator bar). Some desktop WebViews
+  // (this looks like exactly what's happening on this Windows Telegram
+  // Desktop client) report a large, bogus safe-area-inset-bottom, which
+  // shoves every bottom-anchored element upward by that same broken amount -
+  // which is exactly why the navbar/bottom panel/rod all end up bunched
+  // near the top of the window, overlapping and hiding the top HUD.
+  // Fix: measure the real computed inset with a hidden probe element and,
+  // if it's an unreasonable value (or we're on a desktop client at all,
+  // which has no legitimate safe area to begin with), force it to 0 via
+  // CSS custom properties that every "env(safe-area-inset-*)" usage above
+  // now reads through instead of the raw env() value.
+  (function sanitizeSafeArea(){
+    const probe = document.createElement('div');
+    probe.style.cssText = 'position:fixed; visibility:hidden; pointer-events:none;'
+      + 'top:env(safe-area-inset-top,0px); bottom:env(safe-area-inset-bottom,0px);';
+    document.body.appendChild(probe);
+    const cs = getComputedStyle(probe);
+    const insetTop = parseFloat(cs.top) || 0;
+    const insetBottom = parseFloat(cs.bottom) || 0;
+    document.body.removeChild(probe);
+    const MAX_SANE_INSET = 60; // real device safe areas are well under this
+    const badTop = isDesktopTg || insetTop > MAX_SANE_INSET;
+    const badBottom = isDesktopTg || insetBottom > MAX_SANE_INSET;
+    document.documentElement.style.setProperty('--safe-top', badTop ? '0px' : 'env(safe-area-inset-top,0px)');
+    document.documentElement.style.setProperty('--safe-bottom', badBottom ? '0px' : 'env(safe-area-inset-bottom,0px)');
+  })();
 
   // NOTE on the "nav bar stuck at the top" bug on Telegram Desktop (Windows):
   // the old code trusted a single JS-reported number (tg.viewportStableHeight
