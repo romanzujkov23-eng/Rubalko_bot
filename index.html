@@ -17,27 +17,11 @@
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action:manipulation; -webkit-user-select:none !important; user-select:none !important; -webkit-touch-callout:none !important;}
   html, body{-webkit-user-select:none !important; user-select:none !important; -webkit-touch-callout:none !important; -webkit-user-drag:none;}
-  /* --tg-vh обновляется из JS реальной высотой вьюпорта Telegram
-     (viewportStableHeight / window.innerHeight), потому что 100dvh неровно
-     ведёт себя в WebView некоторых клиентов Telegram (Android, Desktop) при
-     смене размера окна, появлении клавиатуры или разворачивании во весь
-     экран. 100dvh остаётся как мгновенный фолбэк до первого JS-события. */
+
   html,body{margin:0; padding:0; width:100%; height:100vh; height:100dvh; height:calc(var(--tg-vh, 1vh) * 100);
     overflow:hidden; overscroll-behavior:none; font-family:'Nunito',sans-serif; background:var(--water-deep); color:var(--cream); -webkit-font-smoothing:antialiased;
     display:flex; justify-content:center; align-items:stretch;}
-  /* #app — «телефонный» холст игры. На планшетах и в Telegram Desktop (широкое
-     окно) он центрируется и не растягивается на всю ширину/высоту, иначе сцена
-     рыбалки и HUD теряются на просторе, а свайп-кнопки становятся неудобно
-     далеко друг от друга. */
-  /* #app — «телефонный» холст игры. container-type:size превращает его в
-     опорную область для единиц cqw/cqh: все внутренние элементы, которые
-     раньше считались в vw/vh (то есть от ширины/высоты ОКНА БРАУЗЕРА), теперь
-     считаются от реального размера этого холста. Раньше на широких экранах
-     (Telegram Desktop, развёрнутый режим на планшетах) #app оставался узким
-     (max-width:560px), а vw/vh всё равно брали ширину/высоту всего окна —
-     из-за этого удочка и связанные с ней элементы (поплавок, леса, крючок,
-     которые в JS считаются от bounding rect удочки) улетали за пределы экрана
-     или "сбивались в кучу" в неправильном месте. */
+
   #app{position:relative; width:100%; max-width:560px; height:100%; max-height:960px; min-width:280px; margin:auto; overflow:hidden;
     background:var(--water-deep); container-type:size; container-name:app;}
   @media (min-width:561px){
@@ -62,9 +46,6 @@
   .wave{position:absolute; width:220%; left:-60%; background:rgba(247,243,232,0.05); border-radius:50%; animation:drift linear infinite;}
   @keyframes drift{0%{transform:translateX(0);} 100%{transform:translateX(30%);}}
 
-  /* ---------- АТМОСФЕРА ЛОКАЦИЙ: свет, дымка, звёзды, блики ---------- */
-  /* Лёгкие декоративные слои поверх/под сценой — все на чистом CSS,
-     без картинок и доп. запросов, поэтому не влияют на вес и скорость загрузки. */
   #godrays{position:absolute; top:0; left:0; width:100%; height:46%; overflow:hidden; z-index:0; pointer-events:none;
     opacity:0; mix-blend-mode:screen; transition:opacity .6s ease;}
   #godrays .ray{position:absolute; top:-30%; width:22%; height:150%; transform-origin:top center;
@@ -97,7 +78,6 @@
   #vignette{position:absolute; inset:0; z-index:1; pointer-events:none;
     background:radial-gradient(ellipse at 50% 38%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.4) 100%);}
 
-  /* ---------- ЖИВОЙ ФОН ЛОКАЦИЙ ---------- */
   #scenery-back{position:absolute; top:0; left:0; width:100%; height:34%; overflow:hidden; z-index:0; pointer-events:none;}
   #scenery-back svg{position:absolute; bottom:0; left:0; width:100%; height:100%;}
   #scenery-particles{position:absolute; inset:0; overflow:hidden; z-index:1; pointer-events:none;}
@@ -123,12 +103,10 @@
   #screen-fish[data-loc="jungle"]{--cloud-color:#eef7ea;}
   #screen-fish[data-loc="volcano"]{--cloud-color:#8a746a;}
 
-  /* ---------- ЛУНКА ВО ЛЬДУ (ледяная локация) ---------- */
   #icehole{position:absolute; width:78px; height:44px; transform:translate(-50%,-50%) scale(0); z-index:2; opacity:0; pointer-events:none; transition:opacity .3s ease, transform .35s cubic-bezier(.34,1.56,.64,1);}
   #icehole.show{opacity:1; transform:translate(-50%,-50%) scale(1);}
   #icehole svg{width:100%; height:100%; display:block;}
 
-  /* ---------- ЧАСТИЦЫ ЗАБРОСА / ПОКЛЁВКИ ПО ЛОКАЦИЯМ ---------- */
   .burst-p{position:fixed; pointer-events:none; z-index:4; will-change:transform,opacity;
     animation:burstFly .75s ease-out forwards;}
   .burst-p svg{display:block; width:100%; height:100%;}
@@ -137,11 +115,6 @@
   @keyframes burstFly{0%{transform:translate(-50%,-50%) translate(0,0) scale(.5) rotate(0deg); opacity:1;}
     100%{transform:translate(-50%,-50%) translate(var(--bx), var(--by)) scale(1.05) rotate(var(--br)); opacity:0;}}
 
-  /* ---------- HUD: единый флекс-контейнер шапки экрана рыбалки ----------
-     Раньше topbar/title/locrow/bonusbanner были независимо спозиционированы
-     через top:%, из-за чего на разных высотах экрана они наезжали друг на
-     друга и на текст. Теперь это один flex-column блок: элементы всегда идут
-     друг под другом в естественном порядке и никогда не перекрываются. */
   #hud{position:absolute; top:0; left:0; width:100%; z-index:5; display:flex; flex-direction:column; align-items:center;
     gap:8px; padding:calc(12px + env(safe-area-inset-top)) 14px 0; pointer-events:none;}
   #hud > *{pointer-events:auto;}
@@ -150,13 +123,10 @@
   .pill{background:rgba(8,26,32,0.6); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid var(--glass-border);
     border-radius:16px; padding:7px 13px; font-weight:800; font-size:13px; display:flex; align-items:center; justify-content:center; gap:6px;
     flex-shrink:0; white-space:nowrap; box-shadow:0 4px 14px rgba(0,0,0,0.25);}
-  /* Собственная иконка золотой монеты (SVG) — не зависит от эмодзи-шрифта устройства,
-     поэтому всегда выглядит золотой, а не серой */
+
   .coin-ico{display:inline-flex; width:1.05em; height:1.05em; vertical-align:-0.16em; flex-shrink:0; filter:drop-shadow(0 1px 1px rgba(0,0,0,0.35));}
   .coin-ico svg{display:block; width:100%; height:100%;}
-  /* Универсальная обёртка для мелких инлайн-SVG-иконок (замена эмодзи 🔒🎉🎁 и т.п.
-     в текстовых строках) — тот же принцип, что и coin-ico: фиксированный масштаб
-     и предсказуемый цвет вместо эмодзи-шрифта устройства */
+
   .ico-inline{display:inline-flex; width:1em; height:1em; vertical-align:-0.14em; flex-shrink:0;}
   .ico-inline svg{display:block; width:100%; height:100%;}
   #levelbox{background:rgba(8,26,32,0.5); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid var(--glass-border); border-radius:16px; padding:7px 14px 8px;
@@ -168,9 +138,6 @@
   #levelbox .xpbar{height:6px; border-radius:5px; background:rgba(247,243,232,0.16); overflow:hidden;}
   #levelbox .xpfill{height:100%; border-radius:5px; background:linear-gradient(90deg, var(--gold-deep), var(--gold)); width:0%; transition:width .4s ease;}
 
-  /* ---------- Переключатель локации: одна аккуратная "капсула" вместо
-     скроллящегося ряда мелких таблеток. Тап открывает #locModal с полноценной
-     визуальной сеткой карточек локаций (превью-градиент + иконка биома). ---------- */
   .locswitch{width:100%; max-width:460px; display:flex; align-items:center; gap:10px; margin:0; appearance:none; -webkit-appearance:none; font:inherit;
     background:rgba(8,26,32,0.55); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
     border:1px solid var(--glass-border); border-radius:16px; padding:6px 14px 6px 6px;
@@ -220,27 +187,20 @@
     z-index:2; pointer-events:none; transform-origin:94% 94%; animation:rodIdle 3.4s ease-in-out infinite; will-change:transform;
     transition:opacity .2s ease;}
   #rodsvg.casting{animation:rodCast .55s cubic-bezier(.3,.1,.3,1);}
-  /* .subscreen (магазин/рынок/задания/коллекция/топ) намеренно не доходит до
-     самого низа экрана — под "стеклянным" навбаром остаётся зазор для эффекта
-     блюра. Удочка и элементы заброса всегда отрисованы в фоне на screen-fish,
-     поэтому без этого правила кусок удочки было видно в этом зазоре на любом
-     экране, кроме самой рыбалки. */
+
   #app.on-other-screen #rodsvg, #app.on-other-screen #bobber, #app.on-other-screen #lineSvg,
   #app.on-other-screen #bitebang, #app.on-other-screen #splash, #app.on-other-screen #icehole{
     opacity:0 !important; pointer-events:none !important;}
   @keyframes rodIdle{0%,100%{transform:rotate(-13deg);} 50%{transform:rotate(-16deg);}}
   @keyframes rodCast{0%{transform:rotate(-11deg);} 25%{transform:rotate(-32deg);} 55%{transform:rotate(-4deg);} 78%{transform:rotate(-18deg);} 100%{transform:rotate(-13deg);}}
-  /* ---------- ДИЗАЙН УДОЧКИ: единый связный силуэт ----------
-     #rodpath - ОДИН замкнутый path (не набор кусков), поэтому обводка и
-     заливка идеально совпадают по краю - никаких швов и "мешанины".
-     Заливка красится активным скином через --rod-color. */
+
   #rodpath{fill:var(--rod-color, #CBA06A); stroke:#2A160C; stroke-width:3; stroke-linejoin:round; transition:filter .4s ease;}
   #rodGloss{fill:none; stroke:rgba(255,255,255,0.5); stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; pointer-events:none;}
   #rodtip{fill:#FFF8EA; stroke:#2A160C; stroke-width:2.2;}
-  /* пробковая рукоять - всегда тёплого кремового цвета, не зависит от скина */
+
   #cork rect{fill:url(#corkGrad); stroke:#8A6A45; stroke-width:1.6;}
   #corkRings path{fill:none; stroke:rgba(0,0,0,0.25); stroke-width:1.6; stroke-linecap:round;}
-  /* катушка - окрашивается тем же скином, что и бланк, для целостного вида */
+
   #reelpath{fill:var(--rod-color, #CBA06A); stroke:#2A160C; stroke-width:2.4; opacity:.98;}
   #reelspool{fill:url(#reelSpoolGrad); stroke:#2A160C; stroke-width:1.3;}
   #reelbutton{fill:#2A160C;}
@@ -249,10 +209,10 @@
   #reelhandle{transition:transform .2s ease; transform-box:fill-box;}
   #reelhandle rect{fill:#2A160C;}
   #reelhandle circle{fill:url(#reelSpoolGrad); stroke:#2A160C; stroke-width:1.2;}
-  /* кольца-тюльпаны на бланке - тёплое золото, единое для всех скинов */
+
   #rodguides ellipse{fill:none; stroke:var(--gold); stroke-width:2;}
   #rodguides circle{fill:none; stroke:#5C3A12; stroke-width:1.5;}
-  /* милый бантик у катушки - фирменная деталь на любом скине */
+
   #rodbow path{fill:var(--coral); stroke:#8A2F1C; stroke-width:1.2; stroke-linejoin:round;}
   #rodbow circle{fill:var(--gold); stroke:#8A5A16; stroke-width:1;}
   #rodsvg.reeling #reelhandle{animation:reelSpin .28s linear infinite;}
@@ -267,23 +227,14 @@
   #rodsvg.legend-skin.reeling{animation:legendHue 4s linear infinite, rodReel .28s ease-in-out infinite;}
   @keyframes legendHue{0%{filter:hue-rotate(0deg) drop-shadow(0 0 10px #F6C453);} 50%{filter:hue-rotate(180deg) drop-shadow(0 0 14px #B14EF2);} 100%{filter:hue-rotate(360deg) drop-shadow(0 0 10px #F6C453);}}
 
-
   .skinswatch{width:38px; height:38px; border-radius:12px; border:1px solid var(--glass-border-strong); flex-shrink:0;}
   @keyframes skinGlowPulse{0%,100%{filter:brightness(1) saturate(1);} 50%{filter:brightness(1.4) saturate(1.3);}}
   @keyframes skinLegendSwatch{0%{filter:hue-rotate(0deg);} 100%{filter:hue-rotate(360deg);}}
 
-  /* ---------- ЛЕСКА: реалистичная провисающая нить вместо прямой линии ----------
-     Раньше леска была CSS-прямоугольником, растянутым transform:scaleX - визуально
-     как натянутая струна без веса. Теперь это SVG-путь (квадратичная кривая),
-     который каждый кадр пересчитывается между кончиком удочки и поплавком с лёгким
-     провисанием (имитация гравитации и намокшей лески), выпрямляется при вываживании. */
-  #lineSvg{position:fixed; inset:0; width:100%; height:100%; z-index:3; pointer-events:none; overflow:visible;}
+  #lineSvg{position:absolute; inset:0; width:100%; height:100%; z-index:3; pointer-events:none; overflow:visible;}
   #linePath{fill:none; stroke-linecap:round; transition:filter .12s ease;}
   #linePath.tense{animation:lineTense .12s ease-in-out infinite;}
 
-  /* ---------- ПОПЛАВОК: классический рыболовный поплавок вместо простого кружка ----------
-     Веретенообразное тело бело-красного цвета (как у настоящих "гусиных" поплавков),
-     тонкая антенна-сторожок сверху, глянцевые блики и контактное кольцо на воде. */
   #bobber{position:absolute; left:50%; width:26px; height:52px; transform:translate(-50%,-50%); z-index:3; will-change:transform;
     filter:drop-shadow(0 4px 7px rgba(0,0,0,0.4));}
   #bobber svg{display:block; width:100%; height:100%; overflow:visible;}
@@ -326,12 +277,7 @@
   #mainbtn:disabled{opacity:.5;}
   #timerbar{width:100%; max-width:340px; height:9px; border-radius:6px; background:rgba(247,243,232,0.18); overflow:hidden; display:none; box-shadow:inset 0 1px 3px rgba(0,0,0,0.3); position:relative;}
   #timerfill{height:100%; width:100%; background:linear-gradient(90deg, var(--coral-deep), var(--coral)); transform-origin:left;}
-  /* Единая механика вываживания для всей рыбы: держишь кнопку — твоя зона
-     всплывает вверх по треку, отпускаешь — тонет обратно (гравитация).
-     Рыбка сама "плавает" по треку туда-сюда. Пока рыбка внутри твоей зоны —
-     верхняя полоса прогресса растёт, если рыбка снаружи — потихоньку падает.
-     Дошла до конца — поймал; упала до нуля — сорвалась. Один и тот же принцип
-     для любой редкости, сложность отличается только скоростью/размером зоны. */
+
   #reelbar{width:100%; max-width:340px; display:none;}
   #reelbar.show{display:block;}
   #reelProgressTrack{width:100%; height:8px; border-radius:5px; background:rgba(247,243,232,0.18); overflow:hidden; box-shadow:inset 0 1px 3px rgba(0,0,0,0.3); margin-bottom:8px;}
@@ -369,12 +315,7 @@
   #navbar{position:absolute; left:10px; right:10px; bottom:calc(10px + env(safe-area-inset-bottom)); height:78px; z-index:20; display:flex;
     background:rgba(9,26,32,0.78); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); border:1px solid var(--glass-border);
     border-radius:24px; box-shadow:0 12px 30px rgba(0,0,0,0.4); padding:6px;
-    /* Фикс мелькания заброшенной удочки сквозь/поверх навбара: удочка постоянно анимируется
-       (will-change:transform) и из-за этого живёт на отдельном GPU-слое. Навбар был обычным
-       слоем без явного композитинга, поэтому в некоторых мобильных WebView (в т.ч. в Telegram)
-       порядок отрисовки между "слоем" и "обычным" элементом мог на кадр-другой съезжать, несмотря
-       на правильный z-index. Явно переводим навбар в собственный изолированный композитный слой —
-       тогда порядок поверх удочки гарантирован на всех кадрах анимации. */
+
     isolation:isolate; transform:translate3d(0,0,0); will-change:transform; backface-visibility:hidden;}
   .navbtn{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; border-radius:16px;
     background:none; border:1px solid transparent; color:rgba(247,243,232,0.5); font-family:'Nunito',sans-serif; font-weight:800; font-size:11.5px; padding:6px 2px;
@@ -383,23 +324,13 @@
   .navbtn .navico{width:25px; height:25px; display:flex; align-items:center; justify-content:center; transition:transform .18s ease;}
   .navbtn .navico svg{display:block; width:100%; height:100%;}
   .navbtn:active{transform:scale(.94);}
-  /* Раньше активная вкладка была сплошным прямоугольником на всю высоту
-     панели — вплотную к краям навбара, из-за чего на фоне размытого стекла
-     смотрелась мутным грязным пятном. Теперь это отдельная "плавающая" золотая
-     плашка: собственные отступы (margin у .navbtn) открывают зазор сверху/снизу,
-     мягкий градиент+обводка+свечение вместо плоской заливки — тот же язык,
-     что и у активных вкладок магазина/заданий/локаций (.shoptab.active,
-     .qtab.active, .loccard.active), только светлее, чтобы не спорить с
-     разноцветными иконками навигации. */
+
   .navbtn.active{color:var(--gold);
     background:linear-gradient(180deg, rgba(246,196,83,0.24), rgba(217,150,44,0.09));
     border-color:rgba(246,196,83,0.3);
     box-shadow:0 4px 12px rgba(246,196,83,0.16), inset 0 1px 0 rgba(255,255,255,0.07);}
   .navbtn.active .navico{transform:translateY(-1px) scale(1.1);}
 
-  /* Отступ снизу у подэкранов должен учитывать safe-area точно так же, как навбар,
-     иначе на устройствах с индикатором свайпа (iPhone X+) последняя карточка
-     списка частично уезжает под навигацию */
   .subscreen{position:absolute; inset:0; z-index:8; background:var(--water-deep); display:none; flex-direction:column;}
   .subscreen.show{display:flex;}
   .subhead{padding:calc(16px + env(safe-area-inset-top)) 18px 12px; flex-shrink:0; border-bottom:1px solid rgba(247,243,232,0.06);
@@ -409,14 +340,7 @@
   .subhead p{margin:0; font-size:11.5px; opacity:.6; font-weight:600;}
   .subhead .pill{flex-shrink:0; margin-top:1px;}
   .sublist{flex:1; overflow-y:auto; touch-action:pan-y; padding:12px 16px calc(24px + 92px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; gap:10px; -webkit-overflow-scrolling:touch; overscroll-behavior-y:contain;}
-  /* Гарантированный "хвост" внизу каждой прокручиваемой ленты (магазин/рынок/
-     задания/коллекция/топ). Раньше расстояние до навбара задавалось только
-     padding-bottom у .sublist: если контент ленты был почти равен высоте
-     экрана, scrollHeight мог оказаться равен clientHeight (из-за округления
-     в WebView Telegram на некоторых устройствах) - тогда прокрутка не
-     включалась вовсе, и последняя карточка оставалась перекрыта навбаром.
-     Реальный пустой блок (не padding) всегда учитывается в scrollHeight и
-     однозначно даёт ленте прокрутиться до конца на любом устройстве. */
+
   .sublist::after{content:''; display:block; flex:0 0 auto; height:88px; width:1px;}
 
   .card2{background:var(--card); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border:1px solid var(--glass-border); border-radius:var(--radius-md); padding:13px; display:flex; align-items:center; gap:11px; box-shadow:0 4px 14px rgba(0,0,0,0.18); transition:transform .12s ease;}
@@ -427,9 +351,7 @@
   .card2 .name{font-weight:800; font-size:14px; margin-bottom:2px; overflow-wrap:break-word;}
   .card2 .desc{font-size:10.5px; opacity:.6; font-weight:600; line-height:1.4; overflow-wrap:break-word;}
   .card2 .action{display:flex; flex-direction:column; gap:6px; flex-shrink:0; max-width:118px;}
-  /* Кнопки в карточках раньше не переносили текст (white-space:nowrap), из-за чего
-     длинные цены/подписи ("Продлить · 45 мин", "9500 🪙") могли вылезать за
-     границы карточки на узких экранах. Теперь текст переносится и центрируется. */
+
   .card2 button{border:none; border-radius:11px; padding:8px 10px; font-weight:800; font-size:11px; font-family:'Baloo 2',sans-serif;
     white-space:normal; word-break:break-word; line-height:1.25; text-align:center; transition:transform .1s ease;}
   .card2 button:active{transform:scale(.94);}
@@ -476,21 +398,12 @@
     border-radius:13px; padding:10px 6px; font-weight:800; font-size:12px; font-family:'Baloo 2',sans-serif; transition:background .15s ease, color .15s ease;}
   .qtab.active{background:linear-gradient(180deg, var(--gold), var(--gold-deep)); color:var(--ink); border-color:transparent; box-shadow:0 4px 12px rgba(246,196,83,0.3);}
 
-  /* ---------- Вкладки внутри "Магазина" (Бусты/Удочки/Наживка/Скины/Мастерская) ----------
-     Раньше весь магазин был одной длинной лентой карточек — приходилось долго
-     листать, чтобы найти нужный раздел. Теперь это горизонтальный ряд вкладок
-     (с прокруткой вбок, если не помещаются), и в списке показывается только
-     содержимое активной вкладки — списки стали короткими и предсказуемыми. */
   .shop-tabs{display:flex; gap:7px; padding:10px 16px 2px; overflow-x:auto; touch-action:pan-x; -webkit-overflow-scrolling:touch; scrollbar-width:none; flex-shrink:0;}
   .shop-tabs::-webkit-scrollbar{display:none;}
   .shoptab{flex:0 0 auto; border:1px solid var(--glass-border); background:rgba(10,31,38,0.45); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); color:rgba(247,243,232,0.65);
     border-radius:13px; padding:9px 14px; font-weight:800; font-size:12px; font-family:'Baloo 2',sans-serif; white-space:nowrap; transition:background .15s ease, color .15s ease;}
   .shoptab.active{background:linear-gradient(180deg, var(--gold), var(--gold-deep)); color:var(--ink); border-color:transparent; box-shadow:0 4px 12px rgba(246,196,83,0.3);}
 
-  /* ---------- Кнопка настроек в шапке экрана (шестерёнка) ----------
-     Вибрация и сброс прогресса раньше висели в самом низу ленты магазина и
-     маячили перед глазами при каждой покупке. Теперь они спрятаны за
-     иконкой-шестерёнкой в шапке и открываются отдельным модальным окном. */
   .subhead-right{display:flex; align-items:center; gap:8px; flex-shrink:0;}
   .icon-btn{width:38px; height:38px; border-radius:12px; background:rgba(247,243,232,0.08); border:1px solid var(--glass-border);
     display:flex; align-items:center; justify-content:center; flex-shrink:0; color:var(--cream); transition:background .12s ease, transform .1s ease;}
@@ -502,20 +415,11 @@
   #settingsModal .btn-reset-progress{margin-top:14px;}
 
   .storycard{background:var(--card); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border:1px solid var(--glass-border); border-radius:var(--radius-lg); padding:16px; box-shadow:0 4px 14px rgba(0,0,0,0.18); overflow:hidden;}
-  /* Баннер главы: те же панорамные SVG-иллюстрации локаций, что служат фоном
-     во время рыбалки, здесь дают сюжету лицо - у каждой главы есть картинка
-     места действия вместо голого текста. Отрицательные поля утягивают баннер
-     к краям карточки (у .storycard теперь overflow:hidden, поэтому верхние
-     углы аккуратно обрежутся по радиусу карточки). */
+
   .schapter-banner{position:relative; height:104px; margin:-16px -16px 12px; background-size:cover;}
   .schapter-banner svg{position:absolute; inset:0; width:100%; height:100%; display:block;}
   .schapter-banner::after{content:''; position:absolute; inset:0; background:linear-gradient(180deg, rgba(10,20,25,0) 40%, rgba(10,20,25,0.55) 100%);}
-  /* Сценка главы: вместо абстрактной иконки типа задания баннер теперь
-     показывает то, что реально происходит в тексте главы - смотритель гавани,
-     рыбаки за беседой, рыночный прилавок, крупная рыба на леске и т.д.
-     Подобрано по смыслу каждой истории в storyChapterScene(). Кладём поверх
-     цветного градиента локации отдельным слоем справа, чтобы не спорить с
-     затемнением снизу (schapter-banner::after) и с бейджем типа задания. */
+
   .schapter-scene{position:absolute; inset:0; z-index:0; overflow:hidden;}
   .schapter-scene svg{position:static; width:100%; height:100%; display:block;}
   .schapter-banner-badge{position:absolute; left:10px; top:10px; width:30px; height:30px; border-radius:50%; z-index:2;
@@ -540,7 +444,6 @@
     display:flex; align-items:center; justify-content:center; gap:7px;}
   .btn-reset-progress:active{background:rgba(255,122,89,0.2);}
 
-  /* ---------- Строка настроек (вкл/выкл вибрации) на экране Магазина ---------- */
   .settingrow{width:100%; display:flex; align-items:center; justify-content:space-between; gap:12px;
     padding:13px 15px; margin-top:8px; border-radius:var(--radius-md); background:var(--card); border:1px solid var(--glass-border);}
   .settingrow .settxt{display:flex; flex-direction:column; gap:2px; min-width:0;}
@@ -571,13 +474,11 @@
   .modal-btn-danger{background:linear-gradient(180deg, #FF7A59, #D9502E); color:#fff;}
   .modal-btn-primary{background:linear-gradient(180deg, var(--gold), var(--gold-deep)); color:var(--ink);}
 
-  /* ---------- ПРИГЛАСИТЬ ДРУГА (виральность) ---------- */
   .invite-btn{margin:12px 16px 4px; padding:13px; border:1px dashed var(--glass-border-strong); border-radius:var(--radius-md);
     background:rgba(246,196,83,0.1); color:var(--gold); font-weight:800; font-size:12.5px; font-family:'Baloo 2',sans-serif;
     display:flex; align-items:center; justify-content:center; gap:8px; text-align:center; transition:transform .1s ease;}
   .invite-btn:active{transform:scale(.97);}
 
-  /* ---------- ОНБОРДИНГ (обучение при первом запуске) ---------- */
   #onboardModal .modal-card{max-width:300px;}
   .onboard-dots{display:flex; justify-content:center; gap:6px; margin-bottom:14px;}
   .onboard-dots span{width:6px; height:6px; border-radius:3px; background:rgba(247,243,232,0.25); transition:background .2s ease, width .2s ease;}
@@ -598,27 +499,21 @@
     transition:opacity .25s ease, transform .25s ease; text-align:center; white-space:nowrap;}
   #levelupToast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 
-  /* ================= ЖИВАЯ АНИМАЦИЯ РЫБАЛКИ ================= */
-
-  /* ---------- Амбиентные рыбьи тени, плавающие в толще воды ---------- */
   .fishshadow{position:absolute; z-index:2; pointer-events:none; will-change:transform, opacity, left;}
   .fishshadow .wiggle{width:100%; height:100%; animation:fishWiggle 1.3s ease-in-out infinite; transform-origin:50% 50%;}
   .fishshadow svg{display:block; width:100%; height:100%;}
   @keyframes fishWiggle{0%,100%{transform:scaleY(1) rotate(0deg);} 50%{transform:scaleY(.92) rotate(-3deg);}}
 
-  /* ---------- Рябь на воде вокруг поплавка во время ожидания ---------- */
   .ripple-ring{position:fixed; z-index:2; pointer-events:none; border-radius:50%;
     border:1.5px solid rgba(247,243,232,0.5); transform:translate(-50%,-50%) scale(.2); opacity:.6;
     animation:rippleOut 1.9s ease-out forwards;}
   @keyframes rippleOut{0%{transform:translate(-50%,-50%) scale(.2); opacity:.6;}
     100%{transform:translate(-50%,-50%) scale(2.8); opacity:0;}}
 
-  /* ---------- Второе кольцо всплеска для более сочного эффекта ---------- */
   #splash::after{content:''; position:absolute; inset:0; border-radius:50%; border:2px solid rgba(247,243,232,0.45); opacity:0; transform:scale(.3);}
   #splash.animate::after{animation:splashRing2 .65s ease-out .08s;}
   @keyframes splashRing2{0%{opacity:.8; transform:scale(.3);} 100%{opacity:0; transform:scale(2);}}
 
-  /* ---------- Разные варианты поклёвки, чтобы каждая была неповторимой ---------- */
   #bobber.bite-jitter-2{animation:bobberBite2 .26s ease-in-out infinite;}
   @keyframes bobberBite2{0%,100%{transform:translate(-50%,-50%) translateX(0) rotate(0deg);}
     30%{transform:translate(-50%,-50%) translateX(-9px) translateY(4px) rotate(-11deg);}
@@ -629,7 +524,6 @@
     50%{transform:translate(-50%,-50%) translateY(-11px) scale(1.08);}
     80%{transform:translate(-50%,-50%) translateY(6px) scale(.95);}}
 
-  /* ---------- Напряжение при вываживании: поплавок, удочка и леска "борются" ---------- */
   #bobber.reel-struggle{animation:reelStruggle .22s ease-in-out infinite;}
   @keyframes reelStruggle{0%,100%{transform:translate(-50%,-50%) translateX(0) translateY(0) rotate(0deg);}
     25%{transform:translate(-50%,-50%) translateX(-6px) translateY(3px) rotate(-6deg);}
@@ -639,10 +533,7 @@
   @keyframes rodReel{0%,100%{transform:rotate(-15deg);} 50%{transform:rotate(-9deg);}}
   #line.tense{animation:lineTense .12s ease-in-out infinite;}
   @keyframes lineTense{0%,100%{filter:none;} 50%{filter:brightness(1.35);}}
-  /* Чем ближе к успешному вываживанию, тем яростнее "сопротивляется" рыба —
-     подменяем анимации на более быстрые/размашистые по мере роста прогресса
-     (см. updateReelVisual). Это чисто ощущение нарастающего напряжения, на баланс
-     не влияет. */
+
   #bobber.reel-struggle.lvl2{animation:reelStruggle .15s ease-in-out infinite;}
   #bobber.reel-struggle.lvl3{animation:reelStruggle2 .1s ease-in-out infinite;}
   @keyframes reelStruggle2{0%,100%{transform:translate(-50%,-50%) translateX(0) translateY(0) rotate(0deg) scale(1);}
@@ -653,11 +544,10 @@
   #rodsvg.reeling.lvl3{animation:rodReel .13s ease-in-out infinite;}
   #mainbtn.pull.lvl2{animation:pullPulse .4s ease-in-out infinite;}
   #mainbtn.pull.lvl3{animation:pullPulse .22s ease-in-out infinite;}
-  /* Короткая вспышка полосы, когда прогресс вываживания заметно "просел" —
-     сигнал "рыба уходит, торопись!" без штрафа по очкам. */
+
   #timerbar.danger{animation:timerDanger .26s ease;}
   @keyframes timerDanger{0%,100%{box-shadow:inset 0 1px 3px rgba(0,0,0,0.3);} 50%{box-shadow:inset 0 1px 3px rgba(0,0,0,0.3), 0 0 0 2px var(--coral);}}
-  /* Всплывающий текст (стрик попаданий, +XP за улов и т.п.) */
+
   .poptext{position:fixed; z-index:40; transform:translate(-50%,-40%); font-weight:900; font-size:14px;
     color:var(--gold); text-shadow:0 2px 6px rgba(0,0,0,0.55); pointer-events:none; white-space:nowrap;
     animation:popTextRise .7s ease-out forwards;}
@@ -667,12 +557,10 @@
     18%{opacity:1; transform:translate(-50%,-62%) scale(1.1);}
     100%{opacity:0; transform:translate(-50%,-120%) scale(1);}}
 
-  /* ---------- Лёгкая тряска экрана для крупных событий ---------- */
   #app.shake{animation:microShake .3s ease-in-out;}
   @keyframes microShake{0%,100%{transform:translate(0,0);} 20%{transform:translate(-3px,2px);} 40%{transform:translate(3px,-2px);}
     60%{transform:translate(-2px,-2px);} 80%{transform:translate(2px,2px);}}
 
-  /* ---------- Праздничное оформление карточки улова по редкости ---------- */
   #catchcard .card.r-rare{border-color:rgba(99,183,238,0.5); box-shadow:0 0 0 1px rgba(99,183,238,0.28), var(--shadow-lift);}
   #catchcard .card.r-legend{border-color:rgba(246,196,83,0.6);
     animation:legendCardGlow 1.6s ease-in-out infinite, legendCardHue 5s linear infinite;}
@@ -685,15 +573,11 @@
   #screen-flash.flash{animation:screenFlash .7s ease-out;}
   @keyframes screenFlash{0%{opacity:0;} 15%{opacity:1;} 100%{opacity:0;}}
 
-  /* ---------- Прыжок рыбы над водой в момент поимки ---------- */
   .fishleap{position:fixed; z-index:26; pointer-events:none; animation:fishLeap .55s cubic-bezier(.3,.6,.3,1) forwards;}
   @keyframes fishLeap{0%{transform:translate(-50%,-50%) translateY(0) scale(.5) rotate(-8deg); opacity:0;}
     35%{transform:translate(-50%,-50%) translateY(-46px) scale(1.15) rotate(6deg); opacity:1;}
     100%{transform:translate(-50%,-50%) translateY(-8px) scale(.9) rotate(0deg); opacity:1;}}
 
-  /* ---------- Варианты прыжка/полёта для находок (сундук/бутылка/сапог) ----------
-     У каждой находки свой характер движения, чтобы визуально отличаться от рыбы
-     ещё до того, как игрок прочитает карточку результата. */
   .fishleap.leap-chest{animation-name:chestLeap; filter:drop-shadow(0 0 6px rgba(246,196,83,0.75));}
   @keyframes chestLeap{0%{transform:translate(-50%,-50%) translateY(0) scale(.4) rotate(0deg); opacity:0;}
     30%{transform:translate(-50%,-50%) translateY(-38px) scale(1.25) rotate(-4deg); opacity:1;}
@@ -773,20 +657,12 @@
         </radialGradient>
       </defs>
 
-      <!-- ===== БЛАНК УДОЧКИ =====
-           Простая прямая "леденцовая" палочка: одна прямая ось от вершины к
-           рукояти, толще внизу, тоньше сверху, с круглыми колпачками на концах.
-           Прямая линия вместо сложного изгиба - чтобы всё было ровно и не криво. -->
-      <path id="rodpath" d="M153.9,39.0 L270.5,430.9
+            <path id="rodpath" d="M153.9,39.0 L270.5,430.9
         Q259.6,452.4 239.5,439.1 L146.1,41.0
         Q148.7,35.2 153.9,39.0 Z"/>
-      <!-- лёгкий глянцевый блик вдоль той же оси -->
-      <path id="rodGloss" d="M162,79 L238,355"/>
+            <path id="rodGloss" d="M162,79 L238,355"/>
 
-      <!-- ===== КАТУШКА =====
-           Круглая, надета прямо на ось удочки у рукояти - гарантированно
-           на бланке, а не сбоку "в воздухе". Красится тем же скином. -->
-      <circle id="reelpath" cx="246.6" cy="403.4" r="27"/>
+            <circle id="reelpath" cx="246.6" cy="403.4" r="27"/>
       <g id="reelbail">
         <path d="M234 384 C 226 376 226 368 233 361"/>
         <path d="M259 384 C 267 376 267 368 260 361"/>
@@ -800,10 +676,7 @@
         <circle cx="246.6" cy="372.4" r="5.8"/>
       </g>
 
-      <!-- ===== ПРОБКОВАЯ РУКОЯТЬ =====
-           Продолжает ось бланка ровно в том же направлении - не под случайным
-           углом, а прямое продолжение одной и той же прямой. -->
-      <g id="cork" transform="rotate(14.9 263.35 466.41)">
+            <g id="cork" transform="rotate(14.9 263.35 466.41)">
         <rect x="246.35" y="433.91" width="34" height="65" rx="17"/>
       </g>
       <g id="corkRings" transform="rotate(14.9 263.35 466.41)">
@@ -812,17 +685,13 @@
         <path d="M249 480 Q263.35 485 277.7 480"/>
       </g>
 
-      <!-- ===== МИЛЫЙ БАНТИК ===== -->
-      <g id="rodbow" transform="translate(232,414) rotate(15)">
+            <g id="rodbow" transform="translate(232,414) rotate(15)">
         <path d="M 0 3 C -13 -8 -16 5 0 8 C -16 15 -13 27 0 16 Z"/>
         <path d="M 0 3 C 13 -8 16 5 0 8 C 16 15 13 27 0 16 Z"/>
         <circle cx="0" cy="9" r="4"/>
       </g>
 
-      <!-- ===== КОЛЬЦА-ТЮЛЬПАНЫ =====
-           Все стоят прямо на оси бланка и повёрнуты на один и тот же угол
-           наклона удочки - надеты ровно, без разнобоя. -->
-      <g id="rodguides">
+            <g id="rodguides">
         <ellipse cx="239.25" cy="375.75" rx="9" ry="3.8" transform="rotate(-15 239.25 375.75)"/>
         <circle cx="239.25" cy="375.75" r="4.4" transform="rotate(-15 239.25 375.75)"/>
         <ellipse cx="218.25" cy="296.75" rx="8" ry="3.4" transform="rotate(-15 218.25 296.75)"/>
@@ -833,8 +702,7 @@
         <circle cx="176.25" cy="138.75" r="3" transform="rotate(-15 176.25 138.75)"/>
       </g>
 
-      <!-- вершина удочки: сюда крепится леска -->
-      <circle id="rodtip" cx="150" cy="40" r="3.3"/>
+            <circle id="rodtip" cx="150" cy="40" r="3.3"/>
     </svg>
     <div id="icehole"></div>
     <svg id="lineSvg" xmlns="http://www.w3.org/2000/svg">
@@ -864,21 +732,15 @@
             <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
           </radialGradient>
         </defs>
-        <!-- контактное кольцо на воде -->
-        <ellipse class="waterring" cx="22" cy="84" rx="13" ry="3.2" fill="none" stroke="rgba(247,243,232,0.55)" stroke-width="1.2"/>
+                <ellipse class="waterring" cx="22" cy="84" rx="13" ry="3.2" fill="none" stroke="rgba(247,243,232,0.55)" stroke-width="1.2"/>
         <ellipse cx="22" cy="84" rx="9" ry="2.2" fill="rgba(4,20,26,0.35)"/>
-        <!-- сторожок (антенна) -->
-        <line x1="22" y1="2" x2="22" y2="28" stroke="#4a3320" stroke-width="1.6" stroke-linecap="round"/>
+                <line x1="22" y1="2" x2="22" y2="28" stroke="#4a3320" stroke-width="1.6" stroke-linecap="round"/>
         <circle cx="22" cy="3.2" r="2.4" fill="#FF3B30"/>
         <circle cx="22" cy="3.2" r="1" fill="#FFB3A8"/>
-        <!-- верхняя (белая) часть тела -->
-        <path d="M22 28 C 32.5 28 37.5 40 37.5 49 L 6.5 49 C 6.5 40 11.5 28 22 28 Z" fill="url(#bobberWhiteGrad)" stroke="#8a6b3f" stroke-width="1"/>
-        <!-- нижняя (красная) часть тела -->
-        <path d="M6.5 49 L 37.5 49 C 37.5 63.5 31 82 22 82 C 13 82 6.5 63.5 6.5 49 Z" fill="url(#bobberRedGrad)" stroke="#7a2510" stroke-width="1"/>
-        <!-- разделительный ободок -->
-        <rect x="6.5" y="47.8" width="31" height="2.6" rx="1.3" fill="#3B2A1C" opacity="0.55"/>
-        <!-- глянцевые блики -->
-        <ellipse cx="15" cy="40" rx="5.5" ry="13" fill="url(#bobberShine)"/>
+                <path d="M22 28 C 32.5 28 37.5 40 37.5 49 L 6.5 49 C 6.5 40 11.5 28 22 28 Z" fill="url(#bobberWhiteGrad)" stroke="#8a6b3f" stroke-width="1"/>
+                <path d="M6.5 49 L 37.5 49 C 37.5 63.5 31 82 22 82 C 13 82 6.5 63.5 6.5 49 Z" fill="url(#bobberRedGrad)" stroke="#7a2510" stroke-width="1"/>
+                <rect x="6.5" y="47.8" width="31" height="2.6" rx="1.3" fill="#3B2A1C" opacity="0.55"/>
+                <ellipse cx="15" cy="40" rx="5.5" ry="13" fill="url(#bobberShine)"/>
         <ellipse cx="15" cy="60" rx="4.5" ry="11" fill="url(#bobberShine)" opacity="0.65"/>
       </svg>
     </div>
@@ -1039,55 +901,31 @@
       tg.setHeaderColor && tg.setHeaderColor('#0B2F3A');
       tg.setBackgroundColor && tg.setBackgroundColor('#0B2F3A');
       tg.setBottomBarColor && tg.setBottomBarColor('#0B2F3A');
-      // Запрещаем Телеграму сворачивать/закрывать мини-апп вертикальным свайпом —
-      // без этого быстрые тапы у верхнего/нижнего края на некоторых клиентах
-      // (особенно iOS) иногда распознаются как жест закрытия.
+
       tg.disableVerticalSwipes && tg.disableVerticalSwipes();
-      // На части Android/Desktop клиентов подтверждение закрытия недоступно,
-      // но там, где доступно — не даём случайно смахнуть прогресс во время игры.
+
       tg.enableClosingConfirmation && tg.enableClosingConfirmation();
     }catch(e){}
   }
 
-  // ---------- РЕАЛЬНАЯ ВЫСОТА ВЬЮПОРТА ----------
-  // 100dvh — хорошая база, но в WebView некоторых клиентов Телеграма (Android,
-  // Desktop, старые версии iOS) он не совпадает с фактически видимой областью:
-  // может включать зону под системными жестами или, наоборот, не учитывать
-  // компактный режим до вызова tg.expand(). Поэтому держим свою переменную
-  // --tg-vh и пересчитываем её из tg.viewportStableHeight (самый надёжный
-  // источник в Mini Apps) с фолбэком на window.visualViewport/innerHeight —
-  // и обновляем при любом изменении вьюпорта (поворот экрана, клавиатура,
-  // смена размера окна десктоп-клиента, разворачивание мини-аппа).
-  //
-  // На Telegram Desktop (Windows/macOS) tg.viewportStableHeight в момент
-  // первого вызова иногда отдаёт устаревшее маленькое значение (сохранённое
-  // ещё от свёрнутого/неразвёрнутого состояния окна, до полного применения
-  // tg.expand()) — на короткое или не очень время. Так как --tg-vh определяет
-  // высоту #app целиком, из-за такого значения ВСЯ разметка схлопывалась в
-  // узкую полоску: закреплённый по низу навбар оказывался почти у самого
-  // верха, HUD и баннер бонуса наезжали друг на друга, а сцена рыбалки не
-  // помещалась и была не видна. Раньше первое (обычно верное) значение можно
-  // было случайно перезаписать более поздним заниженным — поэтому здесь:
-  // 1) берём МАКСИМУМ из всех доступных источников высоты, а не просто первый
-  //    правдоподобный (маленькое значение от одного источника не должно
-  //    портить разметку, если другой источник сообщает нормальную высоту);
-  // 2) отбрасываем совсем неправдоподобные значения (меньше 300px — на
-  //    телефоне/десктопе так низко окно быть не может);
-  // 3) переприменяем расчёт с небольшой задержкой после ready()/expand(),
-  //    чтобы поймать более точное значение, которое Desktop-клиент иногда
-  //    присылает не сразу, а на 100-300мс позже.
+  let warmupUntil = Date.now() + 2500;
+  let warmupMaxH = 0;
   function applyViewportHeight(){
     const candidates = [
       tg && tg.viewportStableHeight,
       window.visualViewport && window.visualViewport.height,
       window.innerHeight
     ].filter(v => typeof v === 'number' && v >= 300);
-    const h = candidates.length ? Math.max(...candidates) : (window.innerHeight || 600);
+    let h = candidates.length ? Math.max(...candidates) : (window.innerHeight || 600);
+    if(Date.now() < warmupUntil){
+      warmupMaxH = Math.max(warmupMaxH, h);
+      h = warmupMaxH;
+    }
     document.documentElement.style.setProperty('--tg-vh', (h * 0.01) + 'px');
   }
   applyViewportHeight();
-  setTimeout(applyViewportHeight, 150);
-  setTimeout(applyViewportHeight, 400);
+  [100, 250, 450, 700, 1000, 1400, 1900, 2500].forEach(t => setTimeout(applyViewportHeight, t));
+  window.addEventListener('load', applyViewportHeight);
   if(tg && tg.onEvent){ try{ tg.onEvent('viewportChanged', applyViewportHeight); }catch(e){} }
   window.addEventListener('resize', applyViewportHeight);
   window.addEventListener('orientationchange', ()=>setTimeout(applyViewportHeight, 60));
@@ -1102,12 +940,6 @@
     }
   }
 
-  // ---------- ЗВУК ----------
-  // Раньше в игре был только вибро-отклик — звуковых эффектов не было вообще.
-  // Короткие SFX синтезируются на лету через Web Audio API (осцилляторы + шум),
-  // без внешних аудиофайлов — это надёжнее в мини-аппе и не требует загрузки
-  // ассетов. Звук включается тем же жестом, что и первое действие игрока
-  // (см. ensureAudioCtx() в обработчике тапа), как того требуют браузеры.
   let audioCtx = null;
   function ensureAudioCtx(){
     if(!audioCtx){
@@ -1145,11 +977,7 @@
     noise.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
     noise.start(t0); noise.stop(t0 + dur + 0.03);
   }
-  // sfx(type) — короткие звуковые отклики на ключевые события: заброс/всплеск,
-  // поклёвка, удачный улов, получение монет, левелап, находки на крючке
-  // (сундук/бутылка/сапог — у каждой свой характерный звук) и общие UI-клики
-  // (переключение вкладок, сдача заданий). Отключается тумблером "Звук" в
-  // настройках (рядом с вибрацией), по умолчанию включён.
+
   function sfx(type){
     if(state && state.soundOn === false) return;
     if(!ensureAudioCtx()) return;
@@ -1180,9 +1008,9 @@
       case 'miss':
         playTone(220, 0, 0.18, 'sawtooth', 0.08, 120);
         break;
-      // ---- находки на крючке: у каждой свой узнаваемый звук, отдельный от рыбы ----
+
       case 'chest':
-        // глухой стук открывающейся крышки + рассыпающийся звонкий каскад монет
+
         playNoise(0, 0.1, 0.1, 260);
         playTone(140, 0, 0.14, 'sine', 0.16, 90);
         playTone(880, 0.1, 0.06, 'square', 0.07);
@@ -1191,22 +1019,22 @@
         playTone(1568, 0.28, 0.14, 'square', 0.09);
         break;
       case 'bottle':
-        // стеклянный чпок пробки + мягкий высокий перезвон
+
         playNoise(0, 0.05, 0.08, 2600);
         playTone(1200, 0.03, 0.07, 'sine', 0.09);
         playTone(1800, 0.1, 0.16, 'triangle', 0.08);
         break;
       case 'boot':
-        // тупой мокрый шлепок - никакого блеска, находка так себе
+
         playNoise(0, 0.12, 0.14, 340);
         playTone(110, 0, 0.16, 'sine', 0.11, 70);
         break;
-      // ---- общие UI-звуки ----
+
       case 'click':
         playTone(720, 0, 0.045, 'sine', 0.05);
         break;
       case 'quest':
-        // короткая фанфара для сдачи задания - светлее и короче левелапа
+
         playTone(784, 0, 0.09, 'triangle', 0.12);
         playTone(1046, 0.08, 0.09, 'triangle', 0.13);
         playTone(1568, 0.16, 0.16, 'triangle', 0.14);
@@ -1222,24 +1050,14 @@
     }
   }
 
-  // ====== ЗАПОЛНИ ЭТУ СТРОКУ ПОСЛЕ НАСТРОЙКИ FIREBASE (см. инструкцию в чате) ======
   const FIREBASE_URL = "https://guhgg-83fab-default-rtdb.europe-west1.firebasedatabase.app";
-  // Пример: "https://tihaya-gavan-default-rtdb.europe-west1.firebasedatabase.app"
-  // =================================================================================
 
-  // ====== ЗАПОЛНИ ССЫЛКУ НА СВОЕГО TELEGRAM-БОТА/ПРИЛОЖЕНИЕ ДЛЯ ПРИГЛАШЕНИЙ ======
-  // Формат: "https://t.me/имя_бота/имя_приложения" (короткое имя Mini App, задаётся в BotFather).
   const BOT_LINK = "https://t.me/rubalko_bot/play";
-  // Пример: "https://t.me/tihaya_gavan_bot/play"
-  // ===============================================================================
+
   function inviteReady(){ return BOT_LINK && BOT_LINK.indexOf('ВСТАВЬ') === -1; }
 
-  // Собственная SVG-иконка монеты (используется вместо эмодзи 🪙, которое на части
-  // устройств/шрифтов отображается плоским серым кружком вместо золотого)
   const COIN_SVG = '<span class="coin-ico"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="coinShine2" cx="35%" cy="28%" r="80%"><stop offset="0%" stop-color="#FFF6DC"/><stop offset="45%" stop-color="#F6C453"/><stop offset="100%" stop-color="#C6811F"/></radialGradient></defs><circle cx="16" cy="16" r="14.5" fill="url(#coinShine2)" stroke="#8A5A16" stroke-width="1.3"/><circle cx="16" cy="16" r="11" fill="none" stroke="#FFEDB8" stroke-width="1" opacity="0.55"/><path d="M9.5 20c-.6-3.2.6-6.7 3.6-8.6 2-1.3 4.5-1.5 6.6-.6-2.4-.3-4.8.4-6.5 2-1.9 1.7-2.7 4.3-2.2 6.8-1.1-.3-1.5.3-1.5.4z" fill="#A66A17" opacity="0.65"/><path d="M12 20.5c2.6.9 5.6.2 7.5-1.9 1.5-1.7 2-3.9 1.6-6 .6 2.2.2 4.6-1.3 6.5-1.7 2.1-4.5 3-7.1 2.2-.4-.1-.6-.5-.7-.8z" fill="#A66A17" opacity="0.5"/><ellipse cx="11.2" cy="10.8" rx="4" ry="2.2" fill="#FFFFFF" opacity="0.5" transform="rotate(-28 11.2 10.8)"/></svg></span>';
 
-  // Собственные SVG-иконки взамен эмодзи 🔒 и 🎉 — используются в текстовых строках,
-  // которые генерирует JS (те же соображения, что и для COIN_SVG выше)
   const LOCK_SVG = '<span class="ico-inline"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M10 14V10a6 6 0 0 1 12 0v4" fill="none" stroke="#D9962C" stroke-width="2.6" stroke-linecap="round"/><rect x="7" y="14" width="18" height="14" rx="4" fill="#F6C453" stroke="#8A5A16" stroke-width="1.3"/><circle cx="16" cy="20" r="2.2" fill="#8A5A16"/><rect x="15" y="21" width="2" height="4" rx="1" fill="#8A5A16"/></svg></span>';
   const TRASH_SVG = '<span class="ico-inline"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M9 10h14l-1.4 17.2a2 2 0 0 1-2 1.8H12.4a2 2 0 0 1-2-1.8L9 10Z" fill="none" stroke="#FF9C82" stroke-width="2" stroke-linejoin="round"/><path d="M6 10h20M13 6h6a1.5 1.5 0 0 1 1.5 1.5V10h-9V7.5A1.5 1.5 0 0 1 13 6Z" fill="none" stroke="#FF9C82" stroke-width="2" stroke-linejoin="round"/><path d="M13 14.5v9M19 14.5v9" stroke="#FF9C82" stroke-width="1.8" stroke-linecap="round"/></svg></span>';
   const PARTY_SVG = '<span class="ico-inline"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 26 22 10" stroke="#D9962C" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="9" r="2" fill="#FF7A59"/><circle cx="20" cy="6" r="1.6" fill="#F6C453"/><circle cx="25" cy="16" r="2" fill="#63B7EE"/><circle cx="14" cy="16" r="1.4" fill="#7FE08F"/><rect x="21.7" y="20.3" width="3" height="3" fill="#F6C453" transform="rotate(20 23.2 21.8)"/><circle cx="6" cy="19" r="1.4" fill="#F6C453"/></svg></span>';
@@ -1248,16 +1066,9 @@
   const GIFT_SVG = '<span class="ico-inline"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="13" width="20" height="14" rx="2" fill="#FF7A59"/><rect x="6" y="13" width="20" height="5" fill="#D9502E"/><rect x="14" y="13" width="4" height="14" fill="#F6C453"/><path d="M16 13c-2-6-9-6-9-1 0 1.5 2 1 9 1zM16 13c2-6 9-6 9-1 0 1.5-2 1-9 1z" fill="#F6C453" stroke="#D9962C" stroke-width="1"/></svg></span>';
 
   const RARITY_LABEL = ['обычная','обычная','редкая','ценная','легендарная'];
-  const RARITY_SPEED = [1, 1, 0.85, 0.68, 0.52]; // множитель окна поклёва: чем реже рыба, тем короче окно
+  const RARITY_SPEED = [1, 1, 0.85, 0.68, 0.52];
 
-  // ---------- СЛУЧАЙНЫЕ НАХОДКИ НА КРЮЧКЕ ----------
-  // Вместо рыбы иногда попадается что-то другое - разбавляет однообразие
-  // поклёвок и даёт маленький сюрприз. Игрок не знает заранее, что клюнуло:
-  // подсечка выглядит и ощущается как обычная поклёвка (та же анимация и то
-  // же окно реакции), а тип улова раскрывается только на карточке результата.
-  // В отличие от рыбы, находка не требует вываживания - сундук/бутылка/сапог
-  // не "борются", поэтому после точной подсечки сразу показывается карточка.
-  const EVENT_CHANCE = 0.1; // ~1 из 10 поклёвок - находка, а не рыба
+  const EVENT_CHANCE = 0.1;
   const EVENT_ITEMS = [
     { id:'chest', name:'Сундук с монетами', kind:'coins', coinsRange:[60,140],
       flavor:'Похоже, тут кто-то давно припрятал заначку...',
@@ -1294,16 +1105,10 @@
     '«Заброшено с Ледяного озера. Долгий путь проделала эта бутылка...»',
   ];
   function pickEvent(){ return EVENT_ITEMS[Math.floor(Math.random()*EVENT_ITEMS.length)]; }
-  // Награда находок раньше была одинаковой в любой локации: сундук всегда
-  // 60-140 монет что в Гавани, что в Вулкане. Из-за этого находка ощутимо
-  // помогала новичку (~30% к среднему улову в Гавани), но к позднему этапу
-  // почти терялась на фоне цен на рыбу (~4% от среднего улова в Вулкане).
-  // Множитель ниже примерно повторяет то, как растёт средняя цена рыбы от
-  // локации к локации, поэтому находка остаётся ощутимой на всей игре.
+
   const LOCATION_FIND_MULT = { harbor:1, reef:1.5, ice:2.2, jungle:2.5, abyss:4, volcano:7 };
   function currentFindMult(){ return LOCATION_FIND_MULT[state.currentLocation] || 1; }
 
-  // ---------- УНИКАЛЬНЫЕ SVG-ИКОНКИ ДЛЯ КАЖДОГО ВИДА РЫБЫ ----------
   function svgTag(inner){ return '<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">'+inner+'</svg>'; }
   function fishBase(o){
     const rx = 15*(o.elong||1), ry = 12*(o.depth||1);
@@ -1383,7 +1188,6 @@
     return svgTag(builder(d));
   }
 
-  // Диапазон веса (кг) по редкости — чем реже рыба, тем крупнее и тяжелее она может быть
   const WEIGHT_RANGE_BY_TIER = [
     [0.08, 0.45],
     [0.25, 1.1],
@@ -1393,7 +1197,7 @@
   ];
   function randomWeight(tier){
     const [wMin, wMax] = WEIGHT_RANGE_BY_TIER[tier];
-    const t = Math.pow(Math.random(), 2.1); // смещение к небольшим экземплярам, крупные — редкость
+    const t = Math.pow(Math.random(), 2.1);
     return Math.round((wMin + t*(wMax-wMin)) * 100) / 100;
   }
   function fishPrice(fish, weight){
@@ -1405,12 +1209,6 @@
     return Math.max(Math.round(fish.coins[0]*0.5), price);
   }
 
-  // xpMult (только у reef/ice/jungle) - выравнивает темп прокачки в середине
-  // игры: без него кумулятивный XP, нужный для следующего уровня, растёт
-  // быстрее (линейно), чем средний XP за улов в этих трёх локациях, из-за
-  // чего Риф-Лёд-Джунгли ощущались заметно более плотным грайндом, чем
-  // соседние Гавань и Бездна. Множитель применяется только к XP с рыбы,
-  // цену улова и остальные механики не трогает.
   const LOCATIONS = [
     { id:'harbor', name:'Тихая Гавань', unlockLevel:1, top:'#FFC27A', bottom:'#164A5C', scenery:'harbor',
       splashFx:['droplet','wave'], flavor:{cast:'Закидываем удочку с причала...', wait:'Тихо... жди клёва'},
@@ -1511,7 +1309,7 @@
     {id:'sulfur', name:'Серная наживка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="9" fill="#D9C23E" opacity=".9" stroke="#A68B2E" stroke-width="1"/><circle cx="16" cy="16" r="4" fill="#E8451F" opacity=".7"/></svg>', desc:'Заметно больше редкой и ценной рыбы в кипящих источниках · зона вываживания чуть шире', weights:[16,20,26,24,14], price:6800, unlockLevel:21, reelTargetDelta:-0.7},
     {id:'phoenix', name:'Феникс-наживка', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 4c4 6 8 9 8 15a8 8 0 1 1-16 0c0-6 4-9 8-15z" fill="#F2C14E" stroke="#B33E1A" stroke-width="1.2"/><path d="M16 4c2 5 1 8-1 10" stroke="#E8451F" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>', desc:'Максимальный шанс легендарной рыбы · рыба заметно крупнее · зона вываживания заметно шире и меньше теряется при промахе', weights:[12,18,24,26,20], price:9200, unlockLevel:24, weightMult:1.2, reelTargetDelta:-1.5, reelDecayMult:0.85},
   ];
-  // Доп. свойства наживки со значениями по умолчанию (если не указаны в самой наживке)
+
   function baitStat(bait, key, def){ return (bait && typeof bait[key]==='number') ? bait[key] : def; }
   const ROD_SKINS = [
     {id:'classic', name:'Классическое дерево', desc:'Тёплый лак и натуральная текстура', colors:['#8a6a45','#5a3d22'], price:0, unlockLevel:1},
@@ -1535,9 +1333,7 @@
     {id:'coins2', name:'Удвоение дохода', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><ellipse cx="16" cy="23" rx="10" ry="4" fill="#D9962C"/><ellipse cx="16" cy="18.3" rx="10" ry="4" fill="#F6C453" stroke="#8A5A16" stroke-width="1"/><ellipse cx="16" cy="13.6" rx="10" ry="4" fill="#FFE9B0" stroke="#8A5A16" stroke-width="1"/></svg>', desc:'x2 монеты при продаже на рынке', basePrice:140, baseDuration:8*60000, minDuration:3*60000},
     {id:'luck', name:'Везение рыбака', ico:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 16c0-4-3-7-6-7s-5 3-3 6 6 3 9 1zM16 16c0-4 3-7 6-7s5 3 3 6-6 3-9 1zM16 16c4 0 7 3 7 6s-3 5-6 3-3-6-1-9zM16 16c-4 0-7 3-7 6s3 5 6 3 3-6 1-9z" fill="#6FAE55" stroke="#3d6b2c" stroke-width="1"/><path d="M16 16v9" stroke="#4c7a3a" stroke-width="2" stroke-linecap="round"/></svg>', desc:'Выше шанс редкой и ценной рыбы', basePrice:170, baseDuration:6*60000, minDuration:2*60000},
   ];
-  // Бусты дорожают и становятся короче с каждым уровнем игрока.
-  // Цена растёт на 12% за уровень (рост мультипликатора ограничен x4).
-  // Длительность сокращается на 3% за уровень, но не короче minDuration.
+
   function boostPrice(item){
     const lvl = Math.max(1, state.level);
     const mult = 1 + Math.min(3, (lvl-1)*0.12);
@@ -1550,26 +1346,6 @@
   }
   const LUCK_WEIGHTS = [14,14,28,26,18];
 
-  // ---------- МАСТЕРСКАЯ: постоянные улучшения за монеты ----------
-  // Раньше в игре монеты было некуда девать после того, как всё снаряжение
-  // куплено и прокачки в мастерской упирались в потолок 10 уровней —
-  // дальше весь доход от рыбалки становился чистым избытком без всякой цели.
-  // Теперь у прокачки НЕТ верхнего уровня: покупать можно бесконечно, поэтому
-  // деньгам всегда есть куда деться, сколько бы игрок ни наиграл. Чтобы это
-  // не сломало баланс, сделаны две независимые кривые:
-  //  - ЦЕНА растёт по степенному закону (n+1)^growthPow — медленнее, чем
-  //    экспонента, поэтому даже на очень высоких уровнях остаётся в разумных
-  //    пределах (сотни тысяч - единицы миллионов), а не улетает в абсурд;
-  //  - ЭФФЕКТ растёт с насыщением к capEffect (чем выше уровень, тем меньше
-  //    прирост), поэтому сама механика ловли не переламывается бесконечной
-  //    прокачкой - после условного 15-20 уровня выгода уже почти незаметна,
-  //    и дальнейшие покупки — осознанный "избыточный" sink для тех, у кого
-  //    просто накопилось много монет.
-  // Раньше вываживание было просто серией тапов, и никакая прокачка не
-  // была напрямую привязана к самому процессу удержания рыбы в зоне.
-  // Теперь это отдельный навык (аналоговое слежение), поэтому нужна
-  // прокачка, которая реально в нём помогает: быстрее растёт прогресс и
-  // меньше теряется, когда рыба на миг выходит из зоны игрока.
   const WORKSHOP_ITEMS = [
     { id:'luck', name:'Чутьё рыбака', icon:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="5.6" fill="#6FAE55" stroke="#3d6b2c" stroke-width="1.4"/><path d="M16 3v5M16 24v5M3 16h5M24 16h5M8 8l3.2 3.2M20.8 20.8 24 24M8 24l3.2-3.2M20.8 11.2 24 8" stroke="#8FBF6E" stroke-width="1.8" stroke-linecap="round"/></svg>', desc:'Стабильно смещает шансы клёва в пользу редкой и ценной рыбы', baseCost:900, growthPow:1.47, capEffect:18, satK:0.15 },
     { id:'income', name:'Деловая хватка', icon:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><ellipse cx="15" cy="25" rx="9" ry="3.4" fill="#D9962C"/><ellipse cx="15" cy="20.6" rx="9" ry="3.4" fill="#F6C453" stroke="#8A5A16" stroke-width="1"/><ellipse cx="15" cy="16.2" rx="9" ry="3.4" fill="#FFE9B0" stroke="#8A5A16" stroke-width="1"/><path d="M24 4v9M20 8.5 24 4l4 4.5" fill="none" stroke="#7FE08F" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>', desc:'Поднимает цену продажи всего улова на рынке', baseCost:1100, growthPow:1.52, capEffect:0.5, satK:0.12 },
@@ -1582,20 +1358,17 @@
   }
   function upgradeLevel(id){ return (state.upgrades && state.upgrades[id]) || 0; }
   function findWorkshopItem(id){ return WORKSHOP_ITEMS.find(w=>w.id===id); }
-  // Цена покупки уровня n->n+1: растёт всегда, без верхнего предела.
+
   function workshopCost(item, level){
     return Math.round(item.baseCost * Math.pow(1+level, item.growthPow) / 10) * 10;
   }
-  // Суммарный эффект на текущем уровне: асимптотически стремится к capEffect,
-  // никогда не достигая его - поэтому покупка следующего уровня всегда имеет
-  // смысл предложить, но отдача от неё на высоких уровнях исчезающе мала.
+
   function workshopEffect(item, level){
     if(!level) return 0;
     return item.capEffect * (1 - 1/(1 + level*item.satK));
   }
   function workshopEffectValue(id){ return workshopEffect(findWorkshopItem(id), upgradeLevel(id)); }
-  // Смещает часть веса самой частой рыбы (tier 0) в пользу редких уровней (2-4).
-  // Ограничено 60% исходного веса tier0, поэтому базовый улов никогда не обнуляется.
+
   function applyLuckUpgrade(weights){
     const shiftCap = workshopEffectValue('luck');
     if(!shiftCap) return weights;
@@ -1606,8 +1379,6 @@
     return w;
   }
 
-  // Экранирование текста из недоверенных источников (имена игроков из
-  // Firebase) перед вставкой в innerHTML — защита от XSS через лидерборд.
   function escapeHtml(str){
     return String(str==null ? '' : str).replace(/[&<>"']/g, function(c){
       return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
@@ -1620,7 +1391,7 @@
     return String(n);
   }
   function xpNeeded(level){ return level*100; }
-  // Награда монетами за новый уровень: растёт с уровнем, каждый 5-й уровень — с бонусом x1.5
+
   function coinsForLevel(level){
     const base = 40 + level*18;
     const milestone = (level % 5 === 0) ? base*1.5 : base;
@@ -1632,8 +1403,7 @@
   const QUEST_POOL = [
     {type:'catch_any', min:6, max:15, label:n=>`Поймать ${n} рыб`, rc:n=>n*8, rx:n=>n*4},
     {type:'catch_rare', min:1, max:3, label:n=>`Поймать ${n} редких или ценных рыб`, rc:n=>n*45, rx:n=>n*22},
-    // Награда была всего 30%/15% от цели - фактически "кэшбэк" заметно
-    // слабее остальных заданий пула по отдаче за усилие. Подняли до 50%/22%.
+
     {type:'sell_coins', min:100, max:350, label:n=>`Заработать ${n} монет на рынке`, rc:n=>Math.floor(n*0.5), rx:n=>Math.floor(n*0.22)},
     {type:'catch_heavy', min:2, max:6, label:n=>`Поймать рыбу весом от ${n} кг`, rc:n=>n*40, rx:n=>n*20},
     {type:'catch_new_species', min:1, max:2, label:n=>`Поймать ${n} ${n===1?'вид рыбы, которого':'вида рыбы, которых'} у тебя ещё нет`, rc:n=>n*90, rx:n=>n*45},
@@ -1658,7 +1428,6 @@
     else q.progress = Math.min(q.target, q.progress + amount);
   }
 
-  // ---------- СЮЖЕТНЫЕ ЗАДАНИЯ (не сбрасываются, идут по цепочке глав) ----------
   const STORY_QUESTS = [
     { title:'Пролог: Новичок на пристани', story:'Старый смотритель гавани щурится на твою снасть: «Здесь рыбачат поколениями, но мало кто задерживается. Покажи, что не бросишь после первой же неудачи». Поймай 5 любых рыб.', type:'catch_any', target:5, rewardCoins:60, rewardXp:30 },
     { title:'Глава 1: Слухи о крупной рыбе', story:'Рыбаки за кружкой чая шепчутся о «редких тенях», что изредка попадаются на крючок. Докажи, что тебе везёт: поймай 3 редких или ценных рыбы.', type:'catch_rare', target:3, rewardCoins:120, rewardXp:60 },
@@ -1671,10 +1440,7 @@
     { title:'Глава 8: Торговый путь', story:'Торговцы рифа готовы платить хорошую цену за твой улов, если докажешь размах своей рыбалки. Заработай 1200 монет на рынке.', type:'sell_coins', target:1200, rewardCoins:480, rewardXp:240 },
     { title:'Глава 9: Ледяной зов', story:'За Рифом лежат воды, что никогда не оттаивают. Чтобы дойти туда, нужно стать сильнее. Достигни 10 уровня.', type:'reach_level', target:10, rewardCoins:400, rewardXp:0 },
     { title:'Глава 10: Богатый улов', story:'Торговцы Ледяного озера уважают только тех, кто умеет зарабатывать. Заработай 2000 монет на рынке.', type:'sell_coins', target:2000, rewardCoins:500, rewardXp:250 },
-    // Главы 11/15/19 требуют легендарную рыбу (базовый шанс тира4 - всего 3%,
-    // плюс у него самое узкое окно подсечки и самое жёсткое вываживание из
-    // всех тиров) - без буста "Везение" или топовой наживки цели 5/8/12 растягивались
-    // в весьма долгий гринд. Смягчили до 3/5/8, награда осталась прежней.
+
     { title:'Глава 11: Ледяные чудовища', story:'Подо льдом прячутся твари, что светятся в темноте воды. Поймай 3 легендарные рыбы.', type:'catch_legendary', target:3, rewardCoins:800, rewardXp:400 },
     { title:'Глава 12: Испытание льда', story:'Смотритель Ледяного озера считает, что выдержки в тебе маловато. Поймай 60 любых рыб и докажи обратное.', type:'catch_any', target:60, rewardCoins:600, rewardXp:300 },
     { title:'Глава 13: Курс на джунгли', story:'За морозными водами скрывается душная тропическая река. Чтобы пробраться туда, нужно стать ещё сильнее. Достигни 15 уровня.', type:'reach_level', target:15, rewardCoins:700, rewardXp:0 },
@@ -1691,7 +1457,7 @@
     { title:'Глава 24: Сокровища кратера', story:'Торговцы у подножия вулкана готовы платить втрое больше за улов из кипящих вод - если у тебя хватит смелости наловить достаточно. Заработай 8000 монет на рынке.', type:'sell_coins', target:8000, rewardCoins:3200, rewardXp:1600 },
     { title:'Финал: Легенда Тихой Гавани', story:'Старый смотритель смотрит на тебя у кромки кипящего источника, и в его глазах - гордость: «Ты прошёл путь от новичка на пристани до тех, о ком слагают легенды - от тихой гавани до самого сердца огня. Осталось последнее: докажи, что ни одна рыба в этих водах - от мелкой плотвички до Феникс-рыбы - не ускользнула бы от тебя». Поймай хотя бы по одному экземпляру каждого вида рыбы во всех локациях.', type:'catch_all_species', target:45, rewardCoins:5000, rewardXp:2500, rewardSkin:'legend' },
   ];
-  // Финальная цель "поймать всех рыб" считается по фактическому числу видов во всех локациях.
+
   (function syncCatchAllTarget(){
     const finale = STORY_QUESTS.find(c=>c.type==='catch_all_species');
     if(finale) finale.target = LOCATIONS.reduce((sum,loc)=>sum+loc.fish.length,0);
@@ -1753,17 +1519,11 @@
     clearTimeout(saveTimer);
     saveTimer = setTimeout(()=>{
       const payload = JSON.stringify(state);
-      // localStorage — надёжный "быстрый" слой сохранения: он есть почти во всех
-      // Telegram WebView, в отличие от CloudStorage (нужен Bot API 6.9+ и сеть).
-      // Пишем в него ВСЕГДА, вне зависимости от того, доступен ли CloudStorage.
+
       try{ localStorage.setItem(SAVE_KEY, payload); }catch(e){}
       if(tg && tg.CloudStorage){ tg.CloudStorage.setItem(SAVE_KEY, payload, function(){}); }
       window.__memSave = payload;
-      // Сервер (Firebase) — источник истины, привязанный к getUserId(), а не к
-      // конкретному браузеру/устройству. Именно это защищает прогресс от
-      // очистки кэша, переустановки Telegram или захода с другого устройства
-      // (при условии, что это тот же Telegram-аккаунт, у которого есть
-      // стабильный tg.initDataUnsafe.user.id).
+
       if(fbReady()){
         const uid = getUserId();
         fetch(FIREBASE_URL + '/saves/' + uid + '.json', {
@@ -1774,17 +1534,14 @@
     }, 300);
   }
   function loadState(cb){
-    // 1) Сначала мгновенно восстанавливаем из localStorage — синхронно, без
-    //    сети, чтобы игра стартовала без задержки/мигания.
+
     try{
       const local = localStorage.getItem(SAVE_KEY);
       if(local) Object.assign(state, JSON.parse(local));
     }catch(e){}
 
     function loadFromServer(){
-      // 3) Финальный и приоритетный источник — сервер, привязанный к
-      //    getUserId(). Если там есть сохранение, оно перекрывает и
-      //    localStorage, и CloudStorage (актуальнее их обоих).
+
       if(fbReady()){
         const uid = getUserId();
         fetch(FIREBASE_URL + '/saves/' + uid + '.json')
@@ -1795,8 +1552,7 @@
         cb();
       }
     }
-    // 2) Если есть CloudStorage — подтягиваем и его тоже (даёт свежие данные,
-    //    если сервер вдруг недоступен офлайн), после чего идём на сервер.
+
     if(tg && tg.CloudStorage){
       tg.CloudStorage.getItem(SAVE_KEY, function(err, value){
         if(!err && value){ try{ Object.assign(state, JSON.parse(value)); }catch(e){} }
@@ -1829,7 +1585,7 @@
     return null;
   }
   function fixInventory(){
-    // миграция со старого формата (число = количество) на новый (массив весов пойманных экземпляров)
+
     Object.keys(state.inventory||{}).forEach(id=>{
       const val = state.inventory[id];
       if(typeof val === 'number'){
@@ -1850,7 +1606,6 @@
   function getBait(id){ return BAITS.find(b=>b.id===id); }
   function getSkin(id){ return ROD_SKINS.find(s=>s.id===id); }
 
-  // ---------- СКИНЫ УДОЧКИ: градиенты + свечение ----------
   function buildSkinDefs(){
     const defs = document.getElementById('skinDefs');
     if(!defs) return;
@@ -1878,8 +1633,6 @@
   function currentLoc(){ return getLocation(state.currentLocation); }
   function isLocUnlocked(loc){ return state.level >= loc.unlockLevel; }
 
-  // Иконки биомов для переключателя локации и карточек в модалке выбора —
-  // маленькие, узнаваемые силуэты, никак не завязанные на эмодзи-шрифт устройства.
   const LOC_ICONS = {
     harbor:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="9" r="3" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M16 12v15M8 21c0 4 3.6 7 8 7s8-3 8-7M6 17h6M20 17h6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
     reef:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M5 24c4-2 6-8 4-13 3 1 5 5 4 10 2-4 1-10-2-13 4 0 7 4 7 9 1-5 5-8 9-7-3 2-4 6-3 10 2-3 6-4 8-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
@@ -1889,7 +1642,6 @@
     volcano:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 26 13 10l3 5 3-5 7 16Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M16 3c-1.6 1.8-1.6 3.2 0 5 1.6-1.8 1.6-3.2 0-5Z" fill="currentColor"/><path d="M2 26h28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
   };
   function locIcon(scenery){ return LOC_ICONS[scenery] || LOC_ICONS.harbor; }
-
 
   function pickFish(){
     const baseWeights = isBoostActive('luck') ? LUCK_WEIGHTS : getBait(state.activeBait).weights;
@@ -1945,11 +1697,7 @@
     return state.anonId;
   }
   function getUserName(){
-    // Если Telegram передал имя — используем и запоминаем его в state (он же
-    // сохраняется через saveState в localStorage/CloudStorage). Это защищает
-    // от ситуаций, когда в какой-то конкретной сессии/клиенте initDataUnsafe.user
-    // временно недоступен: вместо повторной записи в лидерборд "Рыбака" поверх
-    // уже известного имени мы используем последнее известное настоящее имя.
+
     if(tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.first_name){
       state.cachedName = tg.initDataUnsafe.user.first_name;
       return state.cachedName;
@@ -1966,10 +1714,6 @@
     }).catch(()=>{});
   }
 
-  // ---------- ПРИГЛАШЕНИЕ ДРУГА ----------
-  // Просто ссылка на бота/приложение, которой можно поделиться. Никакой
-  // серверной привязки приглашённых друг к другу и никаких автоматических
-  // бонусов за приглашение — это специально убрано как лишняя сложность.
   function inviteLink(){
     if(!inviteReady()) return 'https://t.me';
     return BOT_LINK;
@@ -1989,7 +1733,6 @@
     haptic();
   }
 
-  // ---------- UI REFS ----------
   const btn=document.getElementById('mainbtn'), status=document.getElementById('status'),
     bobber=document.getElementById('bobber'), splash=document.getElementById('splash'),
     biteBang=document.getElementById('bitebang'), timerbar=document.getElementById('timerbar'),
@@ -2005,18 +1748,6 @@
 
   let gameState='idle', biteTimeout, windowTimeout, currentFish=null, currentEvent=null, currentFishXpMult=1, currentEventFindMult=1, rippleInterval=null;
 
-  // ---------- ЗАЩИТА ОТ БЕСКОНЕЧНОГО СПАМА ПО КНОПКЕ ----------
-  // Раньше кнопка одинаково реагировала на любой тап независимо от того, ждал ли
-  // игрок реального сигнала или просто зажимал/спамил её без остановки — это
-  // сводило на нет и реакцию на поклёвку, и вываживание. Ниже — три независимых
-  // барьера, которые вместе закрывают это:
-  //  1) MIN_REACTION_MS — подсечка раньше этого времени после поклёвки не считается
-  //     настоящей реакцией (человек физически не успевает увидеть сигнал и нажать
-  //     быстрее), рыба срывается со штрафом.
-  //  2) MAX_TAPS_PER_WINDOW/TAP_WINDOW_MS — сколько тапов в секунду вообще
-  //     засчитывается; всё, что сверху (автокликер/зажатый спам), просто игнорируется.
-  //  3) nextCastAllowedAt — короткий гарантированный кулдаун между забросами, чтобы
-  //     нельзя было мгновенно перезакинуть удочку сразу после провала/улова.
   const MIN_REACTION_MS = 160;
   const CAST_COOLDOWN_MS = 550;
   const EARLY_STRIKE_PENALTY_MS = 700;
@@ -2026,12 +1757,6 @@
   let nextCastAllowedAt = 0;
   let recentTaps = [];
 
-  // Якорная точка поплавка (cx,cy), которую мы позиционируем в cast(), — это
-  // геометрический ЦЕНТР его 26×52px контейнера (из-за transform:translate(-50%,-50%)).
-  // Но сам буёк (внутри viewBox 44×92) визуально касается воды намного ниже центра —
-  // почти у самого низа (ватерлиния/кольцо на воде нарисованы на y≈84 из 92).
-  // Поэтому прорубь, всплеск и рябь должны рисоваться не в точке (cx,cy), а ниже неё
-  // на эту разницу — тогда они окажутся ровно под буйком, а не по его центру.
   const BOBBER_WATERLINE_OFFSET = 21;
 
   function shakeScreen(){
@@ -2042,7 +1767,6 @@
     screenFlashEl.classList.remove('flash'); void screenFlashEl.offsetWidth; screenFlashEl.classList.add('flash');
   }
 
-  // ---------- ЖИВОЙ ФОН И ЭФФЕКТЫ ЛОКАЦИЙ ----------
   icehole.innerHTML = '<svg viewBox="0 0 80 46" xmlns="http://www.w3.org/2000/svg">'+
     '<ellipse cx="40" cy="23" rx="36" ry="16" fill="#0b2f3a"/>'+
     '<ellipse cx="40" cy="23" rx="36" ry="16" fill="none" stroke="#eaf7ff" stroke-width="3"/>'+
@@ -2191,9 +1915,7 @@
       <circle class="glowdot" cx="630" cy="56" r="2.2" fill="#FF9A4E" opacity="0.7" style="animation-delay:-1.2s;"/>
       </svg>`,
   };
-  // ---------- УНИКАЛЬНЫЕ SVG-ИКОНКИ ДЛЯ ЭФФЕКТОВ (вместо системных эмодзи) ----------
-  // Заменяют эмодзи во всплесках заброса/поклёва и в летающих частицах фона локаций —
-  // выглядят одинаково на любом устройстве и вписаны в стиль игры.
+
   const FX_SVG = {
     firefly: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" fill="#eaff8f" opacity="0.18"/><circle cx="12" cy="12" r="3.4" fill="#f2ff9f"/></svg>',
     dust: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="3" fill="#fff3c4" opacity="0.55"/></svg>',
@@ -2223,15 +1945,12 @@
     abyss: {icons:['sparkle','glowBlue'], count:14, anim:'moteFloat', dur:[3,6], top:15, size:10},
     volcano: {icons:['ember','sparkle'], count:12, anim:'moteFloat', dur:[3,6], top:20, size:9},
   };
-  // Отдельный слой светлячков только для джунглей — своя анимация (плавное парение),
-  // не смешивается с падающими листьями из PARTICLE_CFG.
+
   const FIREFLY_CFG = {jungle: {count:8, top:30, bottom:70}};
   const sceneryBackEl = document.getElementById('scenery-back');
   const sceneryPartEl = document.getElementById('scenery-particles');
   const starsEl = document.getElementById('stars');
-  // Звёздное небо / биолюминесцентная взвесь для ледяной и глубоководной локаций.
-  // Слой статичен и не зависит от текущей локации — видимость переключается CSS
-  // по data-loc, поэтому достаточно построить один раз при загрузке.
+
   function renderStars(){
     if(!starsEl) return;
     starsEl.innerHTML = '';
@@ -2285,15 +2004,11 @@
       }
     }
   }
-  // ---------- ЖИВОЙ ФОН: НАСТОЯЩИЕ РЫБЫ ПЛАВАЮТ В ТОЛЩЕ ВОДЫ ----------
-  // Вместо одинаковой серой тени теперь плавают силуэты реальных видов рыб текущей
-  // локации (по её же SVG-дизайну, что и в коллекции/садке), в 3 слоях глубины —
-  // ближние крупнее и ярче, дальние мельче, туманнее и медленнее. Изредка проплывает
-  // крупный редкий вид, а некоторые рыбы оставляют за собой цепочку пузырьков.
+
   const AMBIENT_LAYERS = [
-    {yMin:29, yMax:40, scaleMul:0.55, opacity:0.22, blur:1.1, speedMul:0.7,  z:1}, // дальний план
-    {yMin:37, yMax:55, scaleMul:0.88, opacity:0.42, blur:0.3, speedMul:1,    z:1}, // средний план
-    {yMin:46, yMax:70, scaleMul:1.25, opacity:0.7,  blur:0,   speedMul:1.35, z:2}, // ближний план
+    {yMin:29, yMax:40, scaleMul:0.55, opacity:0.22, blur:1.1, speedMul:0.7,  z:1},
+    {yMin:37, yMax:55, scaleMul:0.88, opacity:0.42, blur:0.3, speedMul:1,    z:1},
+    {yMin:46, yMax:70, scaleMul:1.25, opacity:0.7,  blur:0,   speedMul:1.35, z:2},
   ];
   function pickAmbientFish(){
     const loc = currentLoc();
@@ -2364,7 +2079,6 @@
   setTimeout(spawnAmbientFish, 1600);
   setTimeout(spawnAmbientFish, 2700);
 
-  // ---------- РЯБЬ НА ВОДЕ ПОКА ПОПЛАВОК ЖДЁТ ----------
   function spawnRipple(){
     if(bobber.classList.contains('hidden')) return;
     const rect = bobber.getBoundingClientRect();
@@ -2394,8 +2108,7 @@
       setTimeout(()=>el.remove(), 800);
     }
   }
-  // Короткий всплывающий текст (стрик попаданий, "+N XP" и т.п.) — лёгкая
-  // обратная связь на каждое значимое действие, не только на редкий улов.
+
   function popText(x, y, text, cls){
     const el = document.createElement('div');
     el.className = 'poptext' + (cls ? (' '+cls) : '');
@@ -2405,12 +2118,6 @@
     setTimeout(()=>el.remove(), 700);
   }
 
-  // Строка активных бустов ("⚡ 4м") раньше обновлялась только внутри
-  // refreshTopUI() — то есть только по факту действий игрока (улов, покупка
-  // и т.п.). Если просто держать приложение открытым, циферка "зависала" и
-  // не отражала реальное оставшееся время. Вынесли обновление в отдельную
-  // лёгкую функцию и тикаем её по таймеру каждые 20 секунд, независимо от
-  // остальных действий.
   function refreshBoostLine(){
     const activeBoosts = BOOST_ITEMS.filter(b=>isBoostActive(b.id)).map(b=>'<span class="ico-inline">'+b.ico+'</span>'+boostRemaining(b.id)+'м');
     boostline.innerHTML = activeBoosts.join('&nbsp; ');
@@ -2497,12 +2204,10 @@
 
   function getTipPoint(){
     const r = rodtipEl.getBoundingClientRect();
-    return { x: r.left + r.width/2, y: r.top + r.height/2 };
+    const a = appEl.getBoundingClientRect();
+    return { x: r.left + r.width/2 - a.left, y: r.top + r.height/2 - a.top };
   }
 
-  // Провисание лески: чем длиннее леска, тем заметнее она провисает под своим
-  // весом (реалистичный эффект), а при вываживании (tense) натягивается почти
-  // в прямую. Лёгкое синусоидальное покачивание имитирует течение/ветер.
   function lineSagFor(len, tense){
     if(tense) return len*0.015;
     return Math.min(46, len*0.16);
@@ -2514,17 +2219,13 @@
     return `M ${tip.x.toFixed(1)} ${tip.y.toFixed(1)} Q ${cpx.toFixed(1)} ${cpy.toFixed(1)} ${end.x.toFixed(1)} ${end.y.toFixed(1)}`;
   }
 
-  // Удочка и поплавок постоянно двигаются своими CSS-анимациями (покачивание,
-  // поклёвка, борьба при подсечке), поэтому леску нельзя нарисовать один раз при
-  // забросе — иначе она отделяется от кончика удочки и вылазит за поплавок.
-  // Вместо этого на каждом кадре пересчитываем реальные координаты обоих концов
-  // и перерисовываем изогнутый (провисающий) путь лески.
   let lineTrackRAF = null;
   function updateLinePosition(){
     if(bobber.classList.contains('hidden')) return;
     const tip = getTipPoint();
     const rect = bobber.getBoundingClientRect();
-    const end = { x: rect.left + rect.width/2, y: rect.top + rect.height*0.32 };
+    const a = appEl.getBoundingClientRect();
+    const end = { x: rect.left + rect.width/2 - a.left, y: rect.top + rect.height*0.32 - a.top };
     const len = Math.hypot(end.x - tip.x, end.y - tip.y);
     const tense = lineEl.classList.contains('tense');
     const sag = lineSagFor(len, tense);
@@ -2549,12 +2250,6 @@
     gameState='casting'; btn.disabled=true; status.textContent=loc.flavor.cast; haptic('light');
     rodsvg.classList.remove('casting'); void rodsvg.getBoundingClientRect(); rodsvg.classList.add('casting');
 
-    // ВАЖНО: используем реальную высоту контейнера сцены (stageEl.clientHeight),
-    // а не window.innerHeight — на iPad/десктопе в развёрнутом режиме Telegram
-    // #app ограничен по высоте и отцентрирован, а window.innerHeight в момент
-    // разворачивания может быть неверным (поэтому в CSS есть отдельная поправка
-    // --tg-vh). Раньше из-за этого поплавок приземлялся не там, где реально
-    // нарисован контейнер, и леска визуально "улетала" мимо него.
     const stageH = stageEl.clientHeight;
     const cx = stageEl.clientWidth/2, cy = Math.min(stageH*0.62, stageH*0.30 + 50 + Math.random()*35);
     bobber.style.left=cx+'px'; bobber.style.top=cy+'px';
@@ -2567,18 +2262,12 @@
       icehole.classList.remove('show');
     }
 
-    // Леска "вылетает" из катушки и летит к поплавку. ВАЖНО: кончик удочки в этот
-    // момент сам качается по CSS-анимации rodCast (взмах длится 550мс), поэтому
-    // нельзя один раз посчитать tip в начале и рисовать леску от застывшей точки —
-    // именно из-за этого раньше леска "отрывалась" от удочки во время заброса.
-    // Вместо dashoffset-трюка на каждом кадре пересчитываем актуальный tip и тянем
-    // от него линию к целевой точке поплавка с нарастающим прогрессом.
     const BOBBER_H = 52;
-    const end = { x: cx, y: cy - BOBBER_H/2 + BOBBER_H*0.32 }; // якорь совпадает с формулой в updateLinePosition
+    const end = { x: cx, y: cy - BOBBER_H/2 + BOBBER_H*0.32 };
     lineEl.style.transition='none'; lineEl.style.strokeDasharray='none'; lineEl.style.strokeDashoffset='0';
     lineEl.classList.remove('tense');
     const castStart = performance.now();
-    const CAST_FLY_DELAY = 120, CAST_TRACK_UNTIL = 560; // синхронизировано с таймингами ниже
+    const CAST_FLY_DELAY = 120, CAST_TRACK_UNTIL = 560;
     (function castLineFrame(){
       const elapsed = performance.now() - castStart;
       const progress = Math.max(0, Math.min(1, (elapsed - CAST_FLY_DELAY) / (CAST_TRACK_UNTIL - CAST_FLY_DELAY)));
@@ -2624,9 +2313,9 @@
     const isEvent = Math.random() < EVENT_CHANCE;
     currentEvent = isEvent ? pickEvent() : null;
     currentFish = isEvent ? null : pickFish();
-    currentFishXpMult = currentLoc().xpMult || 1; // фиксируем на момент поклёвки - см. LOCATIONS.xpMult
-    currentEventFindMult = currentFindMult(); // фиксируем на момент поклёвки, см. LOCATION_FIND_MULT
-    const tier = currentFish ? currentFish.tier : 0; // находки клюют так же мягко, как обычная рыба
+    currentFishXpMult = currentLoc().xpMult || 1;
+    currentEventFindMult = currentFindMult();
+    const tier = currentFish ? currentFish.tier : 0;
     biteStartedAt = Date.now();
     const variant = BITE_VARIANTS[Math.floor(Math.random()*BITE_VARIANTS.length)];
     bobber.classList.remove('idle-bob'); bobber.classList.add(variant);
@@ -2649,23 +2338,9 @@
     windowTimeout = setTimeout(missedBite, winMs);
   }
 
-  // ---------- ВЫВАЖИВАНИЕ: держи рыбу в зоне ----------
-  // Один и тот же принцип для любой редкости рыбы: рыбка сама "плавает" по
-  // треку туда-сюда (плавно, к случайным точкам), а игрок держит кнопку,
-  // чтобы поднять свою зону вверх по треку, и отпускает, чтобы дать ей
-  // просесть обратно (гравитация) — как в классических рыболовных мини-играх.
-  // Пока рыбка внутри зоны игрока — верхняя полоса общего прогресса растёт,
-  // снаружи — потихоньку падает. Дошла до конца — рыба поймана, упала до
-  // нуля — сорвалась. Сложность по редкости — это только скорость/непредска-
-  // зуемость рыбки и размер зоны, а не другой набор правил.
   const reelZoneEl = document.getElementById('reelZone'), reelMarkerEl = document.getElementById('reelMarker');
   const reelbarEl = document.getElementById('reelbar'), reelFillEl = document.getElementById('reelProgressFill');
 
-  // По уровню редкости (0..4): ширина зоны игрока, скорость её подъёма/паде-
-  // ния, скорость и "непоседливость" рыбки, скорость роста/падения общего
-  // прогресса. Чем реже рыба, тем уже зона и шустрее/непредсказуемее рыбка —
-  // но никогда не требуется реакция быстрее человеческой, потому что это
-  // непрерывное слежение, а не одно попадание в узкое окно.
   const REEL_DIFFICULTY = [
     {zoneWidth:0.46, fishSpeed:0.00024, retarget:[1380,2530], gravity:0.00043, rise:0.00080, gain:39, loss:8},
     {zoneWidth:0.41, fishSpeed:0.00027, retarget:[1150,2185], gravity:0.00044, rise:0.00078, gain:35, loss:9},
@@ -2679,9 +2354,7 @@
   let reelGravity = 0.0005, reelRise = 0.0008, reelGain = 25, reelLoss = 14;
   let reelProgress = 0, reelRAF = null, reelLastTs = 0, reelTimeout = null;
   let fishRetargetTimeout = null, reelWasInZone = false, reelIntensity = 1;
-  // Грейс-период в начале вываживания: рыбка и зона стартуют в одной точке
-  // (0.5), поэтому проверку на поражение временно не делаем строгой — иначе
-  // игрок может проиграть ещё до того, как успел среагировать на первый кадр.
+
   const REEL_GRACE_MS = 750, REEL_GRACE_FLOOR = 6;
   let reelStartedAt = 0;
 
@@ -2690,14 +2363,10 @@
     if(Date.now() - biteStartedAt < MIN_REACTION_MS){ earlyStrike(); return; }
     clearTimeout(windowTimeout); haptic('success');
     bobber.classList.remove('bite-jitter','bite-jitter-2','bite-jitter-3');
-    if(currentEvent){ landEvent(); return; } // сундук/бутылка/сапог не "борются" - сразу к результату
+    if(currentEvent){ landEvent(); return; }
     startReeling();
   }
 
-  // Тап пришёл раньше физически возможной реакции человека — это либо спам по
-  // кнопке "на всякий случай", либо автокликер. Засчитываем как срыв рыбы,
-  // но с более длинным штрафным кулдауном, чем обычный промах — иначе спамить
-  // было бы выгоднее, чем ждать честной поклёвки.
   function earlyStrike(){
     clearTimeout(windowTimeout);
     gameState='idle'; haptic('error'); sfx('miss');
@@ -2760,18 +2429,14 @@
     if(inZone && !reelWasInZone) haptic('light');
     reelWasInZone = inZone;
     reelProgress += (inZone ? reelGain : -reelLoss) * dt/1000;
-    // Пока идёт грейс-период — не даём полосе провалиться до настоящего
-    // нуля, только до небольшого минимума. Это не влияет на верхнюю границу
-    // и на обычную логику после окончания грейс-периода.
+
     const inGrace = (ts - reelStartedAt) < REEL_GRACE_MS;
     reelProgress = Math.max(inGrace ? REEL_GRACE_FLOOR : 0, Math.min(100, reelProgress));
     if(reelProgress >= 100){
       reelProgress = 100; updateReelVisual(inZone);
       reelFillEl.parentElement.classList.add('win');
       stopReelLoop();
-      // Даём игроку реально увидеть заполненную до конца полосу на экране,
-      // прежде чем показать карточку улова — иначе поимка выглядит так,
-      // будто произошла "на середине".
+
       setTimeout(()=>{ hideReelBar(); landFish(); }, 220);
       return;
     }
@@ -2814,7 +2479,7 @@
     updateReelVisual(false);
     scheduleFishRetarget(diff.retarget);
     clearTimeout(reelTimeout);
-    reelTimeout = setTimeout(failReel, 20000); // страховка от зависания, не основной критерий
+    reelTimeout = setTimeout(failReel, 20000);
     reelLastTs = performance.now();
     reelStartedAt = reelLastTs;
     reelRAF = requestAnimationFrame(reelFrame);
@@ -2839,10 +2504,6 @@
     setTimeout(resetVisual, 900);
   }
 
-  // variant — необязательный модификатор ('chest'/'bottle'/'boot'), задаёт
-  // характер прыжка через CSS-класс .fishleap.leap-<variant> (см. стили ниже):
-  // сундук чуть тяжелее подскакивает, бутылка плавно покачивается, сапог
-  // кувыркается - без variant всё работает как раньше (рыба).
   function fishLeapEffect(iconHTML, variant){
     const rect = bobber.getBoundingClientRect();
     const el = document.createElement('div');
@@ -2853,9 +2514,6 @@
     setTimeout(()=>el.remove(), 650);
   }
 
-  // targetEl — необязательная цель полёта (по умолчанию счётчик улова catchVal);
-  // для находок логичнее лететь к счётчику монет coinsVal, т.к. они не рыба и
-  // не попадают в totalCatches. variant аналогичен fishLeapEffect.
   function flyFishToCounter(iconHTML, variant, targetEl){
     const from = bobber.getBoundingClientRect();
     const to = (targetEl || catchVal).getBoundingClientRect();
@@ -2887,9 +2545,7 @@
     fishLeapEffect(iconHTML);
     setTimeout(()=>flyFishToCounter(iconHTML), 260);
     const bobRect = bobber.getBoundingClientRect();
-    // Даже самая обычная рыба теперь даёт лёгкий всплеск частиц — раньше
-    // искры/звёзды доставались только редкой рыбе (tier>=2), а массовая мелочь
-    // ощущалась совсем "пусто".
+
     if(fish.tier < 2){
       burstParticles(bobRect.left+bobRect.width/2, bobRect.top+bobRect.height/2, ['droplet'], 4);
     } else {
@@ -2931,12 +2587,6 @@
     resetVisual();
   }
 
-  // Разрешение поклёвки-находки (сундук/бутылка/сапог) - без вываживания,
-  // сразу к награде. Переиспользует карточку результата рыбы (#catchcard),
-  // чтобы не плодить отдельную модалку: та же вёрстка, только контент другой.
-  // У каждого типа находки свой звук (sfx 'chest'/'bottle'/'boot'), свой
-  // характер прыжка/полёта (variant, см. CSS .leap-*/.fly-*) и свои частицы -
-  // это единственное, что отличает находку от рыбы визуально до открытия карточки.
   function landEvent(){
     gameState='idle'; nextCastAllowedAt = Date.now() + CAST_COOLDOWN_MS;
     bobber.classList.remove('reel-struggle','lvl2','lvl3'); rodsvg.classList.remove('reeling','lvl2','lvl3');
@@ -2945,7 +2595,7 @@
     const findMult = currentEventFindMult;
     const coinsGain = Math.round((ev.coinsRange[0] + Math.floor(Math.random()*(ev.coinsRange[1]-ev.coinsRange[0]+1))) * findMult);
     const xpGain = Math.round((ev.xp || 0) * findMult);
-    const variant = ev.id; // 'chest' | 'bottle' | 'boot' - используется и в CSS-классах, и в звуках
+    const variant = ev.id;
     fishLeapEffect(ev.icon, variant);
     setTimeout(()=>flyFishToCounter(ev.icon, variant, coinsVal), 260);
     const bobRect = bobber.getBoundingClientRect();
@@ -2956,7 +2606,7 @@
     let label, rClass, cardClass, subtitle;
     if(ev.kind==='coins'){
       haptic('success'); sfx('chest'); label='Находка'; rClass='r4'; cardClass=' r-legend'; subtitle = ev.flavor;
-      shakeScreen(); goldFlash(); // сундук - самая ценная находка, отмечаем её так же эффектно, как легендарную рыбу
+      shakeScreen(); goldFlash();
     }
     else if(ev.kind==='lore'){ haptic('success'); sfx('bottle'); label='Послание'; rClass='r2'; cardClass=' r-rare'; subtitle = BOTTLE_LORE[Math.floor(Math.random()*BOTTLE_LORE.length)]; }
     else { haptic('light'); sfx('boot'); label='Хлам'; rClass='r0'; cardClass=''; subtitle = ev.flavor; }
@@ -2982,12 +2632,8 @@
     resetVisual();
   }
 
-
   let lastTapTime = 0;
-  // На iOS долгое удержание пальца иногда всё равно вызывает системную лупу
-  // выделения текста, даже с user-select/touch-callout:none в CSS и
-  // preventDefault() на pointerdown — это низкоуровневый жест распознавания
-  // самого Safari. Глушим его явно на всех связанных touch-событиях.
+
   btn.addEventListener('touchstart', (e)=>{ e.preventDefault(); }, {passive:false});
   btn.addEventListener('contextmenu', (e)=>{ e.preventDefault(); });
   btn.addEventListener('selectstart', (e)=>{ e.preventDefault(); });
@@ -2997,24 +2643,20 @@
     ensureAudioCtx();
     if(gameState==='reeling'){ reelHolding = true; return; }
     const now = Date.now(); if(now - lastTapTime < 90) return; lastTapTime = now;
-    // Анти-автокликер: считаем тапы за последнюю секунду. Живой человек не
-    // тапает быстрее ~9 раз в секунду постоянно — всё, что сверху, отбрасываем
-    // молча, не давая ни забросу, ни подсечке засчитаться.
+
     recentTaps.push(now);
     while(recentTaps.length && now - recentTaps[0] > TAP_WINDOW_MS) recentTaps.shift();
     if(recentTaps.length > MAX_TAPS_PER_WINDOW) return;
     if(gameState==='idle') cast();
     else if(gameState==='biting') pull();
   });
-  // Вываживание держится, пока палец/курсор на кнопке — отпустили в любом
-  // месте (даже соскользнув с кнопки) — зона сразу начинает тонуть обратно.
+
   btn.addEventListener('pointerup', ()=>{ reelHolding = false; });
   btn.addEventListener('pointercancel', ()=>{ reelHolding = false; });
   btn.addEventListener('pointerleave', ()=>{ if(gameState==='reeling') reelHolding = false; });
   document.addEventListener('pointerup', ()=>{ if(gameState==='reeling') reelHolding = false; });
   document.getElementById('cc-close').addEventListener('click', ()=>{ catchcard.style.display='none'; });
 
-  // ---------- RESET PROGRESS (with double confirmation) ----------
   let resetStage = 0;
   const resetModal = document.getElementById('resetModal'),
     resetTitle = document.getElementById('resetModalTitle'),
@@ -3049,7 +2691,6 @@
     haptic('light');
   });
 
-  // ---------- ОНБОРДИНГ (обучение при первом запуске) ----------
   const ONBOARD_STEPS = [
     { icon:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 27 L24 6" stroke="#B98550" stroke-width="2.6" stroke-linecap="round"/><path d="M24 6 Q28 16 22.5 25" fill="none" stroke="#F7F3E8" stroke-width="1.3" stroke-dasharray="2 2.4"/><path d="M22.5 25q-2.4 2-1.2 4.4" fill="none" stroke="#D9962C" stroke-width="1.8" stroke-linecap="round"/></svg>',
       title:'Добро пожаловать в Тихую Гавань!', text:'Жми «Закинуть удочку» внизу экрана и жди, пока клюнет - дальше игра сама подскажет, что делать.' },
@@ -3104,15 +2745,10 @@
   document.getElementById('onboardShareBtn').addEventListener('click', shareInvite);
   document.getElementById('inviteBtn').addEventListener('click', shareInvite);
 
-  // ---------- SHOP (gear) ----------
   let activeShopTab = 'boosts';
   function renderShop(){
     const list = document.getElementById('shoplist');
-    // Баг: при покупке предмета список магазина полностью перерисовывается
-    // (innerHTML = ''), из-за чего браузер сбрасывает scrollTop и экран
-    // "прыгает" наверх после каждой покупки. Запоминаем текущую прокрутку
-    // перед перерисовкой и восстанавливаем её после — так покупка предмета
-    // в середине/конце списка больше не дёргает экран вверх.
+
     const prevScroll = list.scrollTop;
     list.innerHTML = '';
     if(activeShopTab === 'boosts'){
@@ -3140,10 +2776,7 @@
       renderShop();
     });
   });
-  // ---------- Настройки (вибрация, сброс прогресса) ----------
-  // Раньше эти пункты висели в самом низу общей ленты магазина и маячили
-  // перед глазами при каждой покупке. Теперь они спрятаны за иконкой
-  // шестерёнки в шапке магазина и живут в отдельном модальном окне.
+
   const settingsModal = document.getElementById('settingsModal');
   function renderSettingsModal(){
     const body = document.getElementById('settingsBody');
@@ -3172,10 +2805,7 @@
   locModal.addEventListener('click', (e)=>{ if(e.target === locModal) locModal.classList.remove('show'); });  document.getElementById('settingsCloseBtn').addEventListener('click', ()=>{
     settingsModal.classList.remove('show');
   });
-  // Переключатель вибрации: реагирует на тактильную отдачу игры (haptic()).
-  // По умолчанию включена; состояние сохраняется в state.vibrationOn.
-  // Переключатель звука: короткие SFX на заброс/всплеск, поклёвку, улов,
-  // монеты и левелап. По умолчанию включён; состояние хранится в state.soundOn.
+
   function soundSettingRow(){
     const row = document.createElement('div'); row.className = 'settingrow';
     const checked = state.soundOn !== false;
@@ -3221,7 +2851,7 @@
     return el;
   }
   function workshopEffectLabel(item, level){
-    // Человекочитаемое описание суммарного эффекта уже купленных уровней.
+
     const eff = workshopEffect(item, level);
     if(item.id==='income') return `+${(eff*100).toFixed(1)}% к цене продажи`;
     if(item.id==='comfort') return `+${(eff*100).toFixed(1)}% к окну подсечки`;
@@ -3285,8 +2915,6 @@
     return el;
   }
 
-
-  // ---------- MARKET (sell / trade) ----------
   function stackValue(f){
     const weights = state.inventory[f.id] || [];
     const tempBoost = isBoostActive('coins2') ? 2 : 1;
@@ -3332,14 +2960,6 @@
     if(total>0){ state.coins += total; bumpQuest('sell_coins', total); bumpStoryQuest('sell_coins', total); haptic('success'); sfx('coin'); saveState(); refreshTopUI(); renderMarket(); }
   });
 
-  // ---------- COLLECTION ----------
-  // Раньше это была одна лента: 6 локаций x 9 рыб подряд, приходилось листать
-  // до самого дна ради последней локации. Теперь, как и в магазине, локации
-  // разбиты на вкладки — список показывает только текущую локацию. Плюс
-  // отдельная вкладка "Находки" — сундук/бутылка/сапог не рыбы и не относятся
-  // ни к одной локации, поэтому раньше были вообще никак не отражены в
-  // коллекции: находка давала монеты и пропадала бесследно. Теперь у неё тоже
-  // есть счётчик "сколько раз находили" и рекорд лучшей находки.
   let activeCollTab = null;
   const FINDS_TAB_ID = 'finds';
   function renderCollTabs(){
@@ -3398,7 +3018,6 @@
     document.getElementById('collSummary').textContent = `Открыто ${discovered} из ${totalSpecies} видов`;
   }
 
-  // ---------- QUESTS ----------
   let activeQuestTab = 'daily';
   function renderDailyQuests(){
     ensureQuests();
@@ -3424,25 +3043,12 @@
     document.getElementById('questSummary').textContent = `Выполнено ${doneCount} из ${state.dailyQuests.length} · обновление каждый день`;
   }
 
-  // Порядковый номер главы для бейджа: совпадает с числом в самом заголовке главы
-  // (индекс 0 — пролог без номера, последний индекс — финал без номера, остальные — "Глава N" = N).
   function storyChapterBadge(idx){
     if(idx === 0) return 'Пролог';
     if(idx === STORY_QUESTS.length-1) return 'Финал';
     return 'Глава ' + idx;
   }
 
-  // ---------- КАРТИНКИ ДЛЯ СЮЖЕТНЫХ ГЛАВ ----------
-  // Раньше сюжет был просто текстом на карточке - без единого визуального
-  // якоря. Своих иллюстраций под каждую из 26 глав рисовать неоправданно
-  // дорого, зато у игры уже есть атмосферные панорамы локаций (SCENERY_SVG) -
-  // те же, что служат фоном во время рыбалки. Переиспользуем их как баннер
-  // главы: главы группируются по локации, где разворачивается действие
-  // (границы совпадают с unlockLevel следующей локации - переходная глава
-  // "Курс на ..." ещё физически в старой локации, герой туда только
-  // собирается). Поверх баннера - маленький кружок-бейдж с иконкой типа
-  // задания, чтобы даже несколько глав подряд с одной картинкой не сливались
-  // визуально в одно и то же.
   const STORY_CHAPTER_LOC = ['harbor','harbor','harbor','harbor','harbor',
     'reef','reef','reef','reef','reef',
     'ice','ice','ice','ice',
@@ -3452,11 +3058,7 @@
   function storyChapterLoc(idx){
     return STORY_CHAPTER_LOC[idx] || 'volcano';
   }
-  // Сценки для баннеров сюжетных глав: в отличие от бейджа типа задания
-  // (что нужно сделать - поймать/продать/достичь уровня), сценка отвечает
-  // на вопрос "что происходит в истории" - кто говорит с игроком или какое
-  // событие описано. Стиль и палитра - как у остальных плоских иллюстраций
-  // игры (обводка --ink, тёплые/природные заливки).
+
     const STORY_SCENE_SVG = {
     keeper: '<svg viewBox="0 0 400 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="kSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1c3a44"/><stop offset="100%" stop-color="#0a1c22"/></linearGradient><linearGradient id="kHillFar" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#33555f"/><stop offset="100%" stop-color="#1a2f37"/></linearGradient><linearGradient id="kHillNear" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#213e46"/><stop offset="100%" stop-color="#132229"/></linearGradient><linearGradient id="kDock" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4a3320"/><stop offset="100%" stop-color="#2c1e12"/></linearGradient><radialGradient id="kGlow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FFE9B0" stop-opacity="0.95"/><stop offset="40%" stop-color="#F6C453" stop-opacity="0.45"/><stop offset="100%" stop-color="#F6C453" stop-opacity="0"/></radialGradient></defs><rect width="400" height="140" fill="url(#kSky)"/><polygon points="0,90 90,44 190,90" fill="url(#kHillFar)" opacity="0.6"/><polygon points="150,95 260,50 360,95" fill="url(#kHillFar)" opacity="0.5"/><polygon points="240,100 320,62 400,100" fill="url(#kHillNear)" opacity="0.7"/><rect x="0" y="98" width="400" height="42" fill="url(#kDock)"/><rect x="0" y="98" width="400" height="3" fill="#1c1108" opacity="0.55"/><rect x="60" y="98" width="6" height="42" fill="#231609" opacity="0.55"/><rect x="330" y="98" width="6" height="42" fill="#231609" opacity="0.5"/><g transform="translate(198,98)"><rect x="-4" y="-58" width="8" height="58" rx="2" fill="#3a2818"/><path d="M-4 -58 Q0 -68 4 -58" fill="none" stroke="#3a2818" stroke-width="6" stroke-linecap="round"/><circle r="34" fill="url(#kGlow)"/><rect x="-3" y="-16" width="6" height="12" fill="#5C4023"/><path d="M-13 -4 L13 -4 L11 18 L-11 18 Z" fill="#F6C453" stroke="#8A5A16" stroke-width="1.6"/><rect x="-14" y="-6" width="28" height="4" fill="#8A5A16"/><ellipse cx="0" cy="6" rx="6.5" ry="8" fill="#FFF3D0"/></g><circle cx="330" cy="24" r="2" fill="#F7F3E8" opacity="0.5"/><circle cx="300" cy="40" r="1.4" fill="#F7F3E8" opacity="0.4"/><circle cx="360" cy="16" r="1.6" fill="#F7F3E8" opacity="0.45"/><circle cx="60" cy="20" r="1.5" fill="#F7F3E8" opacity="0.4"/></svg>',
     fishermen: '<svg viewBox="0 0 400 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="fSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3a2f1c"/><stop offset="100%" stop-color="#1c150c"/></linearGradient><radialGradient id="fGlow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#F6C453" stop-opacity="0.55"/><stop offset="100%" stop-color="#F6C453" stop-opacity="0"/></radialGradient></defs><rect width="400" height="140" fill="url(#fSky)"/><rect x="0" y="98" width="400" height="42" fill="#161011" opacity="0.4"/><circle cx="200" cy="90" r="70" fill="url(#fGlow)"/><rect x="110" y="90" width="180" height="10" rx="3" fill="#4a3320"/><rect x="122" y="100" width="6" height="30" fill="#3a2818"/><rect x="272" y="100" width="6" height="30" fill="#3a2818"/><g transform="translate(170,90)"><ellipse cx="0" cy="-18" rx="32" ry="20" fill="#8A5A16"/><path d="M28 -24 Q48 -28 48 -16 Q48 -4 26 -8" fill="none" stroke="#8A5A16" stroke-width="6" stroke-linecap="round"/><path d="M-30 -28 Q-46 -26 -44 -14 Q-42 -4 -26 -8" fill="none" stroke="#8A5A16" stroke-width="6" stroke-linecap="round"/><ellipse cx="0" cy="-38" rx="10" ry="4" fill="#6B4212"/><circle cx="0" cy="-42" r="3" fill="#6B4212"/><path d="M-8 -50 Q-6 -60 -9 -70 M6 -50 Q8 -60 5 -70" stroke="rgba(247,243,232,0.5)" stroke-width="2.4" fill="none" stroke-linecap="round"/></g><g transform="translate(250,90)"><rect x="-18" y="-24" width="36" height="24" rx="5" fill="#F7F3E8"/><path d="M18 -18 Q32 -18 32 -8 Q32 2 18 0" fill="none" stroke="#F7F3E8" stroke-width="4"/><path d="M-8 -30 Q-5 -40 -9 -50 M5 -30 Q8 -40 4 -50" stroke="rgba(247,243,232,0.55)" stroke-width="2.6" fill="none" stroke-linecap="round"/></g><circle cx="70" cy="30" r="1.6" fill="#F7F3E8" opacity="0.4"/><circle cx="330" cy="24" r="1.4" fill="#F7F3E8" opacity="0.4"/></svg>',
@@ -3468,37 +3070,34 @@
     guide_jungle: '<svg viewBox="0 0 400 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="gjSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2a4020"/><stop offset="100%" stop-color="#0f1c0c"/></linearGradient><linearGradient id="gjCanopyFar" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#33502a"/><stop offset="100%" stop-color="#1a2e14"/></linearGradient><linearGradient id="gjCanopyNear" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#243d1c"/><stop offset="100%" stop-color="#101f0c"/></linearGradient><radialGradient id="gjGlow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#F6C453" stop-opacity="0.3"/><stop offset="100%" stop-color="#F6C453" stop-opacity="0"/></radialGradient><linearGradient id="gjWood" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#5c4023"/><stop offset="100%" stop-color="#2c1e12"/></linearGradient></defs><rect width="400" height="140" fill="url(#gjSky)"/><circle cx="120" cy="26" r="46" fill="url(#gjGlow)"/><circle cx="300" cy="36" r="34" fill="url(#gjGlow)"/><path d="M0 46 Q60 10 130 40 Q200 8 270 42 Q330 12 400 44 L400 0 L0 0 Z" fill="url(#gjCanopyFar)" opacity="0.75"/><path d="M0 66 Q80 28 170 60 Q260 24 400 64 L400 0 L0 0 Z" fill="url(#gjCanopyNear)" opacity="0.5"/><rect x="0" y="132" width="400" height="8" fill="#0e1a0a" opacity="0.6"/><g transform="translate(150,132)"><path d="M-40 0 L-40 -30 Q0 -40 40 -30 L40 0 Z" fill="url(#gjWood)"/><ellipse cx="0" cy="-30" rx="40" ry="12" fill="#6b4a2e"/><ellipse cx="0" cy="-30" rx="26" ry="8" fill="none" stroke="#4a3320" stroke-width="2" opacity="0.6"/><ellipse cx="0" cy="-30" rx="12" ry="4" fill="none" stroke="#4a3320" stroke-width="2" opacity="0.6"/></g><g transform="translate(280,132)"><rect x="-70" y="-8" width="30" height="16" rx="3" fill="#4a3320"/><rect x="-40" y="-5" width="80" height="10" fill="#B8C4C8" stroke="#7a8a90" stroke-width="1.4"/><path d="M40 -5 L52 0 L40 5 Z" fill="#B8C4C8" stroke="#7a8a90" stroke-width="1.4" stroke-linejoin="round"/></g><g transform="translate(60,132)"><ellipse cx="0" cy="0" rx="32" ry="9" fill="#3e5a2b"/><path d="M-18 -1 Q-18 -20 0 -20 Q18 -20 18 -1 Z" fill="#4a6b35"/></g></svg>',
     guide_volcano: '<svg viewBox="0 0 400 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="gvSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4a2015"/><stop offset="100%" stop-color="#160a08"/></linearGradient><linearGradient id="gvMountain" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2a1410"/><stop offset="100%" stop-color="#140806"/></linearGradient><radialGradient id="gvGlow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FF7A2E" stop-opacity="0.85"/><stop offset="100%" stop-color="#FF7A2E" stop-opacity="0"/></radialGradient><radialGradient id="gvTorchGlow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FF7A2E" stop-opacity="0.5"/><stop offset="100%" stop-color="#FF7A2E" stop-opacity="0"/></radialGradient><linearGradient id="gvRock" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3a2018"/><stop offset="100%" stop-color="#1c0e0a"/></linearGradient></defs><rect width="400" height="140" fill="url(#gvSky)"/><polygon points="300,140 350,30 400,140" fill="url(#gvMountain)"/><circle cx="350" cy="46" r="30" fill="url(#gvGlow)"/><path d="M350 22 Q362 34 358 50 Q350 44 342 50 Q338 34 350 22Z" fill="#FF7A2E" opacity="0.92"/><path d="M350 32 Q356 40 353 50 Q350 46 347 50 Q344 40 350 32Z" fill="#FFE9B0" opacity="0.9"/><rect x="0" y="132" width="400" height="8" fill="#1c0f0a" opacity="0.7"/><g transform="translate(150,132)"><path d="M-50 0 L-32 -26 L32 -26 L50 0 Z" fill="url(#gvRock)"/><path d="M-32 -26 L-20 -30 L20 -30 L32 -26 Z" fill="#2e1811"/></g><g transform="translate(150,103)"><circle r="30" fill="url(#gvTorchGlow)"/><rect x="-5" y="-26" width="10" height="26" fill="#3e2e1a"/><path d="M0 -52 Q15 -39 8 -18 Q0 -29 -8 -18 Q-15 -39 0 -52Z" fill="#FF7A2E"/><path d="M0 -41 Q7 -32 4 -20 Q0 -26 -4 -20 Q-7 -32 0 -41Z" fill="#FFE9B0"/></g><circle cx="90" cy="70" r="2.4" fill="#FFB37A" opacity="0.6"/><circle cx="230" cy="80" r="2" fill="#FFB37A" opacity="0.5"/></svg>'
   };
-  // Какая сценка иллюстрирует каждую из 26 глав - подобрано по содержанию
-  // истории (кто говорит с игроком / какое событие описано в ch.story),
-  // а не по механике задания (ch.type), чтобы баннер отражал именно сюжет:
-  // говорит рыбак - рисуем рыбака, речь о продаже - рисуем рынок, и т.д.
+
   const STORY_CHAPTER_SCENE = [
-    'keeper',        // Пролог: смотритель гавани щурится на снасть
-    'fishermen',     // Гл1: рыбаки шепчутся о редких тенях
-    'big_fish',      // Гл2: никто не верил, что попадётся что-то весомое
-    'market',        // Гл3: нужны деньги на снаряжение - заработай на рынке
-    'keeper',        // Гл4: смотритель кивает на горизонт
-    'legendary',     // Гл5: рыба, что светится золотом
-    'big_fish',      // Гл6: побороться с настоящим гигантом
-    'diver',         // Гл7: ныряльщики рифа шепчутся
-    'market',        // Гл8: торговцы рифа готовы платить хорошую цену
-    'horizon',       // Гл9: воды, что никогда не оттаивают - нужно стать сильнее
-    'market',        // Гл10: торговцы Ледяного озера уважают тех, кто зарабатывает
-    'legendary',     // Гл11: твари, что светятся в темноте воды
-    'keeper',        // Гл12: смотритель Ледяного озера считает, что выдержки маловато
-    'horizon',       // Гл13: душная тропическая река - стать ещё сильнее
-    'guide_jungle',  // Гл14: проводник по джунглям качает головой
-    'legendary',     // Гл15: создания, о которых редко говорят вслух
-    'market',        // Гл16: местные торговцы скупают улов джунглей
-    'horizon',       // Гл17: дальше только тьма - Глубокий Океан
-    'big_fish',      // Гл18: существо весом больше пятнадцати килограмм
-    'keeper',        // Гл19: смотритель качает головой при свете фонаря
-    'keeper',        // Гл20: старый смотритель указывает на зарево
-    'guide_volcano', // Гл21: местный проводник усмехается
-    'fishermen',     // Гл22: рыбаки источников, которых боятся даже бывалые
-    'big_fish',      // Гл23: нечто огромное и раскалённое на дне источника
-    'market',        // Гл24: торговцы у подножия вулкана
-    'keeper',        // Финал: старый смотритель у кромки кипящего источника
+    'keeper',
+    'fishermen',
+    'big_fish',
+    'market',
+    'keeper',
+    'legendary',
+    'big_fish',
+    'diver',
+    'market',
+    'horizon',
+    'market',
+    'legendary',
+    'keeper',
+    'horizon',
+    'guide_jungle',
+    'legendary',
+    'market',
+    'horizon',
+    'big_fish',
+    'keeper',
+    'keeper',
+    'guide_volcano',
+    'fishermen',
+    'big_fish',
+    'market',
+    'keeper',
   ];
   function storyChapterScene(idx){
     return STORY_SCENE_SVG[STORY_CHAPTER_SCENE[idx]] || '';
@@ -3576,7 +3175,6 @@
     });
   });
 
-  // ---------- LEADERBOARD ----------
   function renderTop(){
     const list = document.getElementById('toplist'); list.innerHTML = '';
     if(!fbReady()){
@@ -3599,17 +3197,13 @@
     }).catch(()=>{ list.innerHTML = '<div class="lbnote">Не удалось загрузить рейтинг. Проверь соединение.</div>'; });
   }
 
-  // ---------- NAV ----------
   const navbtns = document.querySelectorAll('.navbtn');
   navbtns.forEach(b=>b.addEventListener('click', ()=>{
     sfx('click');
     navbtns.forEach(x=>x.classList.remove('active')); b.classList.add('active');
     ['shop','market','quests','collection','top'].forEach(s=>document.getElementById('screen-'+s).classList.remove('show'));
     const scr = b.dataset.screen;
-    // .subscreen не доходит до самого низа экрана (там намеренный зазор под
-    // "стеклянным" навбаром), поэтому сквозь/вокруг навбара было видно кусок
-    // удочки со сцены рыбалки, которая всегда отрисована в фоне. Прячем удочку
-    // (и остальные элементы сцены заброса) на всех экранах, кроме самой рыбалки.
+
     appEl.classList.toggle('on-other-screen', scr !== 'fish');
     if(scr==='shop'){ renderShop(); document.getElementById('screen-shop').classList.add('show'); }
     else if(scr==='market'){ renderMarket(); document.getElementById('screen-market').classList.add('show'); }
@@ -3618,7 +3212,6 @@
     else if(scr==='top'){ renderTop(); document.getElementById('screen-top').classList.add('show'); }
   }));
 
-  // ---------- INIT ----------
   buildSkinDefs();
   loadState(function(){
     fixInventory(); ensureQuests(); ensureStory(); refreshTopUI(); syncLeaderboard();
