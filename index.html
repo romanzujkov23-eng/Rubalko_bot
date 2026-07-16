@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Тихая Гавань - Рыбалка</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -184,6 +186,13 @@
   #bonusbanner.show{display:flex;}
   #bonusbanner span{display:flex; align-items:center; gap:6px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   #bonusbanner button{border:none; background:var(--ink); color:var(--cream); border-radius:10px; padding:7px 13px; font-weight:800; font-size:11.5px; flex-shrink:0;}
+
+  /* Тихий индикатор: облачная синхронизация не удалась, прогресс есть только локально */
+  #syncWarning{width:100%; max-width:460px; box-sizing:border-box; display:none; align-items:center; gap:6px;
+    background:rgba(255,122,89,0.14); border:1px solid rgba(255,122,89,0.3); color:#FF9C82; border-radius:12px;
+    padding:6px 12px; font-size:10.5px; font-weight:700;}
+  #syncWarning.show{display:flex;}
+  #syncWarning .ico-inline{width:13px; height:13px;}
 
   #rodsvg{position:absolute; right:-14%; bottom:calc(96px + var(--safe-bottom, env(safe-area-inset-bottom))); width:62%; height:52%; max-width:300px; max-height:360px;
     z-index:2; pointer-events:none; transform-origin:94% 94%; animation:rodIdle 3.4s ease-in-out infinite; will-change:transform;
@@ -642,6 +651,10 @@
         <svg class="locswitch-chevron" viewBox="0 0 24 24" width="14" height="14"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
       <div id="bonusbanner"><span class="ico-inline"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="13" width="20" height="14" rx="2" fill="#0A1F26"/><rect x="6" y="13" width="20" height="5" fill="#0A1F26" opacity=".7"/><rect x="14" y="13" width="4" height="14" fill="#F7F3E8"/><path d="M16 13c-2-6-9-6-9-1 0 1.5 2 1 9 1zM16 13c2-6 9-6 9-1 0 1.5-2 1-9 1z" fill="#F7F3E8" stroke="#0A1F26" stroke-width="1"/></svg></span> <span id="bonusText">Бонус готов!</span><button id="bonusBtn">Забрать</button></div>
+      <div id="syncWarning" title="Прогресс сохраняется только на этом устройстве — нет соединения с сервером">
+        <span class="ico-inline"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 4C9.4 4 4 9.4 4 16s5.4 12 12 12 12-5.4 12-12S22.6 4 16 4Z" fill="none" stroke="#FF9C82" stroke-width="2.4"/><path d="M16 10v8" stroke="#FF9C82" stroke-width="2.6" stroke-linecap="round"/><circle cx="16" cy="22" r="1.6" fill="#FF9C82"/></svg></span>
+        <span>Сохранение офлайн</span>
+      </div>
     </div>
 
     <svg id="rodsvg" viewBox="0 0 300 500" preserveAspectRatio="xMaxYMax meet">
@@ -910,6 +923,34 @@
     }catch(e){}
   }
 
+  // --- BackButton: жест/кнопка "назад" закрывает открытую модалку, а не
+  // весь мини-апп. Без этого на Android системный back-жест выходит из игры,
+  // даже если у игрока просто открыт, например, магазин настроек.
+  if(tg && tg.BackButton){
+    try{
+      const closeHandlers = {
+        resetModal: (el)=>el.classList.remove('show'),
+        onboardModal: ()=>{ if(typeof closeOnboarding === 'function') closeOnboarding(); },
+        locModal: (el)=>el.classList.remove('show'),
+        settingsModal: (el)=>el.classList.remove('show')
+      };
+      function refreshBackButton(){
+        const openModal = document.querySelector('.modal-overlay.show');
+        if(openModal) tg.BackButton.show(); else tg.BackButton.hide();
+      }
+      const modalEls = document.querySelectorAll('.modal-overlay');
+      const mo = new MutationObserver(refreshBackButton);
+      modalEls.forEach(el=> mo.observe(el, {attributes:true, attributeFilter:['class']}));
+      tg.BackButton.onClick(()=>{
+        const openModal = document.querySelector('.modal-overlay.show');
+        if(!openModal) return;
+        const handler = closeHandlers[openModal.id];
+        if(handler) handler(openModal); else openModal.classList.remove('show');
+      });
+      refreshBackButton();
+    }catch(e){}
+  }
+
   // Desktop Telegram clients (Windows/macOS/Web) report viewportStableHeight
   // unreliably (often much smaller than the real window), and don't need the
   // mobile "keyboard/animation" height-lock workaround below. Detect them so
@@ -1124,6 +1165,81 @@
   }
 
   const FIREBASE_URL = "https://guhgg-83fab-default-rtdb.europe-west1.firebasedatabase.app";
+
+  // --- Firebase Auth --------------------------------------------------------
+  // Есть два уровня защиты, и игра умеет работать с любым из них:
+  //
+  // 1) С бэкендом (AUTH_WORKER_URL заполнен, см. worker.js — деплоится
+  //    бесплатно на Cloudflare Workers): Worker проверяет подпись Telegram
+  //    initData секретным токеном бота и выдаёт Firebase custom token с
+  //    uid = реальный telegram id. Это даёт настоящую, криптографически
+  //    проверенную идентификацию — подделать чужой uid невозможно, и дублей
+  //    в лидерборде между устройствами больше нет, т.к. uid одинаковый на
+  //    всех устройствах игрока.
+  //
+  // 2) Без бэкенда (AUTH_WORKER_URL не заполнен, или Worker недоступен):
+  //    используется анонимная авторизация Firebase — свой uid на каждое
+  //    устройство. Это по-прежнему не даёт читерить чужие записи (см.
+  //    Rules: auth.uid === $uid), но identity не привязана к реальному
+  //    telegram-аккаунту, поэтому возможны дубли в лидерборде между
+  //    устройствами (решается дедупликацией по tgId на клиенте, см.
+  //    renderTop()).
+  //
+  // ВАЖНО: заполни apiKey/authDomain/projectId ниже своими значениями из
+  // Firebase Console → Project settings → General → "Your apps" → Web app.
+  const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyCSYISDBH4_c3CDySEnkhp0DPat7NcoYtg",
+    authDomain: "guhgg-83fab.firebaseapp.com",
+    databaseURL: FIREBASE_URL,
+    projectId: "guhgg-83fab"
+  };
+  // URL твоего Cloudflare Worker (worker.js) после деплоя, БЕЗ "/auth" на
+  // конце — например: "https://rubalko-auth.твой-акк.workers.dev"
+  const AUTH_WORKER_URL = "https://rubalko-auth.romanzyikov2003.workers.dev";
+  function authWorkerReady(){ return AUTH_WORKER_URL && AUTH_WORKER_URL.indexOf('ВСТАВЬ') === -1; }
+
+  let fbAuthUid = null;      // auth.uid текущей сессии (ключ в базе saves/leaderboard)
+  let fbAuthReady = false;   // true, если авторизация (любым из способов выше) прошла успешно
+  let fbAuthVerified = false;// true, только если это прошло через Worker (реальный telegram id, а не анонимная сессия)
+  let fbSyncFailed = false;  // true, если последняя попытка синка с сервером не удалась
+  function fbConfigReady(){ return FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey.indexOf('ВСТАВЬ') === -1; }
+
+  function initFirebaseAuth(done){
+    if(!fbConfigReady() || typeof firebase === 'undefined'){ done(); return; }
+    try{ firebase.initializeApp(FIREBASE_CONFIG); }catch(e){ done(); return; }
+
+    function finishWithCurrentUser(verified){
+      const user = firebase.auth().currentUser;
+      if(user){ fbAuthUid = user.uid; fbAuthReady = true; fbAuthVerified = !!verified; }
+      done();
+    }
+    function signInAnon(){
+      firebase.auth().signInAnonymously()
+        .then(()=> finishWithCurrentUser(false))
+        .catch(()=>{ done(); }); // офлайн/заблокировано — работаем локально
+    }
+
+    if(authWorkerReady() && tg && tg.initData){
+      fetch(AUTH_WORKER_URL + '/auth', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ initData: tg.initData })
+      })
+        .then(r=>{ if(!r.ok) throw new Error('auth_worker_failed'); return r.json(); })
+        .then(data=> firebase.auth().signInWithCustomToken(data.customToken))
+        .then(()=> finishWithCurrentUser(true))
+        .catch(()=>{ signInAnon(); }); // Worker недоступен/ошибся — тихо деградируем на анонимный вход
+    } else {
+      signInAnon();
+    }
+  }
+  // Токен нужно прикладывать к каждому REST-запросу в Firebase (?auth=...),
+  // иначе запрос отклонят новые правила безопасности (auth != null).
+  // getIdToken() у SDK сам кэширует и обновляет токен по истечении срока —
+  // отдельный таймер для этого не нужен.
+  function fbIdToken(){
+    if(!fbAuthReady || typeof firebase === 'undefined' || !firebase.auth().currentUser) return Promise.resolve(null);
+    return firebase.auth().currentUser.getIdToken().catch(()=>null);
+  }
 
   const BOT_LINK = "https://t.me/rubalko_bot/play";
 
@@ -1587,6 +1703,18 @@
   let state = freshState();
 
   const SAVE_KEY = 'save_v2';
+  // Лимит Telegram CloudStorage — 4096 байт на значение (UTF-8). По мере
+  // роста инвентаря/квестов сериализованное состояние может это превысить —
+  // тогда tg.CloudStorage.setItem молча ничего не сохранит. localStorage и
+  // Firebase таких ограничений не имеют, так что просто пропускаем
+  // CloudStorage в этом случае, а не теряем прогресс тихо.
+  const CLOUD_STORAGE_LIMIT = 4096;
+  function utf8ByteLength(str){ return new Blob([str]).size; }
+  function setSyncFailed(failed){
+    fbSyncFailed = failed;
+    const el = document.getElementById('syncWarning');
+    if(el) el.classList.toggle('show', !!failed);
+  }
   let saveTimer=null;
   function saveState(){
     clearTimeout(saveTimer);
@@ -1594,14 +1722,21 @@
       const payload = JSON.stringify(state);
 
       try{ localStorage.setItem(SAVE_KEY, payload); }catch(e){}
-      if(tg && tg.CloudStorage){ tg.CloudStorage.setItem(SAVE_KEY, payload, function(){}); }
+      if(tg && tg.CloudStorage){
+        if(utf8ByteLength(payload) <= CLOUD_STORAGE_LIMIT){
+          tg.CloudStorage.setItem(SAVE_KEY, payload, function(){});
+        }
+        // иначе просто не пишем — localStorage/Firebase уже сохранили актуальную копию
+      }
       window.__memSave = payload;
 
       if(fbReady()){
         const uid = getUserId();
-        fetch(FIREBASE_URL + '/saves/' + uid + '.json', {
-          method:'PUT', headers:{'Content-Type':'application/json'}, body: payload
-        }).catch(()=>{});
+        fbIdToken().then(token=>{
+          const url = FIREBASE_URL + '/saves/' + uid + '.json' + (token ? ('?auth='+token) : '');
+          return fetch(url, { method:'PUT', headers:{'Content-Type':'application/json'}, body: payload });
+        }).then(r=>{ if(!r.ok) throw new Error('save failed'); setSyncFailed(false); })
+          .catch(()=>{ setSyncFailed(true); });
       }
       syncLeaderboard();
     }, 300);
@@ -1617,10 +1752,13 @@
 
       if(fbReady()){
         const uid = getUserId();
-        fetch(FIREBASE_URL + '/saves/' + uid + '.json')
+        fbIdToken().then(token=>{
+          const url = FIREBASE_URL + '/saves/' + uid + '.json' + (token ? ('?auth='+token) : '');
+          return fetch(url);
+        })
           .then(r=>r.json())
-          .then(data=>{ if(data){ try{ Object.assign(state, data); }catch(e){} } cb(); })
-          .catch(()=>{ cb(); });
+          .then(data=>{ if(data){ try{ Object.assign(state, data); }catch(e){} } setSyncFailed(false); cb(); })
+          .catch(()=>{ setSyncFailed(true); cb(); });
       } else {
         cb();
       }
@@ -1765,6 +1903,13 @@
   }
 
   function getUserId(){
+    // Приоритет: auth.uid из Firebase Anonymous Auth — этот ключ единственный,
+    // который правила безопасности реально могут привязать к автору записи
+    // (auth.uid === $uid). Если FIREBASE_CONFIG не заполнен или авторизация
+    // не удалась (офлайн, заблокирован домен), откатываемся на старую схему —
+    // тогда защита от записи в чужой профиль не действует, см. комментарий
+    // у FIREBASE_CONFIG выше.
+    if(fbAuthReady && fbAuthUid) return fbAuthUid;
     if(tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) return 'u'+tg.initDataUnsafe.user.id;
     if(!state.anonId) state.anonId = 'anon'+Math.random().toString(36).slice(2,10);
     return state.anonId;
@@ -1778,12 +1923,28 @@
     return state.cachedName || 'Рыбак';
   }
   function fbReady(){ return FIREBASE_URL && FIREBASE_URL.indexOf('ВСТАВЬ') === -1; }
+  // telegram id тут используется ТОЛЬКО как поле для группировки одинаковых
+  // игроков в списке лидеров при заходе с разных устройств (ключом записи
+  // в базе он не является — им остаётся auth.uid, см. getUserId()).
+  // Это значение не проверяется криптографически (нет сервера, который бы
+  // подтвердил подпись Telegram initData), поэтому оно годится только для
+  // косметической дедупликации в UI, а не как граница безопасности.
+  function getTelegramId(){
+    if(tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) return 'u'+tg.initDataUnsafe.user.id;
+    return null;
+  }
   function syncLeaderboard(){
     if(!fbReady()) return;
     const uid = getUserId();
-    fetch(FIREBASE_URL + '/leaderboard/' + uid + '.json', {
-      method:'PUT', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ name:getUserName(), level:state.level, score:state.totalXpEarned, catches:state.totalCatches })
+    const tgId = getTelegramId();
+    const payload = { name:getUserName(), level:state.level, score:state.totalXpEarned, catches:state.totalCatches };
+    if(tgId) payload.tgId = tgId;
+    fbIdToken().then(token=>{
+      const url = FIREBASE_URL + '/leaderboard/' + uid + '.json' + (token ? ('?auth='+token) : '');
+      return fetch(url, {
+        method:'PUT', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+      });
     }).catch(()=>{});
   }
 
@@ -2144,10 +2305,26 @@
     setTimeout(()=>{ el.style.opacity='0'; }, dur*1000 - 1300);
     setTimeout(()=>{ if(bubbleTimer) clearInterval(bubbleTimer); el.remove(); }, dur*1000 + 200);
   }
-  setInterval(()=>{
-    if(Math.random()<0.82) spawnAmbientFish();
-    if(Math.random()<0.24) setTimeout(spawnAmbientFish, 300+Math.random()*500);
-  }, 3200);
+  // Раньше этот интервал тикал даже когда приложение свёрнуто (внутри
+  // spawnAmbientFish был лишь early-return по document.hidden) — сам таймер
+  // всё равно просыпался каждые 3.2с и жёг батарею в фоне без всякой пользы.
+  // Теперь при сворачивании таймер полностью останавливается и запускается
+  // заново при возврате.
+  let ambientFishTimer = null;
+  function startAmbientFishLoop(){
+    if(ambientFishTimer) return;
+    ambientFishTimer = setInterval(()=>{
+      if(Math.random()<0.82) spawnAmbientFish();
+      if(Math.random()<0.24) setTimeout(spawnAmbientFish, 300+Math.random()*500);
+    }, 3200);
+  }
+  function stopAmbientFishLoop(){
+    if(ambientFishTimer){ clearInterval(ambientFishTimer); ambientFishTimer = null; }
+  }
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.hidden) stopAmbientFishLoop(); else startAmbientFishLoop();
+  });
+  startAmbientFishLoop();
   setTimeout(spawnAmbientFish, 500);
   setTimeout(spawnAmbientFish, 1600);
   setTimeout(spawnAmbientFish, 2700);
@@ -3263,10 +3440,25 @@
       list.innerHTML = '';
       if(!data){ list.innerHTML = '<div class="lbnote">Пока никто не в рейтинге. Будь первым!</div>'; return; }
       const myId = getUserId();
-      const arr = Object.keys(data).map(k=>({id:k, name:data[k].name||'Рыбак', level:data[k].level||1, score:data[k].score||0, catches:data[k].catches||0}));
+      const myTgId = getTelegramId();
+      let arr = Object.keys(data).map(k=>({id:k, tgId:data[k].tgId||null, name:data[k].name||'Рыбак', level:data[k].level||1, score:data[k].score||0, catches:data[k].catches||0}));
+      // Один и тот же игрок может иметь несколько записей (по одной на
+      // каждое устройство/сессию, т.к. ключ в базе — auth.uid, привязанный
+      // к устройству, см. комментарий у getTelegramId()). Группируем по
+      // tgId, где он есть, и оставляем только лучшую запись каждого
+      // игрока — иначе он занимал бы несколько строк в списке лидеров.
+      const bestByTgId = new Map();
+      const withoutTgId = [];
+      arr.forEach(row=>{
+        if(!row.tgId){ withoutTgId.push(row); return; }
+        const cur = bestByTgId.get(row.tgId);
+        if(!cur || row.score > cur.score) bestByTgId.set(row.tgId, row);
+      });
+      arr = [...bestByTgId.values(), ...withoutTgId];
       arr.sort((a,b)=>b.score-a.score);
       arr.slice(0,30).forEach((row,i)=>{
-        const el = document.createElement('div'); el.className='lbrow' + (row.id===myId?' me':'');
+        const isMe = myTgId ? (row.tgId===myTgId) : (row.id===myId);
+        const el = document.createElement('div'); el.className='lbrow' + (isMe?' me':'');
         el.innerHTML = `<div class="lbrank">${i+1}</div><div class="lbname">${escapeHtml(row.name)} · ур.${escapeHtml(row.level)}</div><div class="lbcatches">${FISH_ICON_SVG} ${formatNum(row.catches)}</div><div class="lbscore">${formatNum(row.score)}</div>`;
         list.appendChild(el);
       });
@@ -3289,9 +3481,11 @@
   }));
 
   buildSkinDefs();
-  loadState(function(){
-    fixInventory(); ensureQuests(); ensureStory(); refreshTopUI(); syncLeaderboard();
-    if(!state.onboardingDone) openOnboarding();
+  initFirebaseAuth(function(){
+    loadState(function(){
+      fixInventory(); ensureQuests(); ensureStory(); refreshTopUI(); syncLeaderboard();
+      if(!state.onboardingDone) openOnboarding();
+    });
   });
 })();
 </script>
