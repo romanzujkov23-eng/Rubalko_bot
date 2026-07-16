@@ -1953,7 +1953,7 @@
     }
     const link = inviteLink();
     const text = 'Я уже поймал ' + formatNum(state.totalCatches) + ' рыб и дошёл до ' + state.level + ' уровня в Тихой Гавани 🎣 '
-      + 'Присоединяйся, а я получу бонус за приглашение!';
+      + 'Присоединяйся!';
     const shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent(text);
     if(tg && tg.openTelegramLink) tg.openTelegramLink(shareUrl);
     else window.open(shareUrl, '_blank');
