@@ -1984,11 +1984,18 @@
     // ВРЕМЕННЫЙ debug-тост, чтобы видеть на экране, что именно поймала игра
     // при запуске по реферальной ссылке. Удалить после отладки.
     if(localStorage.getItem('debug_ref_toast') === '1'){
+      const snapshot = {
+        startParam: getStartParamRefUid() || 'НЕТ',
+        myUid: getUserId() || '?',
+        onboardedAtBoot: state.onboardingDone,
+        referredByBefore: state.referredBy || 'нет'
+      };
       setTimeout(()=>{
-        showToast('DEBUG: start_param=' + (getStartParamRefUid()||'НЕТ') +
-          ' myUid=' + (getUserId()||'?') +
-          ' onboarded=' + state.onboardingDone +
-          ' referredBy=' + (state.referredBy||'нет'));
+        showToast('DEBUG(boot): start_param=' + snapshot.startParam +
+          ' myUid=' + snapshot.myUid +
+          ' onboarded=' + snapshot.onboardedAtBoot +
+          ' referredBy(до)=' + snapshot.referredByBefore +
+          ' referredBy(после)=' + (state.referredBy || 'нет'));
       }, 800);
     }
     if(state.onboardingDone) return;
@@ -2063,18 +2070,25 @@
   window.__testResetReferral = function(){
     const myUid = getUserId();
     try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
-    if(tg && tg.CloudStorage){ tg.CloudStorage.removeItem(SAVE_KEY, function(){}); }
+
     const doDelete = (token)=>{
       const q = token ? ('?auth=' + token) : '';
-      ['saves','leaderboard','referrals','referralRewards'].forEach(node=>{
-        fetch(FIREBASE_URL + '/' + node + '/' + myUid + '.json' + q, { method:'DELETE' }).catch(()=>{});
-      });
+      return Promise.all(['saves','leaderboard','referrals','referralRewards'].map(node=>
+        fetch(FIREBASE_URL + '/' + node + '/' + myUid + '.json' + q, { method:'DELETE' }).catch(()=>{})
+      ));
     };
-    if(fbReady()){
-      fbIdToken().then(token=>{ doDelete(token); setTimeout(()=>location.reload(), 600); });
-    } else {
-      location.reload();
-    }
+    const deleteFirebase = ()=> fbReady() ? fbIdToken().then(doDelete) : Promise.resolve();
+
+    const clearCloud = ()=> new Promise(resolve=>{
+      if(tg && tg.CloudStorage){
+        // ждём реального подтверждения от Telegram, что значение удалено,
+        // иначе оно может "наехать" поверх свежего состояния после reload
+        tg.CloudStorage.removeItem(SAVE_KEY, function(){ resolve(); });
+        setTimeout(resolve, 1500); // страховка, если callback не пришёл
+      } else resolve();
+    });
+
+    Promise.all([deleteFirebase(), clearCloud()]).then(()=>{ location.reload(); });
   };
 
   function inviteLink(){
