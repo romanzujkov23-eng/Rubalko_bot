@@ -1206,29 +1206,44 @@
   function fbConfigReady(){ return FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey.indexOf('ВСТАВЬ') === -1; }
 
   function initFirebaseAuth(done){
-    if(!fbConfigReady() || typeof firebase === 'undefined'){ done(); return; }
-    try{ firebase.initializeApp(FIREBASE_CONFIG); }catch(e){ done(); return; }
+    const DBG = (typeof localStorage !== 'undefined' && localStorage.getItem('debug_ref_toast') === '1');
+    const authLog = [];
+    function finish(){
+      if(DBG) setTimeout(()=>showDebugOverlay(['=== DEBUG(auth) ===', ...authLog]), 100);
+    }
+    if(!fbConfigReady() || typeof firebase === 'undefined'){
+      if(DBG) authLog.push('СТОП: fbConfigReady=' + fbConfigReady() + ' firebase_sdk=' + (typeof firebase !== 'undefined'));
+      finish(); done(); return;
+    }
+    try{ firebase.initializeApp(FIREBASE_CONFIG); }catch(e){
+      if(DBG) authLog.push('СТОП: initializeApp ошибка: ' + e.message);
+      finish(); done(); return;
+    }
 
     function finishWithCurrentUser(verified){
       const user = firebase.auth().currentUser;
-      if(user){ fbAuthUid = user.uid; fbAuthReady = true; fbAuthVerified = !!verified; }
+      if(user){ fbAuthUid = user.uid; fbAuthReady = true; fbAuthVerified = !!verified; if(DBG) authLog.push('УСПЕХ: fbAuthUid=' + fbAuthUid + ' verified=' + verified); }
+      else if(DBG){ authLog.push('currentUser=null после входа?!'); }
+      finish();
       done();
     }
     function signInAnon(){
       firebase.auth().signInAnonymously()
         .then(()=> finishWithCurrentUser(false))
-        .catch(()=>{ done(); }); // офлайн/заблокировано — работаем локально
+        .catch((e)=>{ if(DBG) authLog.push('signInAnonymously ОШИБКА: ' + e.code + ' / ' + e.message); finish(); done(); });
     }
+
+    if(DBG) authLog.push('authWorkerReady=' + authWorkerReady() + ' tg.initData=' + !!(tg && tg.initData));
 
     if(authWorkerReady() && tg && tg.initData){
       fetch(AUTH_WORKER_URL + '/auth', {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ initData: tg.initData })
       })
-        .then(r=>{ if(!r.ok) throw new Error('auth_worker_failed'); return r.json(); })
-        .then(data=> firebase.auth().signInWithCustomToken(data.customToken))
+        .then(r=>{ if(DBG) authLog.push('worker HTTP статус=' + r.status); if(!r.ok) throw new Error('auth_worker_failed_' + r.status); return r.json(); })
+        .then(data=>{ if(DBG) authLog.push('worker вернул customToken? ' + !!data.customToken); return firebase.auth().signInWithCustomToken(data.customToken); })
         .then(()=> finishWithCurrentUser(true))
-        .catch(()=>{ signInAnon(); }); // Worker недоступен/ошибся — тихо деградируем на анонимный вход
+        .catch((e)=>{ if(DBG) authLog.push('worker/customToken ОШИБКА: ' + (e && (e.code || e.message) || e)); signInAnon(); });
     } else {
       signInAnon();
     }
