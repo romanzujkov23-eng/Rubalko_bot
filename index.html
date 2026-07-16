@@ -1206,44 +1206,29 @@
   function fbConfigReady(){ return FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey.indexOf('ВСТАВЬ') === -1; }
 
   function initFirebaseAuth(done){
-    const DBG = (typeof localStorage !== 'undefined' && localStorage.getItem('debug_ref_toast') === '1');
-    const authLog = [];
-    function finish(){
-      if(DBG) setTimeout(()=>showDebugOverlay(['=== DEBUG(auth) ===', ...authLog]), 100);
-    }
-    if(!fbConfigReady() || typeof firebase === 'undefined'){
-      if(DBG) authLog.push('СТОП: fbConfigReady=' + fbConfigReady() + ' firebase_sdk=' + (typeof firebase !== 'undefined'));
-      finish(); done(); return;
-    }
-    try{ firebase.initializeApp(FIREBASE_CONFIG); }catch(e){
-      if(DBG) authLog.push('СТОП: initializeApp ошибка: ' + e.message);
-      finish(); done(); return;
-    }
+    if(!fbConfigReady() || typeof firebase === 'undefined'){ done(); return; }
+    try{ firebase.initializeApp(FIREBASE_CONFIG); }catch(e){ done(); return; }
 
     function finishWithCurrentUser(verified){
       const user = firebase.auth().currentUser;
-      if(user){ fbAuthUid = user.uid; fbAuthReady = true; fbAuthVerified = !!verified; if(DBG) authLog.push('УСПЕХ: fbAuthUid=' + fbAuthUid + ' verified=' + verified); }
-      else if(DBG){ authLog.push('currentUser=null после входа?!'); }
-      finish();
+      if(user){ fbAuthUid = user.uid; fbAuthReady = true; fbAuthVerified = !!verified; }
       done();
     }
     function signInAnon(){
       firebase.auth().signInAnonymously()
         .then(()=> finishWithCurrentUser(false))
-        .catch((e)=>{ if(DBG) authLog.push('signInAnonymously ОШИБКА: ' + e.code + ' / ' + e.message); finish(); done(); });
+        .catch(()=>{ done(); }); // офлайн/заблокировано — работаем локально
     }
-
-    if(DBG) authLog.push('authWorkerReady=' + authWorkerReady() + ' tg.initData=' + !!(tg && tg.initData));
 
     if(authWorkerReady() && tg && tg.initData){
       fetch(AUTH_WORKER_URL + '/auth', {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ initData: tg.initData })
       })
-        .then(r=>{ if(DBG) authLog.push('worker HTTP статус=' + r.status); if(!r.ok) throw new Error('auth_worker_failed_' + r.status); return r.json(); })
-        .then(data=>{ if(DBG) authLog.push('worker вернул customToken? ' + !!data.customToken); return firebase.auth().signInWithCustomToken(data.customToken); })
+        .then(r=>{ if(!r.ok) throw new Error('auth_worker_failed'); return r.json(); })
+        .then(data=> firebase.auth().signInWithCustomToken(data.customToken))
         .then(()=> finishWithCurrentUser(true))
-        .catch((e)=>{ if(DBG) authLog.push('worker/customToken ОШИБКА: ' + (e && (e.code || e.message) || e)); signInAnon(); });
+        .catch(()=>{ signInAnon(); }); // Worker недоступен/ошибся — тихо деградируем на анонимный вход
     } else {
       signInAnon();
     }
@@ -1785,14 +1770,11 @@
     }, 300);
   }
   function loadState(cb){
-    const DBG = (typeof localStorage !== 'undefined' && localStorage.getItem('debug_ref_toast') === '1');
-    const dbgParts = [];
 
     try{
       const local = localStorage.getItem(SAVE_KEY);
-      if(DBG) dbgParts.push('local=' + (local ? ('onboarded:'+(JSON.parse(local).onboardingDone)) : 'пусто'));
       if(local) Object.assign(state, JSON.parse(local));
-    }catch(e){ if(DBG) dbgParts.push('local=ошибка'); }
+    }catch(e){}
 
     function loadFromServer(){
 
@@ -1803,23 +1785,15 @@
           return fetch(url);
         })
           .then(r=>r.json())
-          .then(data=>{
-            if(DBG) dbgParts.push('firebase[' + getUserId() + ']=' + (data ? ('onboarded:'+data.onboardingDone) : 'пусто/null'));
-            if(data){ try{ Object.assign(state, data); }catch(e){} }
-            setSyncFailed(false);
-            if(DBG) setTimeout(()=>showDebugOverlay(['=== DEBUG(load) ===', ...dbgParts, 'ИТОГО onboarded=' + state.onboardingDone]), 200);
-            cb();
-          })
-          .catch(()=>{ setSyncFailed(true); if(DBG){ dbgParts.push('firebase=запрос не прошёл'); setTimeout(()=>showDebugOverlay(['=== DEBUG(load) ===', ...dbgParts]), 200); } cb(); });
+          .then(data=>{ if(data){ try{ Object.assign(state, data); }catch(e){} } setSyncFailed(false); cb(); })
+          .catch(()=>{ setSyncFailed(true); cb(); });
       } else {
-        if(DBG) setTimeout(()=>showDebugOverlay(['=== DEBUG(load) ===', ...dbgParts, 'firebase не готов', 'ИТОГО onboarded=' + state.onboardingDone]), 200);
         cb();
       }
     }
 
     if(tg && tg.CloudStorage){
       tg.CloudStorage.getItem(SAVE_KEY, function(err, value){
-        if(DBG) dbgParts.push('cloud=' + (err ? 'ошибка' : (value ? ('onboarded:'+(JSON.parse(value).onboardingDone)) : 'пусто')));
         if(!err && value){ try{ Object.assign(state, JSON.parse(value)); }catch(e){} }
         loadFromServer();
       });
@@ -1952,33 +1926,6 @@
     haptic('success');
     levelupToastTimer = setTimeout(()=>{ el.classList.remove('show'); }, 2400);
   }
-  // ВРЕМЕННО: полноэкранный debug-оверлей для телефона (тост слишком узкий
-  // и обрезает длинные строки). Показывает текст построчно, с переносом,
-  // не закрывается сам — только по тапу/кнопке. Удалить после отладки.
-  function showDebugOverlay(lines){
-    let el = document.getElementById('debugOverlay');
-    if(!el){
-      el = document.createElement('div');
-      el.id = 'debugOverlay';
-      el.style.cssText = 'position:fixed; inset:0; z-index:99999; background:rgba(10,10,14,0.96); color:#7FE08F; font:12px/1.5 monospace; padding:16px; overflow:auto; white-space:pre-wrap; word-break:break-all;';
-      const closeBtn = document.createElement('button');
-      closeBtn.textContent = 'Закрыть ✕';
-      closeBtn.style.cssText = 'display:block; margin-bottom:12px; padding:8px 14px; background:#FF7A59; color:#fff; border:none; border-radius:8px; font-weight:800;';
-      closeBtn.addEventListener('click', ()=>{ el.remove(); });
-      el.appendChild(closeBtn);
-      const pre = document.createElement('div');
-      pre.id = 'debugOverlayText';
-      el.appendChild(pre);
-      document.body.appendChild(el);
-    }
-    document.getElementById('debugOverlayText').textContent = Array.isArray(lines) ? lines.join('\n') : String(lines);
-  }
-  function showDebugOverlayAppend(line){
-    let el = document.getElementById('debugOverlay');
-    if(!el){ showDebugOverlay([line]); return; }
-    const pre = document.getElementById('debugOverlayText');
-    pre.textContent = pre.textContent + '\n' + line;
-  }
   function showLevelUpToast(level, coins){
     showToast(PARTY_SVG + ' Уровень ' + level + '! +' + formatNum(coins) + ' ' + COIN_SVG);
     sfx('levelup');
@@ -2035,24 +1982,6 @@
   // (т.е. это правда новый игрок, а не повторный визит по чужой ссылке) —
   // запоминаем, кто его пригласил, чтобы позже засчитать награду.
   function captureReferralIfNew(){
-    // ВРЕМЕННЫЙ debug-тост, чтобы видеть на экране, что именно поймала игра
-    // при запуске по реферальной ссылке. Удалить после отладки.
-    if(localStorage.getItem('debug_ref_toast') === '1'){
-      const snapshot = {
-        startParam: getStartParamRefUid() || 'НЕТ',
-        myUid: getUserId() || '?',
-        onboardedAtBoot: state.onboardingDone,
-        referredByBefore: state.referredBy || 'нет'
-      };
-      setTimeout(()=>{
-        showDebugOverlayAppend('=== DEBUG(referral) ===');
-        showDebugOverlayAppend('start_param=' + snapshot.startParam);
-        showDebugOverlayAppend('myUid=' + snapshot.myUid);
-        showDebugOverlayAppend('onboarded(при загрузке)=' + snapshot.onboardedAtBoot);
-        showDebugOverlayAppend('referredBy(до)=' + snapshot.referredByBefore);
-        showDebugOverlayAppend('referredBy(после)=' + (state.referredBy || 'нет'));
-      }, 800);
-    }
     if(state.onboardingDone) return;
     if(state.referredBy) return;
     const refUid = getStartParamRefUid();
@@ -2116,62 +2045,6 @@
       }).catch(()=>{});
     });
   }
-
-  // ВРЕМЕННО, только для ручного тестирования реферальной системы.
-  // Вызывать из консоли браузера на тестовом аккаунте: __testResetReferral()
-  // Полностью откатывает аккаунт в состояние "нового игрока": чистит
-  // localStorage, Telegram CloudStorage и серверную копию в Firebase,
-  // затем перезагружает страницу. Удалить перед релизом.
-  window.__testResetReferral = function(){
-    const DBG = localStorage.getItem('debug_ref_toast') === '1';
-    const myUid = getUserId();
-    const log = ['=== DEBUG(reset) ===', 'myUid=' + myUid, 'fbAuthReady=' + fbAuthReady];
-    try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
-
-    const doDelete = (token)=>{
-      const q = token ? ('?auth=' + token) : '';
-      log.push('token получен? ' + !!token);
-      // saves/referralRewards: сервер отклоняет DELETE (401) из-за .validate,
-      // которая требует определённую структуру данных даже при удалении.
-      // Поэтому вместо удаления перезаписываем валидным "пустым" значением.
-      const writeFresh = fetch(FIREBASE_URL + '/saves/' + myUid + '.json' + q, {
-        method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(freshState())
-      }).then(r=>{ log.push('PUT saves (fresh) -> статус ' + r.status); return r; })
-        .catch(e=>{ log.push('PUT saves -> ОШИБКА сети: ' + e.message); });
-      const clearRewards = fetch(FIREBASE_URL + '/referralRewards/' + myUid + '.json' + q, {
-        method:'PUT', headers:{'Content-Type':'application/json'}, body: '{}'
-      }).then(r=>{ log.push('PUT referralRewards ({}) -> статус ' + r.status); return r; })
-        .catch(e=>{ log.push('PUT referralRewards -> ОШИБКА сети: ' + e.message); });
-      const plainDeletes = Promise.all(['leaderboard','referrals'].map(node=>
-        fetch(FIREBASE_URL + '/' + node + '/' + myUid + '.json' + q, { method:'DELETE' })
-          .then(r=>{ log.push('DELETE ' + node + ' -> статус ' + r.status); return r; })
-          .catch(e=>{ log.push('DELETE ' + node + ' -> ОШИБКА сети: ' + e.message); })
-      ));
-      return Promise.all([writeFresh, clearRewards, plainDeletes]);
-    };
-    const verify = (token)=>{
-      const q = token ? ('?auth=' + token) : '';
-      return fetch(FIREBASE_URL + '/saves/' + myUid + '.json' + q)
-        .then(r=>r.json())
-        .then(data=>{ log.push('ПРОВЕРКА после удаления: saves/' + myUid + ' = ' + (data ? JSON.stringify(data) : 'null (пусто) ✅')); })
-        .catch(e=>{ log.push('ПРОВЕРКА ошибка: ' + e.message); });
-    };
-    const deleteFirebase = ()=> fbReady()
-      ? fbIdToken().then(token=> doDelete(token).then(()=> verify(token)))
-      : Promise.resolve(log.push('fbReady=false, Firebase пропущен'));
-
-    const clearCloud = ()=> new Promise(resolve=>{
-      if(tg && tg.CloudStorage){
-        tg.CloudStorage.removeItem(SAVE_KEY, function(err){ log.push('CloudStorage.removeItem callback, err=' + err); resolve(); });
-        setTimeout(resolve, 1500);
-      } else { log.push('CloudStorage недоступен'); resolve(); }
-    });
-
-    Promise.all([deleteFirebase(), clearCloud()]).then(()=>{
-      if(DBG){ showDebugOverlay(log); setTimeout(()=>location.reload(), 3000); }
-      else location.reload();
-    });
-  };
 
   function inviteLink(){
     if(!inviteReady()) return 'https://t.me';
@@ -3265,34 +3138,6 @@
     resetBtn.innerHTML = TRASH_SVG + ' Сбросить весь прогресс';
     resetBtn.addEventListener('click', ()=>{ settingsModal.classList.remove('show'); openResetModal(); });
     body.appendChild(resetBtn);
-
-    // ВРЕМЕННО, только для ручного тестирования реферальной системы.
-    // Полностью откатывает ЭТОТ аккаунт в состояние "нового игрока" одним
-    // тапом (без консоли): чистит localStorage, CloudStorage и серверную
-    // копию, затем перезапускает игру. Удалить перед релизом.
-    const refTestBtn = document.createElement('button');
-    refTestBtn.className = 'btn-reset-progress';
-    refTestBtn.style.marginTop = '8px';
-    refTestBtn.innerHTML = PARTY_SVG + ' [ТЕСТ] Сделать этот аккаунт "новым" для реферала';
-    refTestBtn.addEventListener('click', ()=>{
-      settingsModal.classList.remove('show');
-      if(confirm('Это тестовая функция: аккаунт полностью обнулится (как будто впервые открыл игру), включая локальные и серверные данные. Продолжить?')){
-        window.__testResetReferral();
-      }
-    });
-    body.appendChild(refTestBtn);
-
-    // ВРЕМЕННО: включает/выключает диагностический тост в captureReferralIfNew().
-    const debugBtn = document.createElement('button');
-    debugBtn.className = 'btn-reset-progress';
-    debugBtn.style.marginTop = '8px';
-    debugBtn.innerHTML = (localStorage.getItem('debug_ref_toast')==='1' ? '✅ ' : '⬜ ') + '[ТЕСТ] Показывать debug-тост про реферал';
-    debugBtn.addEventListener('click', ()=>{
-      const on = localStorage.getItem('debug_ref_toast') === '1';
-      localStorage.setItem('debug_ref_toast', on ? '0' : '1');
-      renderSettingsModal();
-    });
-    body.appendChild(debugBtn);
   }
   document.getElementById('shopSettingsBtn').addEventListener('click', ()=>{
     renderSettingsModal();
