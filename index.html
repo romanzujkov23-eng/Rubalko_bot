@@ -2123,27 +2123,42 @@
   // localStorage, Telegram CloudStorage и серверную копию в Firebase,
   // затем перезагружает страницу. Удалить перед релизом.
   window.__testResetReferral = function(){
+    const DBG = localStorage.getItem('debug_ref_toast') === '1';
     const myUid = getUserId();
+    const log = ['=== DEBUG(reset) ===', 'myUid=' + myUid, 'fbAuthReady=' + fbAuthReady];
     try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
 
     const doDelete = (token)=>{
       const q = token ? ('?auth=' + token) : '';
+      log.push('token получен? ' + !!token);
       return Promise.all(['saves','leaderboard','referrals','referralRewards'].map(node=>
-        fetch(FIREBASE_URL + '/' + node + '/' + myUid + '.json' + q, { method:'DELETE' }).catch(()=>{})
+        fetch(FIREBASE_URL + '/' + node + '/' + myUid + '.json' + q, { method:'DELETE' })
+          .then(r=>{ log.push('DELETE ' + node + ' -> статус ' + r.status); return r; })
+          .catch(e=>{ log.push('DELETE ' + node + ' -> ОШИБКА сети: ' + e.message); })
       ));
     };
-    const deleteFirebase = ()=> fbReady() ? fbIdToken().then(doDelete) : Promise.resolve();
+    const verify = (token)=>{
+      const q = token ? ('?auth=' + token) : '';
+      return fetch(FIREBASE_URL + '/saves/' + myUid + '.json' + q)
+        .then(r=>r.json())
+        .then(data=>{ log.push('ПРОВЕРКА после удаления: saves/' + myUid + ' = ' + (data ? JSON.stringify(data) : 'null (пусто) ✅')); })
+        .catch(e=>{ log.push('ПРОВЕРКА ошибка: ' + e.message); });
+    };
+    const deleteFirebase = ()=> fbReady()
+      ? fbIdToken().then(token=> doDelete(token).then(()=> verify(token)))
+      : Promise.resolve(log.push('fbReady=false, Firebase пропущен'));
 
     const clearCloud = ()=> new Promise(resolve=>{
       if(tg && tg.CloudStorage){
-        // ждём реального подтверждения от Telegram, что значение удалено,
-        // иначе оно может "наехать" поверх свежего состояния после reload
-        tg.CloudStorage.removeItem(SAVE_KEY, function(){ resolve(); });
-        setTimeout(resolve, 1500); // страховка, если callback не пришёл
-      } else resolve();
+        tg.CloudStorage.removeItem(SAVE_KEY, function(err){ log.push('CloudStorage.removeItem callback, err=' + err); resolve(); });
+        setTimeout(resolve, 1500);
+      } else { log.push('CloudStorage недоступен'); resolve(); }
     });
 
-    Promise.all([deleteFirebase(), clearCloud()]).then(()=>{ location.reload(); });
+    Promise.all([deleteFirebase(), clearCloud()]).then(()=>{
+      if(DBG){ showDebugOverlay(log); setTimeout(()=>location.reload(), 3000); }
+      else location.reload();
+    });
   };
 
   function inviteLink(){
