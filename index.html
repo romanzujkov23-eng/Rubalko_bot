@@ -1981,6 +1981,16 @@
   // (т.е. это правда новый игрок, а не повторный визит по чужой ссылке) —
   // запоминаем, кто его пригласил, чтобы позже засчитать награду.
   function captureReferralIfNew(){
+    // ВРЕМЕННЫЙ debug-тост, чтобы видеть на экране, что именно поймала игра
+    // при запуске по реферальной ссылке. Удалить после отладки.
+    if(localStorage.getItem('debug_ref_toast') === '1'){
+      setTimeout(()=>{
+        showToast('DEBUG: start_param=' + (getStartParamRefUid()||'НЕТ') +
+          ' myUid=' + (getUserId()||'?') +
+          ' onboarded=' + state.onboardingDone +
+          ' referredBy=' + (state.referredBy||'нет'));
+      }, 800);
+    }
     if(state.onboardingDone) return;
     if(state.referredBy) return;
     const refUid = getStartParamRefUid();
@@ -3175,6 +3185,18 @@
       }
     });
     body.appendChild(refTestBtn);
+
+    // ВРЕМЕННО: включает/выключает диагностический тост в captureReferralIfNew().
+    const debugBtn = document.createElement('button');
+    debugBtn.className = 'btn-reset-progress';
+    debugBtn.style.marginTop = '8px';
+    debugBtn.innerHTML = (localStorage.getItem('debug_ref_toast')==='1' ? '✅ ' : '⬜ ') + '[ТЕСТ] Показывать debug-тост про реферал';
+    debugBtn.addEventListener('click', ()=>{
+      const on = localStorage.getItem('debug_ref_toast') === '1';
+      localStorage.setItem('debug_ref_toast', on ? '0' : '1');
+      renderSettingsModal();
+    });
+    body.appendChild(debugBtn);
   }
   document.getElementById('shopSettingsBtn').addEventListener('click', ()=>{
     renderSettingsModal();
