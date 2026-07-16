@@ -187,6 +187,7 @@
   #bonusbanner span{display:flex; align-items:center; gap:6px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   #bonusbanner button{border:none; background:var(--ink); color:var(--cream); border-radius:10px; padding:7px 13px; font-weight:800; font-size:11.5px; flex-shrink:0;}
 
+  /* Тихий индикатор: облачная синхронизация не удалась, прогресс есть только локально */
   #syncWarning{width:100%; max-width:460px; box-sizing:border-box; display:none; align-items:center; gap:6px;
     background:rgba(255,122,89,0.14); border:1px solid rgba(255,122,89,0.3); color:#FF9C82; border-radius:12px;
     padding:6px 12px; font-size:10.5px; font-weight:700;}
@@ -650,7 +651,7 @@
         <svg class="locswitch-chevron" viewBox="0 0 24 24" width="14" height="14"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
       <div id="bonusbanner"><span class="ico-inline"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="13" width="20" height="14" rx="2" fill="#0A1F26"/><rect x="6" y="13" width="20" height="5" fill="#0A1F26" opacity=".7"/><rect x="14" y="13" width="4" height="14" fill="#F7F3E8"/><path d="M16 13c-2-6-9-6-9-1 0 1.5 2 1 9 1zM16 13c2-6 9-6 9-1 0 1.5-2 1-9 1z" fill="#F7F3E8" stroke="#0A1F26" stroke-width="1"/></svg></span> <span id="bonusText">Бонус готов!</span><button id="bonusBtn">Забрать</button></div>
-      <div id="syncWarning" title="Прогресс сохраняется только на этом устройстве - нет соединения с сервером">
+      <div id="syncWarning" title="Прогресс сохраняется только на этом устройстве — нет соединения с сервером">
         <span class="ico-inline"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 4C9.4 4 4 9.4 4 16s5.4 12 12 12 12-5.4 12-12S22.6 4 16 4Z" fill="none" stroke="#FF9C82" stroke-width="2.4"/><path d="M16 10v8" stroke="#FF9C82" stroke-width="2.6" stroke-linecap="round"/><circle cx="16" cy="22" r="1.6" fill="#FF9C82"/></svg></span>
         <span>Сохранение офлайн</span>
       </div>
@@ -923,6 +924,9 @@
     }catch(e){}
   }
 
+  // --- BackButton: жест/кнопка "назад" закрывает открытую модалку, а не
+  // весь мини-апп. Без этого на Android системный back-жест выходит из игры,
+  // даже если у игрока просто открыт, например, магазин настроек.
   if(tg && tg.BackButton){
     try{
       const closeHandlers = {
@@ -948,9 +952,28 @@
     }catch(e){}
   }
 
+  // Desktop Telegram clients (Windows/macOS/Web) report viewportStableHeight
+  // unreliably (often much smaller than the real window), and don't need the
+  // mobile "keyboard/animation" height-lock workaround below. Detect them so
+  // we can trust the real window size instead and avoid getting stuck with a
+  // too-small #app that renders pinned to the top of the screen.
   const DESKTOP_TG_PLATFORMS = ['tdesktop','macos','web','weba','webk'];
   const isDesktopTg = !!(tg && DESKTOP_TG_PLATFORMS.indexOf(tg.platform) !== -1);
 
+  // --- Safe-area inset sanitizing --------------------------------------------
+  // #navbar, #bottompanel and #rodsvg all anchor themselves with
+  // "bottom: Npx + env(safe-area-inset-bottom)". On a real phone that inset
+  // is small (0-40px, for the home-indicator bar). Some desktop WebViews
+  // (this looks like exactly what's happening on this Windows Telegram
+  // Desktop client) report a large, bogus safe-area-inset-bottom, which
+  // shoves every bottom-anchored element upward by that same broken amount -
+  // which is exactly why the navbar/bottom panel/rod all end up bunched
+  // near the top of the window, overlapping and hiding the top HUD.
+  // Fix: measure the real computed inset with a hidden probe element and,
+  // if it's an unreasonable value (or we're on a desktop client at all,
+  // which has no legitimate safe area to begin with), force it to 0 via
+  // CSS custom properties that every "env(safe-area-inset-*)" usage above
+  // now reads through instead of the raw env() value.
   (function sanitizeSafeArea(){
     const probe = document.createElement('div');
     probe.style.cssText = 'position:fixed; visibility:hidden; pointer-events:none;'
@@ -960,13 +983,26 @@
     const insetTop = parseFloat(cs.top) || 0;
     const insetBottom = parseFloat(cs.bottom) || 0;
     document.body.removeChild(probe);
-    const MAX_SANE_INSET = 60; 
+    const MAX_SANE_INSET = 60; // real device safe areas are well under this
     const badTop = isDesktopTg || insetTop > MAX_SANE_INSET;
     const badBottom = isDesktopTg || insetBottom > MAX_SANE_INSET;
     document.documentElement.style.setProperty('--safe-top', badTop ? '0px' : 'env(safe-area-inset-top,0px)');
     document.documentElement.style.setProperty('--safe-bottom', badBottom ? '0px' : 'env(safe-area-inset-bottom,0px)');
   })();
 
+  // NOTE on the "nav bar stuck at the top" bug on Telegram Desktop (Windows):
+  // the old code trusted a single JS-reported number (tg.viewportStableHeight
+  // or window.innerHeight) captured once and re-checked only on a fixed
+  // timeout schedule / resize events. Telegram Desktop's WebView sometimes
+  // reports a stale, much-too-small height right after load and then never
+  // fires a resize/viewportChanged event once the real window size settles,
+  // so that bad small value gets baked into --tg-vh forever. Since #app's
+  // height collapses to that bad value, the bottom-anchored #navbar (which
+  // sits 10px from the bottom of #app) ends up drawn near the top of the
+  // real, much taller window - exactly the bug in the screenshot.
+  // Fix: use ResizeObserver to continuously measure the REAL rendered size
+  // of the page and keep --tg-vh in sync with reality, regardless of what
+  // any Telegram API reports or whether it ever fires an update event.
   function measuredHeight(){
     const candidates = [
       (!isDesktopTg && tg) ? tg.viewportStableHeight : null,
@@ -985,6 +1021,8 @@
       warmupMaxH = Math.max(warmupMaxH, h);
       h = warmupMaxH;
     }
+    // Safety floor: never let the app collapse to a near-zero height because
+    // of a transient bogus reading (this is what causes the navbar-at-top bug).
     h = Math.max(h, 400);
     document.documentElement.style.setProperty('--tg-vh', (h * 0.01) + 'px');
   }
@@ -996,6 +1034,9 @@
   window.addEventListener('orientationchange', ()=>setTimeout(applyViewportHeight, 60));
   if(window.visualViewport) window.visualViewport.addEventListener('resize', applyViewportHeight);
 
+  // Belt-and-braces for desktop clients that resize the mini-app window
+  // without firing any of the events above: keep watching the real,
+  // rendered box size and self-correct --tg-vh live if it ever drifts.
   if(window.ResizeObserver){
     let roFrame = null;
     const ro = new ResizeObserver(function(){
@@ -1126,19 +1167,42 @@
 
   const FIREBASE_URL = "https://guhgg-83fab-default-rtdb.europe-west1.firebasedatabase.app";
 
+  // --- Firebase Auth --------------------------------------------------------
+  // Есть два уровня защиты, и игра умеет работать с любым из них:
+  //
+  // 1) С бэкендом (AUTH_WORKER_URL заполнен, см. worker.js — деплоится
+  //    бесплатно на Cloudflare Workers): Worker проверяет подпись Telegram
+  //    initData секретным токеном бота и выдаёт Firebase custom token с
+  //    uid = реальный telegram id. Это даёт настоящую, криптографически
+  //    проверенную идентификацию — подделать чужой uid невозможно, и дублей
+  //    в лидерборде между устройствами больше нет, т.к. uid одинаковый на
+  //    всех устройствах игрока.
+  //
+  // 2) Без бэкенда (AUTH_WORKER_URL не заполнен, или Worker недоступен):
+  //    используется анонимная авторизация Firebase — свой uid на каждое
+  //    устройство. Это по-прежнему не даёт читерить чужие записи (см.
+  //    Rules: auth.uid === $uid), но identity не привязана к реальному
+  //    telegram-аккаунту, поэтому возможны дубли в лидерборде между
+  //    устройствами (решается дедупликацией по tgId на клиенте, см.
+  //    renderTop()).
+  //
+  // ВАЖНО: заполни apiKey/authDomain/projectId ниже своими значениями из
+  // Firebase Console → Project settings → General → "Your apps" → Web app.
   const FIREBASE_CONFIG = {
     apiKey: "AIzaSyCSYISDBH4_c3CDySEnkhp0DPat7NcoYtg",
     authDomain: "guhgg-83fab.firebaseapp.com",
     databaseURL: FIREBASE_URL,
     projectId: "guhgg-83fab"
   };
+  // URL твоего Cloudflare Worker (worker.js) после деплоя, БЕЗ "/auth" на
+  // конце — например: "https://rubalko-auth.твой-акк.workers.dev"
   const AUTH_WORKER_URL = "https://rubalko-auth.romanzyikov2003.workers.dev";
   function authWorkerReady(){ return AUTH_WORKER_URL && AUTH_WORKER_URL.indexOf('ВСТАВЬ') === -1; }
 
-  let fbAuthUid = null;      
-  let fbAuthReady = false;   
-  let fbAuthVerified = false;
-  let fbSyncFailed = false;  
+  let fbAuthUid = null;      // auth.uid текущей сессии (ключ в базе saves/leaderboard)
+  let fbAuthReady = false;   // true, если авторизация (любым из способов выше) прошла успешно
+  let fbAuthVerified = false;// true, только если это прошло через Worker (реальный telegram id, а не анонимная сессия)
+  let fbSyncFailed = false;  // true, если последняя попытка синка с сервером не удалась
   function fbConfigReady(){ return FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey.indexOf('ВСТАВЬ') === -1; }
 
   function initFirebaseAuth(done){
@@ -1153,7 +1217,7 @@
     function signInAnon(){
       firebase.auth().signInAnonymously()
         .then(()=> finishWithCurrentUser(false))
-        .catch(()=>{ done(); }); 
+        .catch(()=>{ done(); }); // офлайн/заблокировано — работаем локально
     }
 
     if(authWorkerReady() && tg && tg.initData){
@@ -1164,11 +1228,15 @@
         .then(r=>{ if(!r.ok) throw new Error('auth_worker_failed'); return r.json(); })
         .then(data=> firebase.auth().signInWithCustomToken(data.customToken))
         .then(()=> finishWithCurrentUser(true))
-        .catch(()=>{ signInAnon(); }); 
+        .catch(()=>{ signInAnon(); }); // Worker недоступен/ошибся — тихо деградируем на анонимный вход
     } else {
       signInAnon();
     }
   }
+  // Токен нужно прикладывать к каждому REST-запросу в Firebase (?auth=...),
+  // иначе запрос отклонят новые правила безопасности (auth != null).
+  // getIdToken() у SDK сам кэширует и обновляет токен по истечении срока —
+  // отдельный таймер для этого не нужен.
   function fbIdToken(){
     if(!fbAuthReady || typeof firebase === 'undefined' || !firebase.auth().currentUser) return Promise.resolve(null);
     return firebase.auth().currentUser.getIdToken().catch(()=>null);
@@ -1178,9 +1246,16 @@
 
   function inviteReady(){ return BOT_LINK && BOT_LINK.indexOf('ВСТАВЬ') === -1; }
 
+  // --- Реферальная система ---
+  // Пригласивший получает REFERRAL_REWARD_COINS монет, когда приглашённый
+  // им новый игрок сделает REFERRAL_CATCH_THRESHOLD успешных забросов
+  // (т.е. немного поиграет, а не просто откроет мини-апп).
   const REFERRAL_REWARD_COINS = 1000;
   const REFERRAL_CATCH_THRESHOLD = 3;
 
+  // Реф-код передаётся в start_param диплинка t.me/bot/app?startapp=ref_<uid>.
+  // Telegram кладёт его в tg.initDataUnsafe.start_param; для тестирования в
+  // обычном браузере дублируем разбором ?startapp=... из URL.
   function getStartParamRefUid(){
     let sp = null;
     if(tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param) sp = tg.initDataUnsafe.start_param;
@@ -1656,6 +1731,11 @@
   let state = freshState();
 
   const SAVE_KEY = 'save_v2';
+  // Лимит Telegram CloudStorage — 4096 байт на значение (UTF-8). По мере
+  // роста инвентаря/квестов сериализованное состояние может это превысить —
+  // тогда tg.CloudStorage.setItem молча ничего не сохранит. localStorage и
+  // Firebase таких ограничений не имеют, так что просто пропускаем
+  // CloudStorage в этом случае, а не теряем прогресс тихо.
   const CLOUD_STORAGE_LIMIT = 4096;
   function utf8ByteLength(str){ return new Blob([str]).size; }
   function setSyncFailed(failed){
@@ -1674,6 +1754,7 @@
         if(utf8ByteLength(payload) <= CLOUD_STORAGE_LIMIT){
           tg.CloudStorage.setItem(SAVE_KEY, payload, function(){});
         }
+        // иначе просто не пишем — localStorage/Firebase уже сохранили актуальную копию
       }
       window.__memSave = payload;
 
@@ -1850,6 +1931,12 @@
   }
 
   function getUserId(){
+    // Приоритет: auth.uid из Firebase Anonymous Auth — этот ключ единственный,
+    // который правила безопасности реально могут привязать к автору записи
+    // (auth.uid === $uid). Если FIREBASE_CONFIG не заполнен или авторизация
+    // не удалась (офлайн, заблокирован домен), откатываемся на старую схему —
+    // тогда защита от записи в чужой профиль не действует, см. комментарий
+    // у FIREBASE_CONFIG выше.
     if(fbAuthReady && fbAuthUid) return fbAuthUid;
     if(tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) return 'u'+tg.initDataUnsafe.user.id;
     if(!state.anonId) state.anonId = 'anon'+Math.random().toString(36).slice(2,10);
@@ -1864,6 +1951,12 @@
     return state.cachedName || 'Рыбак';
   }
   function fbReady(){ return FIREBASE_URL && FIREBASE_URL.indexOf('ВСТАВЬ') === -1; }
+  // telegram id тут используется ТОЛЬКО как поле для группировки одинаковых
+  // игроков в списке лидеров при заходе с разных устройств (ключом записи
+  // в базе он не является — им остаётся auth.uid, см. getUserId()).
+  // Это значение не проверяется криптографически (нет сервера, который бы
+  // подтвердил подпись Telegram initData), поэтому оно годится только для
+  // косметической дедупликации в UI, а не как граница безопасности.
   function getTelegramId(){
     if(tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) return 'u'+tg.initDataUnsafe.user.id;
     return null;
@@ -1883,6 +1976,10 @@
     }).catch(()=>{});
   }
 
+  // Вызывается один раз после первой загрузки состояния. Если игрок пришёл
+  // по реферальной ссылке (?startapp=ref_<uid>) и ещё не проходил обучение
+  // (т.е. это правда новый игрок, а не повторный визит по чужой ссылке) —
+  // запоминаем, кто его пригласил, чтобы позже засчитать награду.
   function captureReferralIfNew(){
     if(state.onboardingDone) return;
     if(state.referredBy) return;
@@ -1895,6 +1992,11 @@
     saveState();
   }
 
+  // Вызывается после каждой удачной поклёвки. Как только приглашённый игрок
+  // немного поиграл (сделал REFERRAL_CATCH_THRESHOLD уловов), кладём для
+  // пригласившего "отложенную" награду в /referralRewards/<uid_пригласившего>/.
+  // Сам пригласивший может быть офлайн — он заберёт награду при следующем
+  // запуске игры через checkReferralRewards().
   function checkReferralProgress(){
     if(!state.referredBy || state.referralClaimed) return;
     if(state.totalCatches < REFERRAL_CATCH_THRESHOLD) return;
@@ -1916,6 +2018,9 @@
     });
   }
 
+  // Вызывается при каждом запуске игры. Забирает начисленные награды за
+  // приглашённых друзей (если кто-то из приглашённых уже немного поиграл),
+  // зачисляет монеты и очищает очередь на сервере.
   function checkReferralRewards(){
     if(!fbReady()) return;
     const myUid = getUserId();
@@ -1940,6 +2045,28 @@
     });
   }
 
+  // ВРЕМЕННО, только для ручного тестирования реферальной системы.
+  // Вызывать из консоли браузера на тестовом аккаунте: __testResetReferral()
+  // Полностью откатывает аккаунт в состояние "нового игрока": чистит
+  // localStorage, Telegram CloudStorage и серверную копию в Firebase,
+  // затем перезагружает страницу. Удалить перед релизом.
+  window.__testResetReferral = function(){
+    const myUid = getUserId();
+    try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
+    if(tg && tg.CloudStorage){ tg.CloudStorage.removeItem(SAVE_KEY, function(){}); }
+    const doDelete = (token)=>{
+      const q = token ? ('?auth=' + token) : '';
+      ['saves','leaderboard','referrals','referralRewards'].forEach(node=>{
+        fetch(FIREBASE_URL + '/' + node + '/' + myUid + '.json' + q, { method:'DELETE' }).catch(()=>{});
+      });
+    };
+    if(fbReady()){
+      fbIdToken().then(token=>{ doDelete(token); setTimeout(()=>location.reload(), 600); });
+    } else {
+      location.reload();
+    }
+  };
+
   function inviteLink(){
     if(!inviteReady()) return 'https://t.me';
     const uid = getUserId();
@@ -1953,7 +2080,7 @@
     }
     const link = inviteLink();
     const text = 'Я уже поймал ' + formatNum(state.totalCatches) + ' рыб и дошёл до ' + state.level + ' уровня в Тихой Гавани 🎣 '
-      + 'Присоединяйся!';
+      + 'Присоединяйся, а я получу бонус за приглашение!';
     const shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent(text);
     if(tg && tg.openTelegramLink) tg.openTelegramLink(shareUrl);
     else window.open(shareUrl, '_blank');
@@ -2298,6 +2425,11 @@
     setTimeout(()=>{ el.style.opacity='0'; }, dur*1000 - 1300);
     setTimeout(()=>{ if(bubbleTimer) clearInterval(bubbleTimer); el.remove(); }, dur*1000 + 200);
   }
+  // Раньше этот интервал тикал даже когда приложение свёрнуто (внутри
+  // spawnAmbientFish был лишь early-return по document.hidden) — сам таймер
+  // всё равно просыпался каждые 3.2с и жёг батарею в фоне без всякой пользы.
+  // Теперь при сворачивании таймер полностью останавливается и запускается
+  // заново при возврате.
   let ambientFishTimer = null;
   function startAmbientFishLoop(){
     if(ambientFishTimer) return;
@@ -3027,6 +3159,22 @@
     resetBtn.innerHTML = TRASH_SVG + ' Сбросить весь прогресс';
     resetBtn.addEventListener('click', ()=>{ settingsModal.classList.remove('show'); openResetModal(); });
     body.appendChild(resetBtn);
+
+    // ВРЕМЕННО, только для ручного тестирования реферальной системы.
+    // Полностью откатывает ЭТОТ аккаунт в состояние "нового игрока" одним
+    // тапом (без консоли): чистит localStorage, CloudStorage и серверную
+    // копию, затем перезапускает игру. Удалить перед релизом.
+    const refTestBtn = document.createElement('button');
+    refTestBtn.className = 'btn-reset-progress';
+    refTestBtn.style.marginTop = '8px';
+    refTestBtn.innerHTML = PARTY_SVG + ' [ТЕСТ] Сделать этот аккаунт "новым" для реферала';
+    refTestBtn.addEventListener('click', ()=>{
+      settingsModal.classList.remove('show');
+      if(confirm('Это тестовая функция: аккаунт полностью обнулится (как будто впервые открыл игру), включая локальные и серверные данные. Продолжить?')){
+        window.__testResetReferral();
+      }
+    });
+    body.appendChild(refTestBtn);
   }
   document.getElementById('shopSettingsBtn').addEventListener('click', ()=>{
     renderSettingsModal();
@@ -3432,10 +3580,10 @@
       const myTgId = getTelegramId();
       let arr = Object.keys(data).map(k=>({id:k, tgId:data[k].tgId||null, name:data[k].name||'Рыбак', level:data[k].level||1, score:data[k].score||0, catches:data[k].catches||0}));
       // Один и тот же игрок может иметь несколько записей (по одной на
-      // каждое устройство/сессию, т.к. ключ в базе auth.uid, привязанный
+      // каждое устройство/сессию, т.к. ключ в базе — auth.uid, привязанный
       // к устройству, см. комментарий у getTelegramId()). Группируем по
       // tgId, где он есть, и оставляем только лучшую запись каждого
-      // игрока иначе он занимал бы несколько строк в списке лидеров.
+      // игрока — иначе он занимал бы несколько строк в списке лидеров.
       const bestByTgId = new Map();
       const withoutTgId = [];
       arr.forEach(row=>{
