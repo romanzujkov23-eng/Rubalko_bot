@@ -2131,11 +2131,23 @@
     const doDelete = (token)=>{
       const q = token ? ('?auth=' + token) : '';
       log.push('token получен? ' + !!token);
-      return Promise.all(['saves','leaderboard','referrals','referralRewards'].map(node=>
+      // saves/referralRewards: сервер отклоняет DELETE (401) из-за .validate,
+      // которая требует определённую структуру данных даже при удалении.
+      // Поэтому вместо удаления перезаписываем валидным "пустым" значением.
+      const writeFresh = fetch(FIREBASE_URL + '/saves/' + myUid + '.json' + q, {
+        method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(freshState())
+      }).then(r=>{ log.push('PUT saves (fresh) -> статус ' + r.status); return r; })
+        .catch(e=>{ log.push('PUT saves -> ОШИБКА сети: ' + e.message); });
+      const clearRewards = fetch(FIREBASE_URL + '/referralRewards/' + myUid + '.json' + q, {
+        method:'PUT', headers:{'Content-Type':'application/json'}, body: '{}'
+      }).then(r=>{ log.push('PUT referralRewards ({}) -> статус ' + r.status); return r; })
+        .catch(e=>{ log.push('PUT referralRewards -> ОШИБКА сети: ' + e.message); });
+      const plainDeletes = Promise.all(['leaderboard','referrals'].map(node=>
         fetch(FIREBASE_URL + '/' + node + '/' + myUid + '.json' + q, { method:'DELETE' })
           .then(r=>{ log.push('DELETE ' + node + ' -> статус ' + r.status); return r; })
           .catch(e=>{ log.push('DELETE ' + node + ' -> ОШИБКА сети: ' + e.message); })
       ));
+      return Promise.all([writeFresh, clearRewards, plainDeletes]);
     };
     const verify = (token)=>{
       const q = token ? ('?auth=' + token) : '';
