@@ -187,7 +187,6 @@
   #bonusbanner span{display:flex; align-items:center; gap:6px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   #bonusbanner button{border:none; background:var(--ink); color:var(--cream); border-radius:10px; padding:7px 13px; font-weight:800; font-size:11.5px; flex-shrink:0;}
 
-  /* Тихий индикатор: облачная синхронизация не удалась, прогресс есть только локально */
   #syncWarning{width:100%; max-width:460px; box-sizing:border-box; display:none; align-items:center; gap:6px;
     background:rgba(255,122,89,0.14); border:1px solid rgba(255,122,89,0.3); color:#FF9C82; border-radius:12px;
     padding:6px 12px; font-size:10.5px; font-weight:700;}
@@ -651,7 +650,7 @@
         <svg class="locswitch-chevron" viewBox="0 0 24 24" width="14" height="14"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
       <div id="bonusbanner"><span class="ico-inline"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="13" width="20" height="14" rx="2" fill="#0A1F26"/><rect x="6" y="13" width="20" height="5" fill="#0A1F26" opacity=".7"/><rect x="14" y="13" width="4" height="14" fill="#F7F3E8"/><path d="M16 13c-2-6-9-6-9-1 0 1.5 2 1 9 1zM16 13c2-6 9-6 9-1 0 1.5-2 1-9 1z" fill="#F7F3E8" stroke="#0A1F26" stroke-width="1"/></svg></span> <span id="bonusText">Бонус готов!</span><button id="bonusBtn">Забрать</button></div>
-      <div id="syncWarning" title="Прогресс сохраняется только на этом устройстве — нет соединения с сервером">
+      <div id="syncWarning" title="Прогресс сохраняется только на этом устройстве - нет соединения с сервером">
         <span class="ico-inline"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 4C9.4 4 4 9.4 4 16s5.4 12 12 12 12-5.4 12-12S22.6 4 16 4Z" fill="none" stroke="#FF9C82" stroke-width="2.4"/><path d="M16 10v8" stroke="#FF9C82" stroke-width="2.6" stroke-linecap="round"/><circle cx="16" cy="22" r="1.6" fill="#FF9C82"/></svg></span>
         <span>Сохранение офлайн</span>
       </div>
@@ -842,6 +841,7 @@
       <span class="ico-inline"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M4 16 27 5 20 27l-5-9-9-2z" fill="#F6C453" stroke="#8A5A16" stroke-width="1.3" stroke-linejoin="round"/><path d="M15 18 27 5" fill="none" stroke="#8A5A16" stroke-width="1.1"/></svg></span>
       Пригласи друга
     </button>
+    <div class="invite-sub">Когда приглашённый друг немного поиграет - ты получишь 1000 монет.</div>
     <div class="sublist" id="toplist"></div>
   </div>
 
@@ -923,9 +923,6 @@
     }catch(e){}
   }
 
-  // --- BackButton: жест/кнопка "назад" закрывает открытую модалку, а не
-  // весь мини-апп. Без этого на Android системный back-жест выходит из игры,
-  // даже если у игрока просто открыт, например, магазин настроек.
   if(tg && tg.BackButton){
     try{
       const closeHandlers = {
@@ -951,28 +948,9 @@
     }catch(e){}
   }
 
-  // Desktop Telegram clients (Windows/macOS/Web) report viewportStableHeight
-  // unreliably (often much smaller than the real window), and don't need the
-  // mobile "keyboard/animation" height-lock workaround below. Detect them so
-  // we can trust the real window size instead and avoid getting stuck with a
-  // too-small #app that renders pinned to the top of the screen.
   const DESKTOP_TG_PLATFORMS = ['tdesktop','macos','web','weba','webk'];
   const isDesktopTg = !!(tg && DESKTOP_TG_PLATFORMS.indexOf(tg.platform) !== -1);
 
-  // --- Safe-area inset sanitizing --------------------------------------------
-  // #navbar, #bottompanel and #rodsvg all anchor themselves with
-  // "bottom: Npx + env(safe-area-inset-bottom)". On a real phone that inset
-  // is small (0-40px, for the home-indicator bar). Some desktop WebViews
-  // (this looks like exactly what's happening on this Windows Telegram
-  // Desktop client) report a large, bogus safe-area-inset-bottom, which
-  // shoves every bottom-anchored element upward by that same broken amount -
-  // which is exactly why the navbar/bottom panel/rod all end up bunched
-  // near the top of the window, overlapping and hiding the top HUD.
-  // Fix: measure the real computed inset with a hidden probe element and,
-  // if it's an unreasonable value (or we're on a desktop client at all,
-  // which has no legitimate safe area to begin with), force it to 0 via
-  // CSS custom properties that every "env(safe-area-inset-*)" usage above
-  // now reads through instead of the raw env() value.
   (function sanitizeSafeArea(){
     const probe = document.createElement('div');
     probe.style.cssText = 'position:fixed; visibility:hidden; pointer-events:none;'
@@ -982,26 +960,13 @@
     const insetTop = parseFloat(cs.top) || 0;
     const insetBottom = parseFloat(cs.bottom) || 0;
     document.body.removeChild(probe);
-    const MAX_SANE_INSET = 60; // real device safe areas are well under this
+    const MAX_SANE_INSET = 60; 
     const badTop = isDesktopTg || insetTop > MAX_SANE_INSET;
     const badBottom = isDesktopTg || insetBottom > MAX_SANE_INSET;
     document.documentElement.style.setProperty('--safe-top', badTop ? '0px' : 'env(safe-area-inset-top,0px)');
     document.documentElement.style.setProperty('--safe-bottom', badBottom ? '0px' : 'env(safe-area-inset-bottom,0px)');
   })();
 
-  // NOTE on the "nav bar stuck at the top" bug on Telegram Desktop (Windows):
-  // the old code trusted a single JS-reported number (tg.viewportStableHeight
-  // or window.innerHeight) captured once and re-checked only on a fixed
-  // timeout schedule / resize events. Telegram Desktop's WebView sometimes
-  // reports a stale, much-too-small height right after load and then never
-  // fires a resize/viewportChanged event once the real window size settles,
-  // so that bad small value gets baked into --tg-vh forever. Since #app's
-  // height collapses to that bad value, the bottom-anchored #navbar (which
-  // sits 10px from the bottom of #app) ends up drawn near the top of the
-  // real, much taller window - exactly the bug in the screenshot.
-  // Fix: use ResizeObserver to continuously measure the REAL rendered size
-  // of the page and keep --tg-vh in sync with reality, regardless of what
-  // any Telegram API reports or whether it ever fires an update event.
   function measuredHeight(){
     const candidates = [
       (!isDesktopTg && tg) ? tg.viewportStableHeight : null,
@@ -1020,8 +985,6 @@
       warmupMaxH = Math.max(warmupMaxH, h);
       h = warmupMaxH;
     }
-    // Safety floor: never let the app collapse to a near-zero height because
-    // of a transient bogus reading (this is what causes the navbar-at-top bug).
     h = Math.max(h, 400);
     document.documentElement.style.setProperty('--tg-vh', (h * 0.01) + 'px');
   }
@@ -1033,9 +996,6 @@
   window.addEventListener('orientationchange', ()=>setTimeout(applyViewportHeight, 60));
   if(window.visualViewport) window.visualViewport.addEventListener('resize', applyViewportHeight);
 
-  // Belt-and-braces for desktop clients that resize the mini-app window
-  // without firing any of the events above: keep watching the real,
-  // rendered box size and self-correct --tg-vh live if it ever drifts.
   if(window.ResizeObserver){
     let roFrame = null;
     const ro = new ResizeObserver(function(){
@@ -1166,42 +1126,19 @@
 
   const FIREBASE_URL = "https://guhgg-83fab-default-rtdb.europe-west1.firebasedatabase.app";
 
-  // --- Firebase Auth --------------------------------------------------------
-  // Есть два уровня защиты, и игра умеет работать с любым из них:
-  //
-  // 1) С бэкендом (AUTH_WORKER_URL заполнен, см. worker.js — деплоится
-  //    бесплатно на Cloudflare Workers): Worker проверяет подпись Telegram
-  //    initData секретным токеном бота и выдаёт Firebase custom token с
-  //    uid = реальный telegram id. Это даёт настоящую, криптографически
-  //    проверенную идентификацию — подделать чужой uid невозможно, и дублей
-  //    в лидерборде между устройствами больше нет, т.к. uid одинаковый на
-  //    всех устройствах игрока.
-  //
-  // 2) Без бэкенда (AUTH_WORKER_URL не заполнен, или Worker недоступен):
-  //    используется анонимная авторизация Firebase — свой uid на каждое
-  //    устройство. Это по-прежнему не даёт читерить чужие записи (см.
-  //    Rules: auth.uid === $uid), но identity не привязана к реальному
-  //    telegram-аккаунту, поэтому возможны дубли в лидерборде между
-  //    устройствами (решается дедупликацией по tgId на клиенте, см.
-  //    renderTop()).
-  //
-  // ВАЖНО: заполни apiKey/authDomain/projectId ниже своими значениями из
-  // Firebase Console → Project settings → General → "Your apps" → Web app.
   const FIREBASE_CONFIG = {
     apiKey: "AIzaSyCSYISDBH4_c3CDySEnkhp0DPat7NcoYtg",
     authDomain: "guhgg-83fab.firebaseapp.com",
     databaseURL: FIREBASE_URL,
     projectId: "guhgg-83fab"
   };
-  // URL твоего Cloudflare Worker (worker.js) после деплоя, БЕЗ "/auth" на
-  // конце — например: "https://rubalko-auth.твой-акк.workers.dev"
   const AUTH_WORKER_URL = "https://rubalko-auth.romanzyikov2003.workers.dev";
   function authWorkerReady(){ return AUTH_WORKER_URL && AUTH_WORKER_URL.indexOf('ВСТАВЬ') === -1; }
 
-  let fbAuthUid = null;      // auth.uid текущей сессии (ключ в базе saves/leaderboard)
-  let fbAuthReady = false;   // true, если авторизация (любым из способов выше) прошла успешно
-  let fbAuthVerified = false;// true, только если это прошло через Worker (реальный telegram id, а не анонимная сессия)
-  let fbSyncFailed = false;  // true, если последняя попытка синка с сервером не удалась
+  let fbAuthUid = null;      
+  let fbAuthReady = false;   
+  let fbAuthVerified = false;
+  let fbSyncFailed = false;  
   function fbConfigReady(){ return FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey.indexOf('ВСТАВЬ') === -1; }
 
   function initFirebaseAuth(done){
@@ -1216,7 +1153,7 @@
     function signInAnon(){
       firebase.auth().signInAnonymously()
         .then(()=> finishWithCurrentUser(false))
-        .catch(()=>{ done(); }); // офлайн/заблокировано — работаем локально
+        .catch(()=>{ done(); }); 
     }
 
     if(authWorkerReady() && tg && tg.initData){
@@ -1227,15 +1164,11 @@
         .then(r=>{ if(!r.ok) throw new Error('auth_worker_failed'); return r.json(); })
         .then(data=> firebase.auth().signInWithCustomToken(data.customToken))
         .then(()=> finishWithCurrentUser(true))
-        .catch(()=>{ signInAnon(); }); // Worker недоступен/ошибся — тихо деградируем на анонимный вход
+        .catch(()=>{ signInAnon(); }); 
     } else {
       signInAnon();
     }
   }
-  // Токен нужно прикладывать к каждому REST-запросу в Firebase (?auth=...),
-  // иначе запрос отклонят новые правила безопасности (auth != null).
-  // getIdToken() у SDK сам кэширует и обновляет токен по истечении срока —
-  // отдельный таймер для этого не нужен.
   function fbIdToken(){
     if(!fbAuthReady || typeof firebase === 'undefined' || !firebase.auth().currentUser) return Promise.resolve(null);
     return firebase.auth().currentUser.getIdToken().catch(()=>null);
@@ -1244,6 +1177,25 @@
   const BOT_LINK = "https://t.me/rubalko_bot/play";
 
   function inviteReady(){ return BOT_LINK && BOT_LINK.indexOf('ВСТАВЬ') === -1; }
+
+  const REFERRAL_REWARD_COINS = 1000;
+  const REFERRAL_CATCH_THRESHOLD = 3;
+
+  function getStartParamRefUid(){
+    let sp = null;
+    if(tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param) sp = tg.initDataUnsafe.start_param;
+    if(!sp){
+      try{
+        const usp = new URLSearchParams(window.location.search);
+        sp = usp.get('startapp') || usp.get('tgWebAppStartParam') || null;
+      }catch(e){}
+    }
+    if(sp && sp.indexOf('ref_') === 0){
+      const uid = sp.slice(4).trim();
+      return uid || null;
+    }
+    return null;
+  }
 
   const COIN_SVG = '<span class="coin-ico"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="coinShine2" cx="35%" cy="28%" r="80%"><stop offset="0%" stop-color="#FFF6DC"/><stop offset="45%" stop-color="#F6C453"/><stop offset="100%" stop-color="#C6811F"/></radialGradient></defs><circle cx="16" cy="16" r="14.5" fill="url(#coinShine2)" stroke="#8A5A16" stroke-width="1.3"/><circle cx="16" cy="16" r="11" fill="none" stroke="#FFEDB8" stroke-width="1" opacity="0.55"/><path d="M9.5 20c-.6-3.2.6-6.7 3.6-8.6 2-1.3 4.5-1.5 6.6-.6-2.4-.3-4.8.4-6.5 2-1.9 1.7-2.7 4.3-2.2 6.8-1.1-.3-1.5.3-1.5.4z" fill="#A66A17" opacity="0.65"/><path d="M12 20.5c2.6.9 5.6.2 7.5-1.9 1.5-1.7 2-3.9 1.6-6 .6 2.2.2 4.6-1.3 6.5-1.7 2.1-4.5 3-7.1 2.2-.4-.1-.6-.5-.7-.8z" fill="#A66A17" opacity="0.5"/><ellipse cx="11.2" cy="10.8" rx="4" ry="2.2" fill="#FFFFFF" opacity="0.5" transform="rotate(-28 11.2 10.8)"/></svg></span>';
 
@@ -1693,6 +1645,7 @@
       eventTotals:{}, eventBest:{},
       lastBonusDate:null, dailyStreak:0, anonId:null,
       questsDate:null, dailyQuests:[],
+      referredBy:null, referralClaimed:false,
       storyChapter:0, storyProgress:0,
       boosts:{xp2:0, coins2:0, luck:0},
       upgrades:{luck:0, income:0, comfort:0, grip:0},
@@ -1703,11 +1656,6 @@
   let state = freshState();
 
   const SAVE_KEY = 'save_v2';
-  // Лимит Telegram CloudStorage — 4096 байт на значение (UTF-8). По мере
-  // роста инвентаря/квестов сериализованное состояние может это превысить —
-  // тогда tg.CloudStorage.setItem молча ничего не сохранит. localStorage и
-  // Firebase таких ограничений не имеют, так что просто пропускаем
-  // CloudStorage в этом случае, а не теряем прогресс тихо.
   const CLOUD_STORAGE_LIMIT = 4096;
   function utf8ByteLength(str){ return new Blob([str]).size; }
   function setSyncFailed(failed){
@@ -1726,7 +1674,6 @@
         if(utf8ByteLength(payload) <= CLOUD_STORAGE_LIMIT){
           tg.CloudStorage.setItem(SAVE_KEY, payload, function(){});
         }
-        // иначе просто не пишем — localStorage/Firebase уже сохранили актуальную копию
       }
       window.__memSave = payload;
 
@@ -1903,12 +1850,6 @@
   }
 
   function getUserId(){
-    // Приоритет: auth.uid из Firebase Anonymous Auth — этот ключ единственный,
-    // который правила безопасности реально могут привязать к автору записи
-    // (auth.uid === $uid). Если FIREBASE_CONFIG не заполнен или авторизация
-    // не удалась (офлайн, заблокирован домен), откатываемся на старую схему —
-    // тогда защита от записи в чужой профиль не действует, см. комментарий
-    // у FIREBASE_CONFIG выше.
     if(fbAuthReady && fbAuthUid) return fbAuthUid;
     if(tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) return 'u'+tg.initDataUnsafe.user.id;
     if(!state.anonId) state.anonId = 'anon'+Math.random().toString(36).slice(2,10);
@@ -1923,12 +1864,6 @@
     return state.cachedName || 'Рыбак';
   }
   function fbReady(){ return FIREBASE_URL && FIREBASE_URL.indexOf('ВСТАВЬ') === -1; }
-  // telegram id тут используется ТОЛЬКО как поле для группировки одинаковых
-  // игроков в списке лидеров при заходе с разных устройств (ключом записи
-  // в базе он не является — им остаётся auth.uid, см. getUserId()).
-  // Это значение не проверяется криптографически (нет сервера, который бы
-  // подтвердил подпись Telegram initData), поэтому оно годится только для
-  // косметической дедупликации в UI, а не как граница безопасности.
   function getTelegramId(){
     if(tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) return 'u'+tg.initDataUnsafe.user.id;
     return null;
@@ -1948,9 +1883,67 @@
     }).catch(()=>{});
   }
 
+  function captureReferralIfNew(){
+    if(state.onboardingDone) return;
+    if(state.referredBy) return;
+    const refUid = getStartParamRefUid();
+    if(!refUid) return;
+    const myUid = getUserId();
+    if(!myUid || refUid === myUid) return;
+    state.referredBy = refUid;
+    state.referralClaimed = false;
+    saveState();
+  }
+
+  function checkReferralProgress(){
+    if(!state.referredBy || state.referralClaimed) return;
+    if(state.totalCatches < REFERRAL_CATCH_THRESHOLD) return;
+    state.referralClaimed = true;
+    saveState();
+    if(!fbReady()) return;
+    const myUid = getUserId();
+    const refUid = state.referredBy;
+    fbIdToken().then(token=>{
+      const q = token ? ('?auth=' + token) : '';
+      fetch(FIREBASE_URL + '/referralRewards/' + refUid + '/' + myUid + '.json' + q, {
+        method:'PUT', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ amount: REFERRAL_REWARD_COINS, name: getUserName(), ts: Date.now() })
+      }).catch(()=>{});
+      fetch(FIREBASE_URL + '/referrals/' + myUid + '.json' + q, {
+        method:'PUT', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ referrer: refUid, ts: Date.now() })
+      }).catch(()=>{});
+    });
+  }
+
+  function checkReferralRewards(){
+    if(!fbReady()) return;
+    const myUid = getUserId();
+    fbIdToken().then(token=>{
+      const q = token ? ('?auth=' + token) : '';
+      const url = FIREBASE_URL + '/referralRewards/' + myUid + '.json' + q;
+      fetch(url).then(r=>r.json()).then(data=>{
+        if(!data) return;
+        const keys = Object.keys(data);
+        let total = 0;
+        keys.forEach(k=>{ total += (data[k] && data[k].amount) || 0; });
+        if(total > 0){
+          state.coins += total;
+          saveState(); refreshTopUI();
+          showToast(PARTY_SVG + ' Друг присоединился по твоему приглашению! +' + formatNum(total) + ' ' + COIN_SVG);
+          sfx('coin'); haptic('success');
+        }
+        keys.forEach(k=>{
+          fetch(FIREBASE_URL + '/referralRewards/' + myUid + '/' + k + '.json' + q, { method:'DELETE' }).catch(()=>{});
+        });
+      }).catch(()=>{});
+    });
+  }
+
   function inviteLink(){
     if(!inviteReady()) return 'https://t.me';
-    return BOT_LINK;
+    const uid = getUserId();
+    return BOT_LINK + (uid ? ('?startapp=ref_' + encodeURIComponent(uid)) : '');
   }
   function shareInvite(){
     if(!inviteReady()){
@@ -1960,7 +1953,7 @@
     }
     const link = inviteLink();
     const text = 'Я уже поймал ' + formatNum(state.totalCatches) + ' рыб и дошёл до ' + state.level + ' уровня в Тихой Гавани 🎣 '
-      + 'Присоединяйся!';
+      + 'Присоединяйся, а я получу бонус за приглашение!';
     const shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent(text);
     if(tg && tg.openTelegramLink) tg.openTelegramLink(shareUrl);
     else window.open(shareUrl, '_blank');
@@ -2305,11 +2298,6 @@
     setTimeout(()=>{ el.style.opacity='0'; }, dur*1000 - 1300);
     setTimeout(()=>{ if(bubbleTimer) clearInterval(bubbleTimer); el.remove(); }, dur*1000 + 200);
   }
-  // Раньше этот интервал тикал даже когда приложение свёрнуто (внутри
-  // spawnAmbientFish был лишь early-return по document.hidden) — сам таймер
-  // всё равно просыпался каждые 3.2с и жёг батарею в фоне без всякой пользы.
-  // Теперь при сворачивании таймер полностью останавливается и запускается
-  // заново при возврате.
   let ambientFishTimer = null;
   function startAmbientFishLoop(){
     if(ambientFishTimer) return;
@@ -2807,6 +2795,7 @@
     const xpGain = Math.round(fish.xp * (xpBoosted?2:1) * currentFishXpMult);
     popText(bobRect.left+bobRect.width/2, bobRect.top - 6, '+' + xpGain + ' XP', fish.tier>=3?'big':'');
     state.totalCatches += 1;
+    checkReferralProgress();
     const isNewSpecies = !(state.collectionTotal[fish.id] > 0);
     if(!Array.isArray(state.inventory[fish.id])) state.inventory[fish.id] = [];
     state.inventory[fish.id].push(weight);
@@ -2953,7 +2942,7 @@
     { icon:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M9 4h11l6 6v18a1.6 1.6 0 0 1-1.6 1.6H9A1.6 1.6 0 0 1 7.4 28V5.6A1.6 1.6 0 0 1 9 4z" fill="#F7F3E8" stroke="#8A5A16" stroke-width="1.2" stroke-linejoin="round"/><path d="M20 4v6h6" fill="none" stroke="#D9962C" stroke-width="1.3" stroke-linejoin="round"/><path d="M11.5 15h9M11.5 19h9M11.5 23h6" stroke="#B98550" stroke-width="1.4" stroke-linecap="round"/></svg>',
       title:'Проходи сюжет Тихой Гавани', text:'Во вкладке «Задания» → «Сюжет» тебя ждут 26 глав с историей, наградами и новыми локациями - от тихой пристани до вулканических источников.' },
     { icon:'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M4 16 27 5 20 27l-5-9-9-2z" fill="#F6C453" stroke="#8A5A16" stroke-width="1.3" stroke-linejoin="round"/><path d="M15 18 27 5" fill="none" stroke="#8A5A16" stroke-width="1.1"/></svg>',
-      title:'Позови друга на рыбалку', text:'Поделись игрой с другом.', share:true },
+      title:'Позови друга на рыбалку', text:'Поделись игрой с другом - как только он немного поиграет, ты получишь 1000 монет в подарок.', share:true },
   ];
   let onboardIndex = 0;
   const onboardModal = document.getElementById('onboardModal'),
@@ -3443,10 +3432,10 @@
       const myTgId = getTelegramId();
       let arr = Object.keys(data).map(k=>({id:k, tgId:data[k].tgId||null, name:data[k].name||'Рыбак', level:data[k].level||1, score:data[k].score||0, catches:data[k].catches||0}));
       // Один и тот же игрок может иметь несколько записей (по одной на
-      // каждое устройство/сессию, т.к. ключ в базе — auth.uid, привязанный
+      // каждое устройство/сессию, т.к. ключ в базе auth.uid, привязанный
       // к устройству, см. комментарий у getTelegramId()). Группируем по
       // tgId, где он есть, и оставляем только лучшую запись каждого
-      // игрока — иначе он занимал бы несколько строк в списке лидеров.
+      // игрока иначе он занимал бы несколько строк в списке лидеров.
       const bestByTgId = new Map();
       const withoutTgId = [];
       arr.forEach(row=>{
@@ -3484,6 +3473,8 @@
   initFirebaseAuth(function(){
     loadState(function(){
       fixInventory(); ensureQuests(); ensureStory(); refreshTopUI(); syncLeaderboard();
+      captureReferralIfNew();
+      checkReferralRewards();
       if(!state.onboardingDone) openOnboarding();
     });
   });
