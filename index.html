@@ -1770,11 +1770,14 @@
     }, 300);
   }
   function loadState(cb){
+    const DBG = (typeof localStorage !== 'undefined' && localStorage.getItem('debug_ref_toast') === '1');
+    const dbgParts = [];
 
     try{
       const local = localStorage.getItem(SAVE_KEY);
+      if(DBG) dbgParts.push('local=' + (local ? ('onboarded:'+(JSON.parse(local).onboardingDone)) : 'пусто'));
       if(local) Object.assign(state, JSON.parse(local));
-    }catch(e){}
+    }catch(e){ if(DBG) dbgParts.push('local=ошибка'); }
 
     function loadFromServer(){
 
@@ -1785,19 +1788,28 @@
           return fetch(url);
         })
           .then(r=>r.json())
-          .then(data=>{ if(data){ try{ Object.assign(state, data); }catch(e){} } setSyncFailed(false); cb(); })
-          .catch(()=>{ setSyncFailed(true); cb(); });
+          .then(data=>{
+            if(DBG) dbgParts.push('firebase[' + getUserId() + ']=' + (data ? ('onboarded:'+data.onboardingDone) : 'пусто/null'));
+            if(data){ try{ Object.assign(state, data); }catch(e){} }
+            setSyncFailed(false);
+            if(DBG) setTimeout(()=>showDebugOverlay(['=== DEBUG(load) ===', ...dbgParts, 'ИТОГО onboarded=' + state.onboardingDone]), 200);
+            cb();
+          })
+          .catch(()=>{ setSyncFailed(true); if(DBG){ dbgParts.push('firebase=запрос не прошёл'); setTimeout(()=>showDebugOverlay(['=== DEBUG(load) ===', ...dbgParts]), 200); } cb(); });
       } else {
+        if(DBG) setTimeout(()=>showDebugOverlay(['=== DEBUG(load) ===', ...dbgParts, 'firebase не готов', 'ИТОГО onboarded=' + state.onboardingDone]), 200);
         cb();
       }
     }
 
     if(tg && tg.CloudStorage){
       tg.CloudStorage.getItem(SAVE_KEY, function(err, value){
+        if(DBG) dbgParts.push('cloud=' + (err ? 'ошибка' : (value ? ('onboarded:'+(JSON.parse(value).onboardingDone)) : 'пусто')));
         if(!err && value){ try{ Object.assign(state, JSON.parse(value)); }catch(e){} }
         loadFromServer();
       });
     } else {
+      if(DBG) dbgParts.push('cloud=недоступен');
       loadFromServer();
     }
   }
@@ -1925,6 +1937,33 @@
     haptic('success');
     levelupToastTimer = setTimeout(()=>{ el.classList.remove('show'); }, 2400);
   }
+  // ВРЕМЕННО: полноэкранный debug-оверлей для телефона (тост слишком узкий
+  // и обрезает длинные строки). Показывает текст построчно, с переносом,
+  // не закрывается сам — только по тапу/кнопке. Удалить после отладки.
+  function showDebugOverlay(lines){
+    let el = document.getElementById('debugOverlay');
+    if(!el){
+      el = document.createElement('div');
+      el.id = 'debugOverlay';
+      el.style.cssText = 'position:fixed; inset:0; z-index:99999; background:rgba(10,10,14,0.96); color:#7FE08F; font:12px/1.5 monospace; padding:16px; overflow:auto; white-space:pre-wrap; word-break:break-all;';
+      const closeBtn = document.createElement('button');
+      closeBtn.textContent = 'Закрыть ✕';
+      closeBtn.style.cssText = 'display:block; margin-bottom:12px; padding:8px 14px; background:#FF7A59; color:#fff; border:none; border-radius:8px; font-weight:800;';
+      closeBtn.addEventListener('click', ()=>{ el.remove(); });
+      el.appendChild(closeBtn);
+      const pre = document.createElement('div');
+      pre.id = 'debugOverlayText';
+      el.appendChild(pre);
+      document.body.appendChild(el);
+    }
+    document.getElementById('debugOverlayText').textContent = Array.isArray(lines) ? lines.join('\n') : String(lines);
+  }
+  function showDebugOverlayAppend(line){
+    let el = document.getElementById('debugOverlay');
+    if(!el){ showDebugOverlay([line]); return; }
+    const pre = document.getElementById('debugOverlayText');
+    pre.textContent = pre.textContent + '\n' + line;
+  }
   function showLevelUpToast(level, coins){
     showToast(PARTY_SVG + ' Уровень ' + level + '! +' + formatNum(coins) + ' ' + COIN_SVG);
     sfx('levelup');
@@ -1991,11 +2030,12 @@
         referredByBefore: state.referredBy || 'нет'
       };
       setTimeout(()=>{
-        showToast('DEBUG(boot): start_param=' + snapshot.startParam +
-          ' myUid=' + snapshot.myUid +
-          ' onboarded=' + snapshot.onboardedAtBoot +
-          ' referredBy(до)=' + snapshot.referredByBefore +
-          ' referredBy(после)=' + (state.referredBy || 'нет'));
+        showDebugOverlayAppend('=== DEBUG(referral) ===');
+        showDebugOverlayAppend('start_param=' + snapshot.startParam);
+        showDebugOverlayAppend('myUid=' + snapshot.myUid);
+        showDebugOverlayAppend('onboarded(при загрузке)=' + snapshot.onboardedAtBoot);
+        showDebugOverlayAppend('referredBy(до)=' + snapshot.referredByBefore);
+        showDebugOverlayAppend('referredBy(после)=' + (state.referredBy || 'нет'));
       }, 800);
     }
     if(state.onboardingDone) return;
